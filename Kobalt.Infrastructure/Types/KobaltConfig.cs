@@ -5,4 +5,4 @@ public class KobaltConfig
     public KobaltDiscordConfig Discord { get; set; }
 };
 
-public record KobaltDiscordConfig(string Token);
+public record KobaltDiscordConfig(string Token, int ShardCount);
