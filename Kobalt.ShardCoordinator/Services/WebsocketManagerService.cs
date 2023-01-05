@@ -127,17 +127,18 @@ public class WebsocketManagerService
                 }
 
                 // TODO: Limit this to 8 shards per burst, regardless of bucket size
-                foreach (var sessionID in bucket)
+                for (var j = bucket.Count - 1; j >= 0; j--)
                 {
+                    var sessionID = bucket[j];
                     if (!_connections.TryGetValue(sessionID, out var connection))
                     {
-                        _logger.LogError("Missing session in bucket {BucketID}", i);
+                        _logger.LogError("Missing session in bucket {BucketID}", j);
                         continue;
                     }
 
                     await connection.SendAsync(ShardServerOpcode.Ready);
 
-                    _connections.Remove(sessionID);
+                    bucket.Remove(sessionID);
                 }
             }
         }
