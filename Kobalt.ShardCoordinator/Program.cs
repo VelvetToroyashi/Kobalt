@@ -1,12 +1,9 @@
-using System.Net;
 using System.Net.WebSockets;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Kobalt.Infrastructure.Types;
+using Kobalt.Infrastructure.Types.ShardCoordinator;
 using Kobalt.ShardCoordinator.Services;
-using Kobalt.ShardCoordinator.Types;
 using Microsoft.AspNetCore.Authentication;
-using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.Caching.Extensions;
 using Remora.Discord.Rest;
 using Remora.Discord.Rest.Extensions;
@@ -55,23 +52,21 @@ app.MapDelete
 (
     "/shards/{shardID}", async (HttpContext context, int shardID, WebsocketManagerService websocketManager, SessionManager sessions) =>
     {
-        var shardId = context.Request.RouteValues["id"] as int?;
-        
         var sessionId = context.Request.Headers["X-Session-ID"].ToString();
         
-        if (!sessions.IsValidSession(sessionId, shardId, out var parsedSessionId))
+        if (!sessions.IsValidSession(sessionId, shardID, out var parsedSessionId))
         {
             return Results.Unauthorized();
         }
         
-        var body = await JsonSerializer.DeserializeAsync<(string gatewaySessionID, int? sequence)>(context.Request.Body);
+        var body = await JsonSerializer.DeserializeAsync<ClientGatewaySessionData>(context.Request.Body);
         
-        if (string.IsNullOrEmpty(body.gatewaySessionID) || body.sequence is not {} gatewaySequence)
+        if (string.IsNullOrEmpty(body.GatewaySessionID) || body.Sequence is 0)
         {
             return Results.BadRequest();
         }
 
-        var sessionResult = await websocketManager.TerminateClientSessionAsync(parsedSessionId, body.gatewaySessionID, gatewaySequence);
+        var sessionResult = await websocketManager.TerminateClientSessionAsync(parsedSessionId, body.GatewaySessionID, body.Sequence);
         
         if (!sessionResult.IsSuccess)
         {

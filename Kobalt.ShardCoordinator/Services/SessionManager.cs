@@ -49,7 +49,7 @@ public class SessionManager
         return session;
     }
 
-    public bool IsValidSession(string? sessionID, int? shardID, out Guid sessionGuid)
+    public bool IsValidSession(string? sessionID, int shardID, out Guid sessionGuid)
     {
         if (!Guid.TryParse(sessionID, out sessionGuid))
         {
