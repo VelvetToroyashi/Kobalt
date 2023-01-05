@@ -77,6 +77,7 @@ public class SessionManager
         
         if (_sessions.Count >= _config.Value.Discord.ShardCount)
         {
+            _sessionsLock.ExitReadLock();
             return new InvalidOperationError("No sessions available.");
         }
         
