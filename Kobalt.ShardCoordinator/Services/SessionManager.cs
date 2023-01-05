@@ -15,6 +15,7 @@ public class SessionManager
     private readonly Dictionary<Guid, ClientSession> _sessions = new();
     private readonly ReaderWriterLockSlim _sessionsLock = new(LockRecursionPolicy.SupportsRecursion);
     private readonly PeriodicTimer _cleanupTimer;
+    private readonly Task _cleanupTask;
     
     public SessionManager(IOptions<KobaltConfig> config, CacheService cacheService, ILogger<SessionManager> logger)
     {
@@ -23,6 +24,8 @@ public class SessionManager
         _logger = logger;
         
         _cleanupTimer = new(TimeSpan.FromSeconds(20));
+
+        _cleanupTask = CleanupAbandonedSessionsAsync();
     }
 
     public async Task<Result<ClientSession>> GetClientSessionAsync(RequestHeaders headers, CancellationToken ct)
@@ -31,6 +34,7 @@ public class SessionManager
         var sessionID = headers.Get<Guid>("X-Session-ID");
         if (sessionID == default)
         {
+            _sessionsLock.ExitReadLock();
             return new NotFoundError("No session ID was provided.");
         }
         
@@ -86,7 +90,7 @@ public class SessionManager
         _sessionsLock.EnterWriteLock();
         
         var guid = Guid.NewGuid();
-        var session = new ClientSession(guid, GetNextAvailableShardID(), null, null, null, null);
+        var session = new ClientSession(guid, GetNextAvailableShardID(), null, null, DateTimeOffset.UtcNow, null);
         
         _sessions.Add(guid, session);
         
@@ -155,10 +159,9 @@ public class SessionManager
         while (await _cleanupTimer.WaitForNextTickAsync())
         {
             _sessionsLock.EnterWriteLock();
-
             try
             {
-                var sessions = _sessions.Values.Where(x => (x.AbandonedAt + TimeSpan.FromSeconds(75)) > DateTime.UtcNow);
+                var sessions = _sessions.Values.Where(EligibleForCleanup);
                 foreach (var session in sessions)
                 {
                     _sessions.Remove(session.SessionID);
@@ -169,6 +172,15 @@ public class SessionManager
             {
                 _sessionsLock.ExitWriteLock();
             }
+        }
+        
+        static bool EligibleForCleanup(ClientSession session)
+        {
+            var isAbandoned = session.AbandonedAt != null;
+            var isEligbleForAbandomentCleanup = (session.AbandonedAt + TimeSpan.FromSeconds(20)) < DateTime.UtcNow;
+            var isLikelyInvalid = session.LastSavedAt + TimeSpan.FromSeconds(70) < DateTime.UtcNow;
+            
+            return isEligbleForAbandomentCleanup || (isAbandoned && isLikelyInvalid);
         }
     }
 }
