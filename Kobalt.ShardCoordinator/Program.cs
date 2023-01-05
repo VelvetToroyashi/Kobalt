@@ -24,8 +24,6 @@ builder.Services
        .AddSingleton<SessionManager>()
        .AddSingleton<WebsocketManagerService>();
 
-await SetMaxConcurrency(builder);
-
 var app = builder.Build();
 
 app.UseHttpsRedirection();
@@ -108,20 +106,3 @@ app.Use(async (context, next) =>
 });
 
 app.Run();
-
-
-// Cursed, but works.
-static async Task SetMaxConcurrency(WebApplicationBuilder webApplicationBuilder)
-{
-    var tempServices = webApplicationBuilder.Services.BuildServiceProvider();
-    var gateway = tempServices.GetRequiredService<IDiscordRestGatewayAPI>();
-
-    var gatewayInfoResult = await gateway.GetGatewayBotAsync();
-
-    if (!gatewayInfoResult.IsSuccess)
-    {
-        throw new Exception("Failed to get gateway info");
-    }
-
-    var concurrency = gatewayInfoResult.Entity.SessionStartLimit.Value.MaxConcurrency;
-}
