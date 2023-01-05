@@ -105,4 +105,4 @@ app.Use(async (context, next) =>
     }
 });
 
-app.Run();
+await app.RunAsync();
