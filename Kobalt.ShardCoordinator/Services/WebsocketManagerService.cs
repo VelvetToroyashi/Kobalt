@@ -1,10 +1,13 @@
 ﻿using System.Globalization;
 using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
 using Kobalt.Infrastructure.Enums;
 using Kobalt.Infrastructure.Types;
 using Kobalt.ShardCoordinator.Types;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.Extensions.Options;
+using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.Caching.Services;
 using Remora.Results;
 
@@ -13,25 +16,32 @@ namespace Kobalt.ShardCoordinator.Services;
 
 public class WebsocketManagerService
 {
-    private const string SessionKey = "ksc:sessions:{0}";
-
-    private readonly IOptions<KobaltConfig> _config;
     private readonly SessionManager _sessionManager;
+    private readonly IDiscordRestGatewayAPI _gatewayApi;
+    private readonly IOptions<KobaltConfig> _config;
     private readonly ILogger<WebsocketManagerService> _logger;
 
+    private readonly Task _bucketSweepTask;
     private readonly PeriodicTimer _timer;
     private readonly Dictionary<int, List<Guid>> _ratelimitBuckets;
     private readonly Dictionary<Guid, WebsocketWatchdog> _connections = new();
+
+    private int _maxConcurrency;
     
-    public WebsocketManagerService(IOptions<KobaltConfig> config, SessionManager sessionManager, ILogger<WebsocketManagerService> logger)
+    public WebsocketManagerService(SessionManager sessionManager, IDiscordRestGatewayAPI gatewayApi, IOptions<KobaltConfig> config, ILogger<WebsocketManagerService> logger)
     {
-        _config = config;
         _sessionManager = sessionManager;
+        _gatewayApi = gatewayApi;
+        _config = config;
+        _logger = logger;
+        
         _timer = new(TimeSpan.FromSeconds(6));
         _logger = logger;
         _ratelimitBuckets = new();
-    }
 
+        _bucketSweepTask = StartBucketsAsync();
+    }
+    
     public async Task HandleConnectionAsync(WebSocket socket, RequestHeaders headers, CancellationToken ct)
     {
         _logger.LogDebug("Handling new client connection");
@@ -47,7 +57,7 @@ public class WebsocketManagerService
             return;
         }
         
-        if ((buffer.Span[0] ^ 0x30) is not (byte)ShardServerOpcodes.Identify)
+        if ((buffer.Span[0] ^ 0x30) is not (byte)ShardServerOpcode.Identify)
         {
             _logger.LogWarning("Expected OP2, got OP{Opcode}", buffer.Span[0] ^ 0x30);
             await socket.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "Invalid opcode", CancellationToken.None);
@@ -56,7 +66,7 @@ public class WebsocketManagerService
 
         var sessionResult = await _sessionManager.GetClientSessionAsync(headers, ct);
         
-        if (!sessionResult.IsSuccess)
+        if (!sessionResult.IsDefined(out var session))
         {
             _logger.LogWarning("Failed to get client session: {Error}", sessionResult.Error);
             await socket.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Invalid session", CancellationToken.None);
@@ -67,10 +77,15 @@ public class WebsocketManagerService
 
         // Should *technically* use an indexer, but this is fine.
         // Relying on implementation details. Fun.
-        _connections.Add(sessionResult.Entity.SessionID, connection);
+        _connections.Add(session.SessionID, connection);
 
-        _logger.LogDebug("Client connection established");
+        _logger.LogDebug("Client connection established (Shard {Shard})", session.ShardID);
         connection.Start();
+
+        await ConfigureStartBucketsAsync();
+        
+        AssignShardToBucket(session.ShardID, session.SessionID);
+        
         await connection.WebsocketTask;
     }
 
@@ -94,6 +109,81 @@ public class WebsocketManagerService
         );
 
         return updateResult;
+    }
+
+    private async Task StartBucketsAsync()
+    {
+        // This timer ticks every 6 seconds, so 
+        // it's okay to start all shards in a given
+        // bucket at once.
+        while (await _timer.WaitForNextTickAsync())
+        {
+            for (int i = 0; i < _maxConcurrency; i++)
+            {
+                if (!_ratelimitBuckets.TryGetValue(i, out var bucket))
+                {
+                    _logger.LogError("Expected bucket {Bucket} to exist", i);
+                    continue;
+                }
+
+                // TODO: Limit this to 8 shards per burst, regardless of bucket size
+                foreach (var sessionID in bucket)
+                {
+                    if (!_connections.TryGetValue(sessionID, out var connection))
+                    {
+                        _logger.LogError("Missing session in bucket {BucketID}", i);
+                        continue;
+                    }
+
+                    await connection.SendAsync(ShardServerOpcode.Ready);
+
+                    _connections.Remove(sessionID);
+                }
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Sets the <see cref="_maxConcurrency"/> to the maximum number of shards that can be connected to the gateway at once.
+    /// </summary>
+    private async ValueTask ConfigureStartBucketsAsync()
+    {
+        if (_maxConcurrency != 0)
+        {
+            return;
+        }
+        
+        var gatewayResult = await _gatewayApi.GetGatewayBotAsync();
+        
+        if (!gatewayResult.IsDefined(out var gatewayInformation))
+        {
+            _logger.LogError("Failed to get gateway info from Discord: {Error}", gatewayResult.Error);
+            return;
+        }
+        
+        var maxConcurrency = gatewayInformation.SessionStartLimit.Value.MaxConcurrency;
+        
+        _logger.LogInformation("Max concurrency is {MaxConcurrency}", maxConcurrency);
+        
+        _maxConcurrency = maxConcurrency;
+        
+        var shardsPerBucket = (int)Math.Ceiling((double)_config.Value.Discord.ShardCount / maxConcurrency);
+        for (var i = 0; i < maxConcurrency; i++)
+        {
+            _ratelimitBuckets.Add(i, new(shardsPerBucket));
+        }
+    }
+
+    /// <summary>
+    /// Assigns a shard (identified by its ID) to a bucket.
+    /// </summary>
+    /// <param name="shardId">The ID of the shard to assign.</param>
+    /// <param name="sessionId">The ID of the shard's session.</param>
+    /// <remarks>Discord docs: https://discord.dev/topics/gateway#sharding-max-concurrency</remarks>
+    private void AssignShardToBucket(int shardId, Guid sessionId)
+    {
+        var bucketId = shardId % _maxConcurrency / _maxConcurrency;
+        _ratelimitBuckets[bucketId].Add(sessionId);
     }
 
     private class WebsocketWatchdog : IDisposable
@@ -127,7 +217,21 @@ public class WebsocketManagerService
         
             _heartbeatTimer = new(TimeSpan.FromSeconds(1));
         }
-        
+
+        public async Task<Result> SendAsync(ShardServerOpcode opcode, object? data = null)
+        {
+            if (_socket.State != WebSocketState.Open)
+            {
+                return new InvalidOperationError("Socket closed unexpectedly. Bug?");
+            }
+            
+            byte[] json = JsonSerializer.SerializeToUtf8Bytes( new { op = (int)opcode, d = data });
+            
+            await _socket.SendAsync(json, WebSocketMessageType.Text, true, default);
+            
+            return Result.FromSuccess();
+        }
+
         public void Start()
         {
             _watchdogTask = WatchdogAsync();
@@ -153,5 +257,8 @@ public class WebsocketManagerService
             _socket.Dispose();
             _heartbeatTimer.Dispose();
         }
+        
+        
+        
     }
 }
