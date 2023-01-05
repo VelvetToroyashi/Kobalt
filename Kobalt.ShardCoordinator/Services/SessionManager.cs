@@ -157,7 +157,7 @@ public class SessionManager
 
             try
             {
-                var sessions = _sessions.Values.Where(x => x.AbandonedAt < DateTime.UtcNow - TimeSpan.FromSeconds(3000));
+                var sessions = _sessions.Values.Where(x => (x.AbandonedAt + TimeSpan.FromSeconds(75)) > DateTime.UtcNow);
                 foreach (var session in sessions)
                 {
                     _sessions.Remove(session.SessionID);
