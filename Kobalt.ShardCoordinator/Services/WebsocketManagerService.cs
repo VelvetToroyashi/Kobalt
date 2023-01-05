@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Buffers;
+using System.Globalization;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -26,6 +27,8 @@ public class WebsocketManagerService
     private readonly Dictionary<int, List<Guid>> _ratelimitBuckets;
     private readonly Dictionary<Guid, WebsocketWatchdog> _connections = new();
 
+    private static readonly byte[] _helloPayload = JsonSerializer.SerializeToUtf8Bytes(new ShardServerPayload(ShardServerOpcode.Hello, null));
+    
     private int _maxConcurrency;
     
     public WebsocketManagerService(SessionManager sessionManager, IDiscordRestGatewayAPI gatewayApi, IOptions<KobaltConfig> config, ILogger<WebsocketManagerService> logger)
@@ -45,22 +48,26 @@ public class WebsocketManagerService
     public async Task HandleConnectionAsync(WebSocket socket, RequestHeaders headers, CancellationToken ct)
     {
         _logger.LogDebug("Handling new client connection");
-        var buffer = new Memory<byte>(new byte[32]);
         
-        var identity = await socket.ReceiveAsync(buffer, CancellationToken.None);
+        await socket.SendAsync(_helloPayload, WebSocketMessageType.Text, true, ct);
 
-        if (!identity.EndOfMessage || identity.MessageType is not WebSocketMessageType.Text)
+        var buffer = new Memory<byte>(new byte[32]);
+        var identifyMessage = await socket.ReceiveAsync(buffer, CancellationToken.None);
+        
+        if (!identifyMessage.EndOfMessage || identifyMessage.MessageType is not WebSocketMessageType.Text)
         {
-            _logger.LogWarning("Invalid identity message (End of message: {EndOfMessage}, Message type: {MessageType})", identity.EndOfMessage, identity.MessageType);
+            _logger.LogWarning("First message from the client invalid. Disconnecting.");
             // Client should immediately send OP3, which should fit in a single 32B buffer.
             await socket.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "Invalid payload", CancellationToken.None);
             return;
         }
         
-        if ((buffer.Span[0] ^ 0x30) is not (byte)ShardServerOpcode.Identify)
+        var deserialized = JsonSerializer.Deserialize<ShardServerPayload>(buffer.Span[..identifyMessage.Count]);
+
+        if (deserialized.Opcode is not ShardServerOpcode.Identify)
         {
-            _logger.LogWarning("Expected OP2, got OP{Opcode}", buffer.Span[0] ^ 0x30);
-            await socket.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "Invalid opcode", CancellationToken.None);
+            _logger.LogWarning("Expected client to identify. Got {Opcode} instead. Disconnecting.", deserialized.Opcode);
+            await socket.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "Expected OP3", CancellationToken.None);
             return;
         }
 
@@ -73,14 +80,14 @@ public class WebsocketManagerService
             return;
         }
 
-        var connection = new WebsocketWatchdog(socket, ct, this);
+        var connection = new WebsocketWatchdog(session.SessionID, socket, ct, this);
 
         // Should *technically* use an indexer, but this is fine.
         // Relying on implementation details. Fun.
-        _connections.Add(session.SessionID, connection);
+        _connections.TryAdd(session.SessionID, connection);
+        _sessionManager.ReclaimSession(session.SessionID);
 
         _logger.LogDebug("Client connection established (Shard {Shard})", session.ShardID);
-        connection.Start();
 
         await ConfigureStartBucketsAsync();
         
@@ -143,6 +150,20 @@ public class WebsocketManagerService
             }
         }
     }
+
+    private async ValueTask HandleSocketMessageAsync(WebsocketWatchdog watchdog, Memory<byte> data, bool isClosing)
+    {
+        // Currently all this method does is hadnle close messages, as there's
+        // nothing the client currently sends other than IDENTIFY (OP3)
+
+        if (isClosing)
+        {
+            _connections.Remove(watchdog.SessionID);
+            _sessionManager.AbandonSession(watchdog.SessionID);
+            watchdog.Dispose();
+            return;
+        }
+    }
     
     /// <summary>
     /// Sets the <see cref="_maxConcurrency"/> to the maximum number of shards that can be connected to the gateway at once.
@@ -195,28 +216,36 @@ public class WebsocketManagerService
         private readonly CancellationToken _cancellationToken;
         private readonly WebsocketManagerService _manager;
         private readonly PeriodicTimer _heartbeatTimer;
-    
-        public Task WebsocketTask => _tcs.Task;
 
+        private bool _isDisposed;
         private Task _watchdogTask;
-    
+        
+        public Guid SessionID { get; }
+        public Task WebsocketTask => _tcs.Task;
+        
         public WebsocketWatchdog
         (
+            Guid sessionID,
             WebSocket socket,
             CancellationToken ct,
             WebsocketManagerService manager
         )
         {
+            SessionID = sessionID;
+            
             _socket = socket;
             _tcs = new(false);
             _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             _cancellationToken = _cts.Token;
             _manager = manager;
         
-            // Register on the parent cancellation token; disposing will our token.
+            // Register on the parent cancellation token;
+            // disposing will our token.
             ct.Register(() => Dispose());
         
             _heartbeatTimer = new(TimeSpan.FromSeconds(1));
+            
+            _watchdogTask = WatchdogAsync();
         }
 
         public async Task<Result> SendAsync(ShardServerOpcode opcode, object? data = null)
@@ -226,40 +255,50 @@ public class WebsocketManagerService
                 return new InvalidOperationError("Socket closed unexpectedly. Bug?");
             }
             
-            byte[] json = JsonSerializer.SerializeToUtf8Bytes( new { op = (int)opcode, d = data });
+            byte[] json = JsonSerializer.SerializeToUtf8Bytes(new { op = (int)opcode, d = data });
             
             await _socket.SendAsync(json, WebSocketMessageType.Text, true, default);
             
             return Result.FromSuccess();
         }
 
-        public void Start()
-        {
-            _watchdogTask = WatchdogAsync();
-        }
-
         private async Task WatchdogAsync()
         {
-            while (await _heartbeatTimer.WaitForNextTickAsync(_cancellationToken))
+            var buffer = ArrayPool<byte>.Shared.Rent(4096);
+            try
             {
-                if (_socket.State is not WebSocketState.Open)
+                while (!_cancellationToken.IsCancellationRequested)
                 {
-                    await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Connection closed", CancellationToken.None);
-                    _tcs.TrySetResult();
-                    return;
+                    // Normally you do NOT want to pass a CT to ReceiveAsync
+                    // because it registers to abort the socket if the CT is cancelled.
+                    // However, here it's fine because if the CT is aborted, 
+                    // the client has already disconnected anyway, or the server is shutting down.
+                    var res = await _socket.ReceiveAsync(buffer, _cancellationToken);
+
+                    if (res.MessageType == WebSocketMessageType.Close)
+                    {
+                        // Client has disconnected unexpectedly! Server-initiated disconnects
+                        // will dispose, which cancels, and thusly we'll never reach this point!
+                        await _manager.HandleSocketMessageAsync(this, buffer.AsMemory(0, res.Count), true);
+                        return;
+                    }
                 }
             }
+            catch { /* Socket was aborted, do nothing. */ }
+            finally { ArrayPool<byte>.Shared.Return(buffer); }
         }
 
         public void Dispose()
         {
-            _tcs.TrySetResult();
-            _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, default);
-            _socket.Dispose();
-            _heartbeatTimer.Dispose();
+            if (!_isDisposed)
+            {
+                _cts.Dispose();
+                _tcs.TrySetResult();
+                _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, default);
+                _socket.Dispose();
+                _heartbeatTimer.Dispose();
+                _isDisposed = true;
+            }
         }
-        
-        
-        
     }
 }
