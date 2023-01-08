@@ -1,20 +1,23 @@
 ﻿using System.Buffers;
-using System.Globalization;
 using System.Net.WebSockets;
-using System.Text;
 using System.Text.Json;
 using Kobalt.Infrastructure.Enums;
 using Kobalt.Infrastructure.Types;
-using Kobalt.ShardCoordinator.Types;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.Extensions.Options;
 using Remora.Discord.API.Abstractions.Rest;
-using Remora.Discord.Caching.Services;
 using Remora.Results;
 
 namespace Kobalt.ShardCoordinator.Services;
 
-
+/// <summary>
+/// Service responsible for handling and monitoring client connections.
+/// </summary>
+/// <remarks>
+/// This service effectively serves as an aggregated watchdog across all shards,
+/// notifying the session handler that a client has disconnected and its session can be
+/// oprhaned.
+/// </remarks>
 public class WebsocketManagerService
 {
     private readonly SessionManager _sessionManager;
@@ -49,27 +52,8 @@ public class WebsocketManagerService
     {
         _logger.LogDebug("Handling new client connection");
         
-        await socket.SendAsync(_helloPayload, WebSocketMessageType.Text, true, ct);
-
-        var buffer = new Memory<byte>(new byte[32]);
-        var identifyMessage = await socket.ReceiveAsync(buffer, CancellationToken.None);
-        
-        if (!identifyMessage.EndOfMessage || identifyMessage.MessageType is not WebSocketMessageType.Text)
-        {
-            _logger.LogWarning("First message from the client invalid. Disconnecting.");
-            // Client should immediately send OP3, which should fit in a single 32B buffer.
-            await socket.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "Invalid payload", CancellationToken.None);
+        if (!await WaitForClientIdentifyAsync(socket, ct))
             return;
-        }
-        
-        var deserialized = JsonSerializer.Deserialize<ShardServerPayload>(buffer.Span[..identifyMessage.Count]);
-
-        if (deserialized.Opcode is not ShardServerOpcode.Identify)
-        {
-            _logger.LogWarning("Expected client to identify. Got {Opcode} instead. Disconnecting.", deserialized.Opcode);
-            await socket.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "Expected OP3", CancellationToken.None);
-            return;
-        }
 
         var sessionResult = await _sessionManager.GetClientSessionAsync(headers, ct);
         
@@ -83,7 +67,9 @@ public class WebsocketManagerService
         var connection = new WebsocketWatchdog(session.SessionID, socket, ct, this);
 
         // Should *technically* use an indexer, but this is fine.
-        // Relying on implementation details. Fun.
+        // Theoretically we could ask the session manager if the session has already been claimed
+        // or check if adding fails, which means the session is currently in use, and thusly the client
+        // should be disconnected.
         _connections.TryAdd(session.SessionID, connection);
         _sessionManager.ReclaimSession(session.SessionID);
 
@@ -96,6 +82,40 @@ public class WebsocketManagerService
         await connection.WebsocketTask;
     }
 
+    private async Task<bool> WaitForClientIdentifyAsync(WebSocket socket, CancellationToken ct)
+    {
+        await socket.SendAsync(_helloPayload, WebSocketMessageType.Text, true, ct);
+
+        var buffer = new Memory<byte>(new byte[32]);
+        var identifyMessage = await socket.ReceiveAsync(buffer, CancellationToken.None);
+
+        if (!identifyMessage.EndOfMessage || identifyMessage.MessageType is not WebSocketMessageType.Text)
+        {
+            _logger.LogWarning("First message from the client invalid. Disconnecting.");
+            // Client should immediately send OP3, which should fit in a single 32B buffer.
+            await socket.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "Invalid payload", CancellationToken.None);
+            return false;
+        }
+
+        var deserialized = JsonSerializer.Deserialize<ShardServerPayload>(buffer.Span[..identifyMessage.Count]);
+
+        if (deserialized.Opcode is not ShardServerOpcode.Identify)
+        {
+            _logger.LogWarning("Expected client to identify. Got {Opcode} instead. Disconnecting.", deserialized.Opcode);
+            await socket.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "Expected OP3", CancellationToken.None);
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Terminates a client's connection, releasing its associated session.
+    /// </summary>
+    /// <param name="sessionID">The ID of the session to be released.</param>
+    /// <param name="gatewaySessionID">The updated gateway session ID from the client.</param>
+    /// <param name="sequence">The updated gateway sequence number from the client.</param>
+    /// <returns>A result that may or not have succeeded.</returns>
     public async Task<Result> TerminateClientSessionAsync(Guid sessionID, string gatewaySessionID, int sequence)
     {
         if (!_connections.TryGetValue(sessionID, out var connection))
@@ -105,8 +125,6 @@ public class WebsocketManagerService
         
         //Dispose will close the socket and release the middleware.
         connection.Dispose();
-        
-        //Remove the connection from the dictionary.
         _connections.Remove(sessionID);
         
         var updateResult = await _sessionManager.UpdateSessionAsync
@@ -159,7 +177,7 @@ public class WebsocketManagerService
         if (isClosing)
         {
             _connections.Remove(watchdog.SessionID);
-            _sessionManager.AbandonSession(watchdog.SessionID);
+            _sessionManager.ReleaseSession(watchdog.SessionID);
             watchdog.Dispose();
             return;
         }
@@ -185,7 +203,7 @@ public class WebsocketManagerService
         
         var maxConcurrency = gatewayInformation.SessionStartLimit.Value.MaxConcurrency;
         
-        _logger.LogInformation("Max concurrency is {MaxConcurrency}", maxConcurrency);
+        _logger.LogInformation("Max client start concurrency is {MaxConcurrency}", maxConcurrency);
         
         _maxConcurrency = maxConcurrency;
         
@@ -208,6 +226,9 @@ public class WebsocketManagerService
         _ratelimitBuckets[bucketId].Add(sessionId);
     }
 
+    /// <summary>
+    /// The watchdog that powers <see cref="WebsocketManagerService"/>.
+    /// </summary>
     private class WebsocketWatchdog : IDisposable
     {
         private readonly WebSocket _socket;
@@ -248,6 +269,12 @@ public class WebsocketManagerService
             _watchdogTask = WatchdogAsync();
         }
 
+        /// <summary>
+        /// Sends a payload to the client.
+        /// </summary>
+        /// <param name="opcode">The opcode to send to the client.</param>
+        /// <param name="data">Any additional data to send to the client</param>
+        /// <returns>A result that may or not have succeeded.</returns>
         public async Task<Result> SendAsync(ShardServerOpcode opcode, object? data = null)
         {
             if (_socket.State != WebSocketState.Open)
@@ -262,6 +289,9 @@ public class WebsocketManagerService
             return Result.FromSuccess();
         }
 
+        /// <summary>
+        /// The watchdog task that monitors the given socket, notifying the manager when it closes.
+        /// </summary>
         private async Task WatchdogAsync()
         {
             var buffer = ArrayPool<byte>.Shared.Rent(4096);

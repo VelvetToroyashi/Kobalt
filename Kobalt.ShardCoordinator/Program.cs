@@ -28,6 +28,8 @@ app.MapControllers();
 
 app.UseWebSockets();
 
+// Either gets a new session if all pre-existing ones are taken
+// or returns an existing, unused session
 app.MapPost
 (
     "/shards", async (HttpContext context, SessionManager manager) =>
@@ -48,6 +50,8 @@ app.MapPost
     }
 );
 
+// DELETE /shards/{id} to release a session, saving its updated information
+// these sessions are reassigned to any connecting client during their POST request
 app.MapDelete
 (
     "/shards/{shardID}", async (HttpContext context, int shardID, WebsocketManagerService websocketManager, SessionManager sessions) =>

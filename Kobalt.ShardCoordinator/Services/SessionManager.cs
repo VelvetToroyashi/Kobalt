@@ -1,4 +1,6 @@
-﻿using Kobalt.Infrastructure.Types;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
+using Kobalt.Infrastructure.Types;
 using Kobalt.ShardCoordinator.Types;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.Extensions.Options;
@@ -7,16 +9,30 @@ using Remora.Results;
 
 namespace Kobalt.ShardCoordinator.Services;
 
+/// <summary>
+/// Service for handling sessions.
+/// </summary>
+/// <remarks>
+/// Sessions in this context refer to a connection between the server and a client,
+/// which also hold metadata about the client.
+///
+/// <para>
+/// This metadata includes:
+/// <ul>The shard ID of the client</ul>
+/// <ul>The ID of the session to hold a mapping with</ul>
+/// <ul>The gateway session ID</ul>
+/// <ul>The gateway sequence number</ul>
+/// </para>
+/// </remarks>
 public class SessionManager
 {
     private readonly IOptions<KobaltConfig> _config;
     private readonly CacheService _cacheService;
     private readonly ILogger<SessionManager> _logger;
-    private readonly Dictionary<Guid, ClientSession> _sessions = new();
-    private readonly ReaderWriterLockSlim _sessionsLock = new(LockRecursionPolicy.SupportsRecursion);
+    private readonly ConcurrentDictionary<Guid, ClientSession> _sessions = new();
     private readonly PeriodicTimer _cleanupTimer;
     private readonly Task _cleanupTask;
-    
+
     public SessionManager(IOptions<KobaltConfig> config, CacheService cacheService, ILogger<SessionManager> logger)
     {
         _config = config;
@@ -28,24 +44,25 @@ public class SessionManager
         _cleanupTask = CleanupAbandonedSessionsAsync();
     }
 
+    /// <summary>
+    /// Retrieves the session for the given ID.
+    /// </summary>
+    /// <param name="headers">The headers from the request.</param>
+    /// <param name="ct">A cancellation token to abort the request.</param>
+    /// <returns>A result containing the client session, if it exists.</returns>
     public async Task<Result<ClientSession>> GetClientSessionAsync(RequestHeaders headers, CancellationToken ct)
     {
-        _sessionsLock.EnterReadLock();
         var sessionID = headers.Get<Guid>("X-Session-ID");
         if (sessionID == default)
         {
-            _sessionsLock.ExitReadLock();
             return new NotFoundError("No session ID was provided.");
         }
-        
+
         if (!_sessions.TryGetValue(sessionID, out var session))
         {
-            _sessionsLock.ExitReadLock();
             return new NotFoundError("The session ID provided was not found.");
         }
-        
-        _sessionsLock.ExitReadLock();
-
+            
         return session;
     }
 
@@ -56,89 +73,61 @@ public class SessionManager
             return false;
         }
         
-        _sessionsLock.EnterReadLock();
-        try
+        if (!_sessions.TryGetValue(sessionGuid, out var session))
         {
-            if (!_sessions.TryGetValue(sessionGuid, out var session))
-            {
-            
-                return false;
-            }
+            return false;
+        }
         
-            var isCorrectShard = session.ShardID == shardID;
+        var isCorrectShard = session.ShardID == shardID;
 
-            return isCorrectShard;
-        }
-        finally
-        {
-            _sessionsLock.ExitReadLock();
-        }
+        return isCorrectShard;
     }
 
     public async Task<Result<ClientSession>> GetNextAvailableSessionAsync()
     {
-        _sessionsLock.EnterReadLock();
-        
         if (_sessions.Count >= _config.Value.Discord.ShardCount)
         {
-            _sessionsLock.ExitReadLock();
             return new InvalidOperationError("No sessions available.");
         }
-        
-        _sessionsLock.ExitReadLock();
-        
-        _sessionsLock.EnterWriteLock();
-        
+
         var guid = Guid.NewGuid();
         var session = new ClientSession(guid, GetNextAvailableShardID(), null, null, DateTimeOffset.UtcNow, null);
-        
-        _sessions.Add(guid, session);
-        
-        _sessionsLock.ExitWriteLock();
-        
+
+        _sessions.TryAdd(guid, session);
+
         return session;
     }
     
     public async Task<Result> UpdateSessionAsync(Guid sessionID, Func<ClientSession, ClientSession> updateFunc)
     {
-        _sessionsLock.EnterWriteLock();
-        
         if (!_sessions.TryGetValue(sessionID, out var existingSession))
         {
-            _sessionsLock.ExitWriteLock();
             return new NotFoundError("The session ID provided was not found.");
         }
         
         _sessions[sessionID] = updateFunc(existingSession) with { LastSavedAt = DateTimeOffset.UtcNow };
-        _sessionsLock.ExitWriteLock();
         
         return Result.FromSuccess();
     }
     
-    public void AbandonSession(Guid sessionID)
+    public void ReleaseSession(Guid sessionID)
     {
-        _sessionsLock.EnterWriteLock();
-        
         var session = _sessions[sessionID];
         
         _sessions[sessionID] = session with { AbandonedAt = DateTimeOffset.UtcNow };
-        
-        _sessionsLock.ExitWriteLock();
     }
     
     public void ReclaimSession(Guid sessionID)
     {
-        _sessionsLock.EnterWriteLock();
-        
         var session = _sessions[sessionID];
         
         _sessions[sessionID] = session with { AbandonedAt = null };
-        
-        _sessionsLock.ExitWriteLock();
     }
     
     private int GetNextAvailableShardID()
     {
+        Debug.Assert(_sessions.Count < _config.Value.Discord.ShardCount);
+        
         var ids = Enumerable.Range(0, _config.Value.Discord.ShardCount);
 
         foreach (var id in ids)
@@ -151,26 +140,19 @@ public class SessionManager
             return id;
         }
         
-        throw new ArgumentOutOfRangeException("No shards available.");
+        // Throwing as we have no data to return in this situation; this case is exceptional.
+        throw new InvalidOperationException("No available shard IDs.");
     }
     
     private async Task CleanupAbandonedSessionsAsync()
     {
         while (await _cleanupTimer.WaitForNextTickAsync())
         {
-            _sessionsLock.EnterWriteLock();
-            try
+            var sessions = _sessions.Values.Where(EligibleForCleanup);
+            foreach (var session in sessions)
             {
-                var sessions = _sessions.Values.Where(EligibleForCleanup);
-                foreach (var session in sessions)
-                {
-                    _sessions.Remove(session.SessionID);
-                    _logger.LogDebug("Removed abandoned session {SessionID}", session.SessionID);
-                }
-            }
-            finally
-            {
-                _sessionsLock.ExitWriteLock();
+                _sessions.Remove(session.SessionID, out _);
+                _logger.LogDebug("Removed abandoned session {SessionID}", session.SessionID);
             }
         }
         
