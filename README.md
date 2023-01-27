@@ -1,4 +1,4 @@
-﻿# Kobalt - The bot for everyone
+# Kobalt - The bot for everyone
 
 Kobalt is, or at least *attempts* to be a bot for everyone.
 
@@ -10,52 +10,52 @@ As it stands right now, this project is not only in a very early stage, but also
 
 ## Feature checklist (AKA a Roadmap)
 
-[ ] Kobalt (The bot itself)
-    [ ] Configuration
-    [ ] Entertainment (TBD)
-        [ ] RPG/MUD? (Plays well in Discord)
-    [ ] Moderation (See `Infraction API`)
-    [ ] Utility
-        [ ] ID Search/Info
-        [ ] Reminders
-        [ ] Role Menus
-        [ ] Timezone/Timestamp helper
+- [ ] Kobalt (The bot itself)
+    - [ ] Configuration
+    - [ ] Entertainment (TBD)
+        - [ ] RPG/MUD? (Plays well in Discord)
+    - [ ] Moderation (See `Infraction API`)
+    - [ ] Utility
+        - [ ] ID Search/Info
+        - [ ] Reminders
+        - [ ] Role Menus
+        - [ ] Timezone/Timestamp helper
 
-[ ] Infraction API  
-    [x] Infractions
-        [x] Create infraction (`PUT /infractions/guilds/{guildID}`)
-        [x] Get guild infractions (`GET /infractions/guilds/{guildID}`)
-        [x] Update infraction (`PATCH /infractions/guilds/{guildID}/{id}`)
-        [x] Get user infractions (`GET /infractions/guilds/{guildID}/users/{id}`)
-    [x] Infraction Rules
-        [x] Get guild infraction rules (`GET /infractions/guilds/{guildID}/rules`)
-        [x] Create infraction rule (`POST /infractions/guilds/{guildID}/rules`)
-        [x] Update infraction rule (`PATCH /infractions/guilds/{guildID}/rules/{id}`)
-        [x] Delete infraction rule (`DELETE /infractions/guilds/{guildID}/rules/{id}`)
-    [x] Infraction History
-    [ ] Infraction Exemptions (TBD?)
-    [ ] Infraction Logging (Handled by Kobalt)
-    [ ] Infraction Dispatch (Requires support on Kobalt)
+- [ ] Infraction API  
+    - [x] Infractions
+        - [x] Create infraction (`PUT /infractions/guilds/{guildID}`)
+        - [x] Get guild infractions (`GET /infractions/guilds/{guildID}`)
+        - [x] Update infraction (`PATCH /infractions/guilds/{guildID}/{id}`)
+        - [x] Get user infractions (`GET /infractions/guilds/{guildID}/users/{id}`)
+    - [x] Infraction Rules
+        - [x] Get guild infraction rules (`GET /infractions/guilds/{guildID}/rules`)
+        - [x] Create infraction rule (`POST /infractions/guilds/{guildID}/rules`)
+        - [x] Update infraction rule (`PATCH /infractions/guilds/{guildID}/rules/{id}`)
+        - [x] Delete infraction rule (`DELETE /infractions/guilds/{guildID}/rules/{id}`)
+    - [x] Infraction History
+    - [ ] Infraction Exemptions (TBD?)
+    - [ ] Infraction Logging (Handled by Kobalt)
+    - [ ] Infraction Dispatch (Requires support on Kobalt)
 
-[ ] Artist Authentication API
-    [ ] Reverse Image Search
-    [ ] Artist Verification (Likely a manual process)
+- [ ] Artist Authentication API
+    - [ ] Reverse Image Search
+    - [ ] Artist Verification (Likely a manual process)
 
-[ ] Dashboard
-    [ ] Manage Reminders
-    [ ] Manage Guild Configuration
-    [ ] Manage Infraction Rules
-    [ ] Manage Infraction Exemptions
-    [ ] Manage Infraction Logging
-    [ ] Artist Verification Registration
+- [ ] Dashboard
+    - [ ] Manage Reminders
+    - [ ] Manage Guild Configuration
+    - [ ] Manage Infraction Rules
+    - [ ] Manage Infraction Exemptions
+    - [ ] Manage Infraction Logging
+    - [ ] Artist Verification Registration
 
-[ ] Reminder Microservice
-    [ ] Create Reminder
-    [ ] Get Reminder
-    [ ] Update Reminder
-    [ ] Delete Reminder
-    [ ] Dispatch Reminder (Requires Kobalt Support)
+- [ ] Reminder Microservice
+    - [ ] Create Reminder
+    - [ ] Get Reminder
+    - [ ] Update Reminder
+    - [ ] Delete Reminder
+    - [ ] Dispatch Reminder (Requires Kobalt Support)
 
-[ ] Anti-Phish Microservice
-    [ ] Handle aggregated phishing sources
-    [ ] Expose API for Kobalt to query
+- [ ] Anti-Phish Microservice
+    - [ ] Handle aggregated phishing sources
+    - [ ] Expose API for Kobalt to query
