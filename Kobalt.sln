@@ -6,6 +6,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Infrastructure", "Ko
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.ShardCoordinator", "Kobalt.ShardCoordinator\Kobalt.ShardCoordinator.csproj", "{5315FF37-C39F-4ECE-957B-B9A6C2E2C6D5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Infractions.API", "Kobalt.InfractionAPI\Kobalt.Infractions.API\Kobalt.Infractions.API.csproj", "{EA1B77AF-B2AE-4F7A-BAC2-C477B3E689D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Infractions.Data", "Kobalt.InfractionAPI\Kobalt.Infractions.Data\Kobalt.Infractions.Data.csproj", "{51FC3DE3-1A7B-4B13-B985-B3B29F4AF6DE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Kobalt.InfractionAPI", "Kobalt.InfractionAPI", "{7650B8A1-CFA5-48CF-AB2F-7F8B379BDFA8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Infractions.Infrastructure", "Kobalt.InfractionAPI\Kobalt.Infractions.Infrastructure\Kobalt.Infractions.Infrastructure.csproj", "{36086C92-73BC-4183-9A22-3E2C1C4E0641}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Infractions.Shared", "Kobalt.InfractionAPI\Kobalt.Infractions.Shared\Kobalt.Infractions.Shared.csproj", "{0517D1AA-9A52-4663-AE22-BB99F5555C0B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +34,27 @@ Global
 		{5315FF37-C39F-4ECE-957B-B9A6C2E2C6D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5315FF37-C39F-4ECE-957B-B9A6C2E2C6D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5315FF37-C39F-4ECE-957B-B9A6C2E2C6D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA1B77AF-B2AE-4F7A-BAC2-C477B3E689D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA1B77AF-B2AE-4F7A-BAC2-C477B3E689D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA1B77AF-B2AE-4F7A-BAC2-C477B3E689D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA1B77AF-B2AE-4F7A-BAC2-C477B3E689D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51FC3DE3-1A7B-4B13-B985-B3B29F4AF6DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51FC3DE3-1A7B-4B13-B985-B3B29F4AF6DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51FC3DE3-1A7B-4B13-B985-B3B29F4AF6DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51FC3DE3-1A7B-4B13-B985-B3B29F4AF6DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36086C92-73BC-4183-9A22-3E2C1C4E0641}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36086C92-73BC-4183-9A22-3E2C1C4E0641}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36086C92-73BC-4183-9A22-3E2C1C4E0641}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36086C92-73BC-4183-9A22-3E2C1C4E0641}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0517D1AA-9A52-4663-AE22-BB99F5555C0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0517D1AA-9A52-4663-AE22-BB99F5555C0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0517D1AA-9A52-4663-AE22-BB99F5555C0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0517D1AA-9A52-4663-AE22-BB99F5555C0B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EA1B77AF-B2AE-4F7A-BAC2-C477B3E689D3} = {7650B8A1-CFA5-48CF-AB2F-7F8B379BDFA8}
+		{51FC3DE3-1A7B-4B13-B985-B3B29F4AF6DE} = {7650B8A1-CFA5-48CF-AB2F-7F8B379BDFA8}
+		{36086C92-73BC-4183-9A22-3E2C1C4E0641} = {7650B8A1-CFA5-48CF-AB2F-7F8B379BDFA8}
+		{0517D1AA-9A52-4663-AE22-BB99F5555C0B} = {7650B8A1-CFA5-48CF-AB2F-7F8B379BDFA8}
 	EndGlobalSection
 EndGlobal
