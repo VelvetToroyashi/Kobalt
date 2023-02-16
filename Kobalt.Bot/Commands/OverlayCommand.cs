@@ -6,7 +6,6 @@ using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.Commands.Attributes;
 using Remora.Discord.Commands.Contexts;
-using Remora.Results;
 
 namespace Kobalt.Bot.Commands;
 
@@ -46,24 +45,24 @@ public class OverlayCommand : CommandGroup
     )
     {
         var result = await _overlay.OverlayAsync(@base.Url, overlay.Url, intensity, greyscale);
-        
-        if (!result.IsSuccess)
+
+        if (result.IsSuccess)
         {
-            await _interactions.EditOriginalInteractionResponseAsync
+            return (Result)await _interactions.EditOriginalInteractionResponseAsync
             (
                 _context.Interaction.ApplicationID,
                 _context.Interaction.Token,
-                $"There was an error processing your request. {result.Error.Message}"
+                attachments: new OneOf<FileData, IPartialAttachment>[] { new FileData("output.png", result.Entity, null!) }
             );
-            
-            return Result.FromError(result);
         }
 
-        return (Result)await _interactions.EditOriginalInteractionResponseAsync
+        await _interactions.EditOriginalInteractionResponseAsync
         (
             _context.Interaction.ApplicationID,
             _context.Interaction.Token,
-            attachments: new OneOf<FileData, IPartialAttachment>[] { new FileData("output.png", result.Entity, null) }
+            $"There was an error processing your request. {result.Error.Message}"
         );
+            
+        return (Result)result;
     }
 }
