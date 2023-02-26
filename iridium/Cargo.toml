@@ -6,13 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-grpc     = "0.8.3"
-protobuf = "3.2.0"
-futures  = "~0.3"
-img_hash = "3.2.0"
-sqlx     = { version = "0.6.2", features = [ "runtime-tokio-rustls", "postgres", "macros", "migrate" ] }
-tokio    = { version = "1.14.0", features = ["full"] }
+rocket = { version = "0.5.0-rc.2", features = ["default"] }
+rocket_auth = { version = "0.4.0", features = [""] }
+hyper = { version = "0.14.19", features = ["full"] }
+tokio    = { version = "1.14.0", features = ["rt", "rt-multi-thread", "sync", "macros", "signal"] }
 serde    = { version = "1.0.130", features = ["derive"] }
 
-[build-dependencies]
-protoc-rust-grpc = "0.8.3"
+img_hash = "3.2.0"
+
+chrono = { version = "0.4.19", features = ["serde"] }
+dotenvy = "0.15.6"
+
+diesel = { version = "2.0.3", features = ["postgres", "chrono"] }
+diesel-async = { version = "0.2.0", features = ["postgres"] }
+diesel_migrations = "2.0.0"
