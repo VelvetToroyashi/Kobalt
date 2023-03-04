@@ -1,7 +1,10 @@
 #![feature(decl_macro)]
+extern crate core;
+
 pub mod models;
 pub mod schema;
 mod api;
+mod discord;
 
 use std::error::Error;
 use diesel::{backend::Backend};
@@ -22,9 +25,9 @@ fn run_migrations<DB: Backend>(connection: &mut impl MigrationHarness<DB>) -> Re
 }
 
 type Err = Box<dyn Error>;
-#[rocket::main]
+#[tokio::main]
 async fn main() -> Result<(), Err> {
-    api::Api::new().run().await?;
+    api::Api::run().await?;
 
 
     Ok(())
