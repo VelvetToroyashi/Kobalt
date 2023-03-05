@@ -5,8 +5,9 @@ diesel::table! {
         id -> Int4,
         category -> Text,
         source -> Text,
+        added_by -> Int8,
         added -> Timestamp,
-        md5_hash -> Nullable<Bpchar>,
+        md5_hash -> Nullable<Text>,
         phash -> Bytea,
     }
 }
