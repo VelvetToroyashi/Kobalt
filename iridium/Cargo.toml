@@ -21,6 +21,6 @@ img_hash = "3.2.0"
 chrono = { version = "0.4.19", features = ["serde"] }
 dotenvy = "0.15.6"
 
-diesel = { version = "2.0.3", features = ["postgres", "chrono"] }
-diesel-async = { version = "0.2.0", features = ["postgres"] }
+diesel = { version = "2.0.3", features = ["postgres", "chrono", "r2d2"] }
+#diesel-async = { version = "0.2.0", features = ["postgres"] }
 diesel_migrations = "2.0.0"
