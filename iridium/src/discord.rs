@@ -1,11 +1,11 @@
-use std::error::Error;
-use axum::{async_trait, http};
-use axum::extract::{FromRequest, FromRequestParts};
-use axum::http::Request;
+
+use axum::{async_trait};
+use axum::extract::{FromRequestParts};
+
 use axum::http::request::Parts;
-use hyper::client::HttpConnector;
-use hyper::{StatusCode, Uri};
-use hyper_tls::HttpsConnector;
+
+use hyper::{StatusCode};
+
 use reqwest::{Client};
 use serde::{Deserialize};
 use crate::api::Config;
