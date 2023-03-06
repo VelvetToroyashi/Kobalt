@@ -111,12 +111,12 @@ fn get_most_similar_image(
     let image = sql_query(include_str!("../sql/phash.sql"))
         .bind::<Bytea, _>(&bytes)
         .bind::<Float, _>(threshold)
-        .load::<Option<Image>>(conn)
+        .load::<Image>(conn)
         .ok()?
-        .first()
-        .unwrap();
+        .first_mut()
+        .map(|i| i.clone());
 
-    None
+    image
 }
 
 fn compute_hash(image: Vec<u8>) -> Option<ImageHash> {
