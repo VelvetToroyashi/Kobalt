@@ -1,9 +1,9 @@
-use diesel::prelude::*;
-use chrono::NaiveDateTime;
-use serde::{Serialize, Deserialize};
 use crate::schema::images;
+use chrono::NaiveDateTime;
+use diesel::prelude::*;
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, QueryableByName)]
+#[derive(Serialize, Deserialize, QueryableByName, Clone)]
 #[table_name = "images"]
 pub struct Image {
     pub id: i32,
