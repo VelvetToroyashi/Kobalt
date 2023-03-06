@@ -7,7 +7,9 @@ edition = "2021"
 
 [dependencies]
 axum = "0.6.8"
-axum-auth = "0.4.0"
+axum-macros = "0.3.5"
+
+
 hyper = { version = "0.14.19", features = ["full"] }
 hyper-tls = "0.5.0"
 reqwest = { version = "0.11.14", features = ["rustls-tls", "json"] }
