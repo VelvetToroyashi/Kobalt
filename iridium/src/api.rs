@@ -46,8 +46,9 @@ impl Api {
         let db_pool = Arc::new(Mutex::new(db_pool));
 
         let app = Router::new()
-            //.route("/phishing/check/image", post(create_image))
-            .route("/phishing/submit/image", put(h)); //.with_state(Config { bot_token, db_pool });
+            .route("/phishing/check/image", post(check_image))
+            .route("/phishing/submit/image", put(create_image))
+            .with_state(Config { bot_token, db_pool });
 
         axum::Server::bind(&"127.0.0.1:7000".parse().unwrap())
             .serve(app.into_make_service())
