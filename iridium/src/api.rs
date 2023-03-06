@@ -72,7 +72,7 @@ async fn check_image(
 
     let id = query.get("id").ok_or(StatusCode::BAD_REQUEST)?;
 
-    let threshold = query
+    let _threshold = query
         .get("threshold")
         .and_then(|t| t.parse::<f32>().ok())
         .unwrap_or(0.95);
@@ -91,9 +91,9 @@ async fn check_image(
 
     let image = compute_hash(image.to_vec()).ok_or(StatusCode::BAD_REQUEST)?;
 
-    let hash_bytes = image.as_bytes().to_vec();
+    let _hash_bytes = image.as_bytes().to_vec();
 
-    let pg_connection = &mut pg.db_pool.clone().lock().unwrap().get().unwrap();
+    let _pg_connection = &mut pg.db_pool.clone().lock().unwrap().get().unwrap();
 
     Err(StatusCode::NOT_FOUND)
 }
