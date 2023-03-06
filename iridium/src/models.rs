@@ -1,11 +1,10 @@
 use diesel::prelude::*;
 use chrono::NaiveDateTime;
-use diesel::FromSqlRow;
 use serde::{Serialize, Deserialize};
 use crate::schema::images;
 
-#[derive(Serialize, Deserialize, Queryable)]
-//#[table_name = "images"]
+#[derive(Serialize, Deserialize, QueryableByName)]
+#[table_name = "images"]
 pub struct Image {
     pub id: i32,
     pub category: String,

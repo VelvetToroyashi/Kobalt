@@ -21,12 +21,6 @@ struct DiscordApplication {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub(crate) struct DiscordUser {
-    pub id: String,
-    pub username: String,
-}
-
-#[derive(Debug, Clone, Deserialize)]
 pub(crate) struct DiscordTeam {
     pub id: String,
     pub name: String,
@@ -95,6 +89,12 @@ impl DiscordAPI {
     }
 }
 
+
+#[derive(Debug, Clone, Deserialize)]
+pub(crate) struct DiscordUser {
+    pub id: String,
+    pub username: String,
+}
 
 #[async_trait]
 impl FromRequestParts<Config> for DiscordUser

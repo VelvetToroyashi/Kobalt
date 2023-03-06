@@ -1,24 +1,27 @@
-use std::collections::HashMap;
-use std::ops::DerefMut;
-use std::sync::{Arc, Mutex};
-use axum::{Json, Router, routing::post};
-use axum::extract::{Query, State};
-use diesel::{PgConnection, r2d2, RunQueryDsl, Table};
-use diesel::r2d2::ConnectionManager;
-
-use hyper::StatusCode;
-use img_hash::{HasherConfig, image, ImageHash};
-use serde::Deserialize;
 use crate::discord::DiscordUser;
-use crate::models;
 use crate::models::Image;
-
+use axum::extract::{Query, State};
+use axum::{routing::post, Json, Router};
+use axum_macros::debug_handler;
+use diesel::{
+    r2d2,
+    r2d2::ConnectionManager,
+    sql_types::{Bytea, Float},
+    FromSqlRow, PgConnection, RunQueryDsl,
+};
+use hyper::StatusCode;
+use img_hash::{image, HasherConfig, ImageHash};
+use serde::Serialize;
+use std::{
+    collections::HashMap,
+    ops::DerefMut,
+    sync::{Arc, Mutex},
+};
 
 pub struct Api;
 
 type SharedConnectionManager = Arc<Mutex<r2d2::Pool<ConnectionManager<PgConnection>>>>;
 type PooledConnection = r2d2::PooledConnection<ConnectionManager<PgConnection>>;
-
 
 #[derive(Clone)]
 pub(crate) struct Config {
@@ -50,7 +53,7 @@ impl Api {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, FromSqlRow)]
 struct FoundHashResponse {
     category: String,
     score: f32,
@@ -59,7 +62,12 @@ struct FoundHashResponse {
 }
 
 // Write an API endpoint (POST /check/image) that takes an avatar hash as a query parameter, and requires authentication.
-async fn check_image(Query(query): Query<HashMap<String, String>>, State(pg): State<Config>, _user: DiscordUser) -> Result<Json<FoundHashResponse>, StatusCode> {
+#[debug_handler]
+async fn check_image(
+    State(pg): State<Config>,
+    Query(query): Query<HashMap<String, String>>,
+    _user: DiscordUser,
+) -> Result<Json<FoundHashResponse>, StatusCode> {
     let hash = query.get("hash").ok_or(StatusCode::BAD_REQUEST)?;
 
     let id = query.get("id").ok_or(StatusCode::BAD_REQUEST)?;
@@ -69,9 +77,17 @@ async fn check_image(Query(query): Query<HashMap<String, String>>, State(pg): St
         .and_then(|t| t.parse::<f32>().ok())
         .unwrap_or(0.95);
 
-    let fetch = reqwest::get(format!("https://cdn.discordapp.com/avatars/{}/{}.png?size=256", id, hash)).await;
+    let fetch = reqwest::get(format!(
+        "https://cdn.discordapp.com/avatars/{}/{}.png?size=256",
+        id, hash
+    ))
+    .await;
 
-    let image = fetch.map_err(|_| StatusCode::BAD_REQUEST)?.bytes().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let image = fetch
+        .map_err(|_| StatusCode::BAD_REQUEST)?
+        .bytes()
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let image = compute_hash(image.to_vec()).ok_or(StatusCode::BAD_REQUEST)?;
 
@@ -79,20 +95,26 @@ async fn check_image(Query(query): Query<HashMap<String, String>>, State(pg): St
 
     let pg_connection = &mut pg.db_pool.clone().lock().unwrap().get().unwrap();
 
-
     Err(StatusCode::NOT_FOUND)
 }
 
-fn get_most_similar_image(bytes: Vec<u8>, threshold: f32, pg_conn: &mut PooledConnection) -> Option<Image> {
+fn get_most_similar_image(
+    bytes: Vec<u8>,
+    threshold: f32,
+    pg_conn: &mut PooledConnection,
+) -> Option<Image> {
     use diesel::dsl::*;
-    use crate::schema::images::dsl::*;
 
     let conn = pg_conn.deref_mut();
 
     // Find the most similar image in the database using the <-> operator
-     let image: Vec<Image> = sql_query(include_str!("../sql/phash.sql"))
-         .load::<Image>(conn)
-         .ok()?;
+    let image = sql_query(include_str!("../sql/phash.sql"))
+        .bind::<Bytea, _>(&bytes)
+        .bind::<Float, _>(threshold)
+        .load::<Option<Image>>(conn)
+        .ok()?
+        .first()
+        .unwrap();
 
     None
 }
@@ -100,7 +122,7 @@ fn get_most_similar_image(bytes: Vec<u8>, threshold: f32, pg_conn: &mut PooledCo
 fn compute_hash(image: Vec<u8>) -> Option<ImageHash> {
     let image = match image::load_from_memory(&image) {
         Ok(image) => image,
-        Err(_) => return None
+        Err(_) => return None,
     };
 
     let config = HasherConfig::new().to_hasher();
