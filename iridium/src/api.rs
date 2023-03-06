@@ -1,8 +1,12 @@
 use crate::discord::DiscordUser;
-use crate::models::Image;
+use crate::models::{Image, NewImage};
 use axum::extract::{Query, State};
-use axum::{routing::post, Json, Router};
+use axum::{
+    routing::{post, put},
+    Json, Router,
+};
 use axum_macros::debug_handler;
+use chrono::NaiveDateTime;
 use diesel::{
     r2d2,
     r2d2::ConnectionManager,
@@ -11,7 +15,7 @@ use diesel::{
 };
 use hyper::StatusCode;
 use img_hash::{image, HasherConfig, ImageHash};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     ops::DerefMut,
@@ -42,8 +46,8 @@ impl Api {
         let db_pool = Arc::new(Mutex::new(db_pool));
 
         let app = Router::new()
-            .route("/phishing/check/image", post(check_image))
-            .with_state(Config { bot_token, db_pool });
+            //.route("/phishing/check/image", post(create_image))
+            .route("/phishing/submit/image", put(h)); //.with_state(Config { bot_token, db_pool });
 
         axum::Server::bind(&"127.0.0.1:7000".parse().unwrap())
             .serve(app.into_make_service())
@@ -57,12 +61,72 @@ impl Api {
 struct FoundHashResponse {
     category: String,
     score: f32,
-    added_by: String,
-    added_at: String,
+    added_by: i64,
+    added_at: NaiveDateTime,
+}
+
+#[derive(Deserialize)]
+struct SubmitImageResponse {
+    url: String,
+    category: String,
+    added_by: i64,
+    md5: Option<String>,
+}
+
+async fn create_image(
+    State(config): State<Config>,
+    _user: DiscordUser,
+    Json(mut body): Json<SubmitImageResponse>,
+) -> StatusCode {
+    let pg_connection = &mut config.db_pool.clone().lock().unwrap().get().unwrap();
+
+    let hasher = HasherConfig::new().to_hasher();
+
+    if body.url.contains("discord") {
+        let idx = body.url.find("?size=");
+
+        if let Some(idx) = idx {
+            let url = body.url[..idx].to_string() + "?size=1024";
+            body.url = url;
+        }
+    }
+
+    let res = reqwest::get(&body.url).await.unwrap();
+
+    let bytes = res.bytes().await.map_err(|_| StatusCode::BAD_REQUEST);
+
+    if bytes.is_err() {
+        return StatusCode::BAD_REQUEST;
+    }
+
+    let bytes = bytes.unwrap();
+
+    let image = image::load_from_memory(&bytes).unwrap();
+    let hash = hasher.hash_image(&image).as_bytes().to_vec();
+
+    let image = NewImage {
+        source: body.url.as_str(),
+        category: body.category.as_str(),
+        added_by: body.added_by,
+        md5_hash: body.md5.as_ref().map(|s| s.as_str()),
+        phash: hash,
+    };
+
+    diesel::insert_into(crate::schema::images::table)
+        .values(&image)
+        .execute(pg_connection)
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+        .map(|c| {
+            if c > 0 {
+                StatusCode::CREATED
+            } else {
+                StatusCode::BAD_REQUEST
+            }
+        })
+        .unwrap()
 }
 
 // Write an API endpoint (POST /check/image) that takes an avatar hash as a query parameter, and requires authentication.
-#[debug_handler]
 async fn check_image(
     State(pg): State<Config>,
     Query(query): Query<HashMap<String, String>>,
@@ -93,16 +157,25 @@ async fn check_image(
 
     let _hash_bytes = image.as_bytes().to_vec();
 
-    let _pg_connection = &mut pg.db_pool.clone().lock().unwrap().get().unwrap();
+    let pg_connection = &mut pg.db_pool.clone().lock().unwrap().get().unwrap();
 
-    Err(StatusCode::NOT_FOUND)
+    get_most_similar_image(_hash_bytes, _threshold, pg_connection)
+        .ok_or(StatusCode::NOT_FOUND)
+        .map(|(image, score)| {
+            Json(FoundHashResponse {
+                category: image.category,
+                score,
+                added_by: image.added_by,
+                added_at: image.added,
+            })
+        })
 }
 
 fn get_most_similar_image(
     bytes: Vec<u8>,
     threshold: f32,
     pg_conn: &mut PooledConnection,
-) -> Option<Image> {
+) -> Option<(Image, f32)> {
     use diesel::dsl::*;
 
     let conn = pg_conn.deref_mut();
@@ -116,7 +189,26 @@ fn get_most_similar_image(
         .first_mut()
         .map(|i| i.clone());
 
-    image
+    if let Some(img) = image {
+        use bitvec::prelude::*;
+
+        let dist_vec = img
+            .phash
+            .iter()
+            .zip(bytes)
+            .map(|(a, b)| *a ^ b)
+            .collect::<Vec<u8>>();
+
+        let dist = dist_vec.as_bits::<Msb0>().count_ones();
+
+        // Normalize the distance between 1 and 0
+
+        let dist_normalized = 1.0 - (dist as f32 / dist_vec.len() as f32);
+
+        return Some((img, dist_normalized));
+    }
+
+    None
 }
 
 fn compute_hash(image: Vec<u8>) -> Option<ImageHash> {

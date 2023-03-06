@@ -20,6 +20,7 @@ pub struct Image {
 pub struct NewImage<'a> {
     pub category: &'a str,
     pub source: &'a str,
+    pub added_by: i64,
     pub md5_hash: Option<&'a str>,
     pub phash: Vec<u8>,
 }
