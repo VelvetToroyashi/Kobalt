@@ -1,14 +1,13 @@
-
-use axum::{async_trait};
-use axum::extract::{FromRequestParts};
+use axum::async_trait;
+use axum::extract::FromRequestParts;
 
 use axum::http::request::Parts;
 
-use hyper::{StatusCode};
+use hyper::StatusCode;
 
-use reqwest::{Client};
-use serde::{Deserialize};
 use crate::api::Config;
+use reqwest::Client;
+use serde::Deserialize;
 
 const DISCORD_API_OAUTH2_URL: &str = "https://discord.com/api/v10/users/@me";
 const DISCORD_API_APPLICATION_URL: &str = "https://discord.com/api/v10/oauth2/applications/@me";
@@ -33,7 +32,7 @@ struct DiscordAPI;
 pub enum OAuth2Error {
     RequestError,
     InvalidToken,
-    IncorrectUser
+    IncorrectUser,
 }
 
 impl PartialEq for DiscordUser {
@@ -41,7 +40,6 @@ impl PartialEq for DiscordUser {
         self.id == other.id
     }
 }
-
 
 impl DiscordAPI {
     async fn validate_token(token: String) -> Result<Client, OAuth2Error> {
@@ -58,7 +56,6 @@ impl DiscordAPI {
     }
 
     async fn get_user_info(client: &Client, token: String) -> Result<DiscordUser, OAuth2Error> {
-
         let user = client
             .get(DISCORD_API_OAUTH2_URL)
             .bearer_auth(token)
@@ -67,13 +64,12 @@ impl DiscordAPI {
             .map_err(|_| OAuth2Error::RequestError)?
             .json::<DiscordUser>()
             .await
-            .unwrap();//.map_err(|_| OAuth2Error::RequestError)?;
+            .unwrap(); //.map_err(|_| OAuth2Error::RequestError)?;
 
         Ok(user)
     }
 
-    async fn get_owners(client: &Client, token: String) -> Result<Vec<DiscordUser>, OAuth2Error>
-    {
+    async fn get_owners(client: &Client, token: String) -> Result<Vec<DiscordUser>, OAuth2Error> {
         let owners = client
             .get(DISCORD_API_APPLICATION_URL)
             .header("Authorization", format!("Bot {}", token))
@@ -89,7 +85,6 @@ impl DiscordAPI {
     }
 }
 
-
 #[derive(Debug, Clone, Deserialize)]
 pub(crate) struct DiscordUser {
     pub id: String,
@@ -97,25 +92,40 @@ pub(crate) struct DiscordUser {
 }
 
 #[async_trait]
-impl FromRequestParts<Config> for DiscordUser
-{
+impl FromRequestParts<Config> for DiscordUser {
     type Rejection = StatusCode;
 
-    async fn from_request_parts(parts: &mut Parts, state: &Config) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(
+        parts: &mut Parts,
+        state: &Config,
+    ) -> Result<Self, Self::Rejection> {
         let token = parts
             .headers
             .get("Authorization")
             .ok_or(StatusCode::UNAUTHORIZED)?
             .to_str()
-            .map_err(|_| StatusCode::BAD_REQUEST)?
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
             .to_string();
 
-        let token = token.strip_prefix("Bearer ").ok_or(StatusCode::BAD_REQUEST)?.to_string();
+        let token = token
+            .strip_prefix("Bearer ")
+            .ok_or(StatusCode::BAD_REQUEST)?
+            .to_string();
 
-        let client = DiscordAPI::validate_token(token.to_owned()).await.map_err(|_| StatusCode::UNAUTHORIZED)?;
-        let user = DiscordAPI::get_user_info(&client, token).await.map_err(|_| StatusCode::UNAUTHORIZED)?;
+        if token.is_empty() {
+            return Err(StatusCode::UNAUTHORIZED);
+        }
 
-        let owners = DiscordAPI::get_owners(&client, state.bot_token.to_string()).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        let client = DiscordAPI::validate_token(token.to_owned())
+            .await
+            .map_err(|_| StatusCode::UNAUTHORIZED)?;
+        let user = DiscordAPI::get_user_info(&client, token)
+            .await
+            .map_err(|_| StatusCode::UNAUTHORIZED)?;
+
+        let owners = DiscordAPI::get_owners(&client, state.bot_token.to_string())
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
         if !owners.contains(&user) {
             return Err(StatusCode::FORBIDDEN);

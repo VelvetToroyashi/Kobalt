@@ -39,6 +39,7 @@ impl Api {
         let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
         let db_manager = ConnectionManager::<PgConnection>::new(db_url.clone());
+
         let db_pool = r2d2::Pool::builder()
             .build(db_manager)
             .expect("Failed to create pool.");
@@ -76,12 +77,10 @@ struct SubmitImageResponse {
 
 async fn create_image(
     State(config): State<Config>,
-    _user: DiscordUser,
+    //_user: DiscordUser,
     Json(mut body): Json<SubmitImageResponse>,
-) -> StatusCode {
+) -> Result<StatusCode, StatusCode> {
     let pg_connection = &mut config.db_pool.clone().lock().unwrap().get().unwrap();
-
-    let hasher = HasherConfig::new().to_hasher();
 
     if body.url.contains("discord") {
         let idx = body.url.find("?size=");
@@ -94,15 +93,11 @@ async fn create_image(
 
     let res = reqwest::get(&body.url).await.unwrap();
 
-    let bytes = res.bytes().await.map_err(|_| StatusCode::BAD_REQUEST);
-
-    if bytes.is_err() {
-        return StatusCode::BAD_REQUEST;
-    }
-
-    let bytes = bytes.unwrap();
+    let bytes = res.bytes().await.map_err(|_| StatusCode::BAD_REQUEST)?;
 
     let image = image::load_from_memory(&bytes).unwrap();
+
+    let hasher = HasherConfig::new().to_hasher();
     let hash = hasher.hash_image(&image).as_bytes().to_vec();
 
     let image = NewImage {
@@ -124,35 +119,38 @@ async fn create_image(
                 StatusCode::BAD_REQUEST
             }
         })
-        .unwrap()
 }
 
 // Write an API endpoint (POST /check/image) that takes an avatar hash as a query parameter, and requires authentication.
 async fn check_image(
     State(pg): State<Config>,
     Query(query): Query<HashMap<String, String>>,
-    _user: DiscordUser,
+    //_user: DiscordUser,
 ) -> Result<Json<FoundHashResponse>, StatusCode> {
-    let hash = query.get("hash").ok_or(StatusCode::BAD_REQUEST)?;
+    let hash = query.get("hash").ok_or(StatusCode::NOT_FOUND)?;
 
-    let id = query.get("id").ok_or(StatusCode::BAD_REQUEST)?;
+    let id = query.get("id").ok_or(StatusCode::NOT_FOUND)?;
 
     let _threshold = query
         .get("threshold")
         .and_then(|t| t.parse::<f32>().ok())
         .unwrap_or(0.95);
 
-    let fetch = reqwest::get(format!(
+    let image = reqwest::get(format!(
         "https://cdn.discordapp.com/avatars/{}/{}.png?size=256",
         id, hash
     ))
-    .await;
-
-    let image = fetch
-        .map_err(|_| StatusCode::BAD_REQUEST)?
-        .bytes()
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    .await
+    .map_or(Err(StatusCode::BAD_REQUEST), |r| {
+        if r.status().is_success() {
+            Ok(r)
+        } else {
+            Err(StatusCode::BAD_REQUEST)
+        }
+    })?
+    .bytes()
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let image = compute_hash(image.to_vec()).ok_or(StatusCode::BAD_REQUEST)?;
 
