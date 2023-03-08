@@ -39,7 +39,6 @@ impl Api {
         let bot_token = std::env::var("BOT_TOKEN").expect("BOT_TOKEN must be set");
         let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
-        println!("DB URL: {}", db_url);
         let db_manager = ConnectionManager::<PgConnection>::new(db_url.clone());
 
         let db_pool = r2d2::Pool::builder()
