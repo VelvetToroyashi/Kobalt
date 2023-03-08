@@ -190,18 +190,6 @@ fn get_most_similar_image(
         .first_mut()
         .map(|i| i.clone());
 
-    println!("Threshold: {}", threshold);
-
-    println!(
-        "Input bytes: {:02x?}",
-        bytes.iter().copied().collect::<Vec<_>>().as_slice()
-    );
-
-    println!(
-        "Found image: {:02x?}",
-        image.as_ref().map(|i| i.phash.as_slice()).unwrap_or(&[])
-    );
-
     if let Some(img) = image {
         use bitvec::prelude::*;
 
