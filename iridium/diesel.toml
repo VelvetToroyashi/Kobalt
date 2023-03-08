@@ -3,6 +3,7 @@
 
 [print_schema]
 file = "src/schema.rs"
+schema = "iridium"
 
 [migrations_directory]
 dir = "migrations"
