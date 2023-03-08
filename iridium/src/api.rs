@@ -5,7 +5,7 @@ use axum::{
     routing::{post, put},
     Json, Router,
 };
-use axum_macros::debug_handler;
+
 use chrono::NaiveDateTime;
 use diesel::{
     r2d2,
@@ -14,7 +14,8 @@ use diesel::{
     FromSqlRow, PgConnection, RunQueryDsl,
 };
 use hyper::StatusCode;
-use img_hash::{image, HasherConfig, ImageHash};
+use image::ImageFormat;
+use image_hasher::{HasherConfig, ImageHash};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -38,6 +39,7 @@ impl Api {
         let bot_token = std::env::var("BOT_TOKEN").expect("BOT_TOKEN must be set");
         let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
+        println!("DB URL: {}", db_url);
         let db_manager = ConnectionManager::<PgConnection>::new(db_url.clone());
 
         let db_pool = r2d2::Pool::builder()
@@ -95,7 +97,7 @@ async fn create_image(
 
     let bytes = res.bytes().await.map_err(|_| StatusCode::BAD_REQUEST)?;
 
-    let image = image::load_from_memory(&bytes).unwrap();
+    let image = image::load_from_memory_with_format(&bytes, ImageFormat::Png).unwrap();
 
     let hasher = HasherConfig::new().to_hasher();
     let hash = hasher.hash_image(&image).as_bytes().to_vec();
@@ -131,7 +133,7 @@ async fn check_image(
 
     let id = query.get("id").ok_or(StatusCode::NOT_FOUND)?;
 
-    let _threshold = query
+    let threshold = query
         .get("threshold")
         .and_then(|t| t.parse::<f32>().ok())
         .unwrap_or(0.95);
@@ -154,11 +156,11 @@ async fn check_image(
 
     let image = compute_hash(image.to_vec()).ok_or(StatusCode::BAD_REQUEST)?;
 
-    let _hash_bytes = image.as_bytes().to_vec();
+    let hash_bytes = image.as_bytes().to_vec();
 
     let pg_connection = &mut pg.db_pool.clone().lock().unwrap().get().unwrap();
 
-    get_most_similar_image(_hash_bytes, _threshold, pg_connection)
+    get_most_similar_image(hash_bytes, threshold, pg_connection)
         .ok_or(StatusCode::NOT_FOUND)
         .map(|(image, score)| {
             Json(FoundHashResponse {
@@ -187,6 +189,18 @@ fn get_most_similar_image(
         .ok()?
         .first_mut()
         .map(|i| i.clone());
+
+    println!("Threshold: {}", threshold);
+
+    println!(
+        "Input bytes: {:02x?}",
+        bytes.iter().copied().collect::<Vec<_>>().as_slice()
+    );
+
+    println!(
+        "Found image: {:02x?}",
+        image.as_ref().map(|i| i.phash.as_slice()).unwrap_or(&[])
+    );
 
     if let Some(img) = image {
         use bitvec::prelude::*;
