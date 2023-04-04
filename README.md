@@ -20,6 +20,7 @@ As it stands right now, this project is not only in a very early stage, but also
         - [ ] Reminders
         - [ ] Role Menus
         - [ ] Timezone/Timestamp helper
+        - [ ] Push-to-Talk (PTT) Threshold
 
 - [ ] Infraction API  
     - [x] Infractions

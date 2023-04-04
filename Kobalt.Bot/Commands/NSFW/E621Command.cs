@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel;
-using System.Drawing;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types.Booru;
-using Kobalt.Infrastructure.Types.Results;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Abstractions.Objects;
@@ -12,8 +10,7 @@ using Remora.Discord.Commands.Attributes;
 using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Interactivity;
 using Remora.Rest;
-using Remora.Rest.Extensions;
-using Remora.Results;
+using Color = System.Drawing.Color;
 
 namespace Kobalt.Bot.Commands.NSFW;
 
@@ -91,8 +88,14 @@ public class E621Command : CommandGroup
         return res;
     }
 
+    /// <summary>
+    /// Generates componeonts based on the given image datas.
+    /// </summary>
+    /// <param name="search">The search result containing the images that will be displayed.</param>
+    /// <returns>A list of action rows with buttons or other components relevant to the images.</returns>
     private IReadOnlyList<IActionRowComponent> GetComponents(QueryResultData search)
     {
+        // N.B. If this is changed, update Interactivity/E621Responder.cs as well.
         var components = new IActionRowComponent[2];
         
         components[0] = new ActionRowComponent

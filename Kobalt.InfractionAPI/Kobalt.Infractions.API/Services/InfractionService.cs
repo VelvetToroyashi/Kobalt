@@ -3,6 +3,7 @@ using Kobalt.Infractions.Infrastructure.Interfaces;
 using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Mediator;
 using Remora.Rest;
+using Remora.Rest.Extensions;
 
 namespace Kobalt.Infractions.API.Services;
 
@@ -12,7 +13,10 @@ public class InfractionService : BackgroundService, IInfractionService
     private readonly IRestHttpClient _httpClient;
     private readonly List<InfractionDTO> _infractions = new();
     private readonly Channel<InfractionDTO> _dispatcherChannel;
-    private readonly PeriodicTimer _dispatcherTimer, _queueTimer;
+    private readonly PeriodicTimer _dispatcherTimer;
+    private readonly SemaphoreSlim _dispatcherLock = new(1, 1);
+    
+    private CancellationToken _cancellationToken;
 
     private Task _queueTask,
                  _dispatcherTask;
@@ -22,19 +26,14 @@ public class InfractionService : BackgroundService, IInfractionService
         _mediator = mediator;
         _httpClient = httpClient;
         _dispatcherChannel = Channel.CreateUnbounded<InfractionDTO>();
-
-        // The discrepancy between the queue timer and the dispatcher timer is intentional.
-        // The ~500ms difference is to prevent the race condition of dispatching an infraction
-        // when it's being updated, which could remove it from the queue. In that case the client
-        // will be notified about the infraction twice, which is an issue, as the client may attempt
-        // to act upon that notification (e.g. unmuting the infraction target).
-        // Perhaps there's a better way to handle the race condition?
-        _dispatcherTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
-        _queueTimer = new PeriodicTimer(TimeSpan.FromSeconds(1.5));
+        
+        _dispatcherTimer = new(TimeSpan.FromSeconds(1));
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken).Token;
+        
         _queueTask = Task.Run(UnloadQueueAsync, stoppingToken);
         _dispatcherTask = Task.Run(DispatchAsync, stoppingToken);
 
@@ -55,9 +54,36 @@ public class InfractionService : BackgroundService, IInfractionService
             _infractions.Add(infraction);
         }
     }
-    
-    private async Task UnloadQueueAsync(){}
-    
-    private async Task DispatchAsync(){}
+
+    private async Task UnloadQueueAsync()
+    {
+        while (await _dispatcherTimer.WaitForNextTickAsync(_cancellationToken))
+        {
+            await _dispatcherLock.WaitAsync(_cancellationToken);
+
+            foreach (var infraction in _infractions)
+            {
+                if (infraction.ExpiresAt > DateTimeOffset.UtcNow)
+                {
+                    _infractions.Remove(infraction);
+                    await _dispatcherChannel.Writer.WriteAsync(infraction, _cancellationToken);
+                    continue;
+                }
+            }
+        }
+    }
+
+    // Should this be it's own service? 
+    private async Task DispatchAsync()
+    {
+        while (await _dispatcherChannel.Reader.WaitToReadAsync(_cancellationToken))
+        {
+            var dto = await _dispatcherChannel.Reader.ReadAsync();
+            
+            //await _mediator.Send(new InfractionExpiredNotification(dto));
+            
+            await _httpClient.PostAsync("/api/bot/infractions/expired", b => b.WithJson(json => json.Write("", dto)));
+        }
+    }
     
 }

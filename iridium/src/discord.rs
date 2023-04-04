@@ -80,7 +80,7 @@ impl DiscordAPI {
             .await
             .map(|app| app.team.map(|team| team.members).unwrap_or(vec![app.owner]))
             .map_err(|_| OAuth2Error::RequestError)?;
-
+    
         Ok(owners)
     }
 }
@@ -106,31 +106,31 @@ impl FromRequestParts<Config> for DiscordUser {
             .to_str()
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
             .to_string();
-
+    
         let token = token
             .strip_prefix("Bearer ")
             .ok_or(StatusCode::BAD_REQUEST)?
             .to_string();
-
+    
         if token.is_empty() {
             return Err(StatusCode::UNAUTHORIZED);
         }
-
+    
         let client = DiscordAPI::validate_token(token.to_owned())
             .await
             .map_err(|_| StatusCode::UNAUTHORIZED)?;
         let user = DiscordAPI::get_user_info(&client, token)
             .await
             .map_err(|_| StatusCode::UNAUTHORIZED)?;
-
+    
         let owners = DiscordAPI::get_owners(&client, state.bot_token.to_string())
             .await
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
+    
         if !owners.contains(&user) {
             return Err(StatusCode::FORBIDDEN);
         }
-
+    
         Ok(user)
     }
 }
