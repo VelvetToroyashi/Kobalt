@@ -1,10 +1,6 @@
 ﻿using Remora.Results;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
 namespace Kobalt.Bot.Services;
-
-using SixLabors.ImageSharp;
 
 public sealed class ImageOverlayService
 {
@@ -46,7 +42,7 @@ public sealed class ImageOverlayService
             sourceImage.Mutate(x => x.Grayscale(greyscale / 100));
         }
         
-        sourceImage.Mutate(x => x.DrawImage(overlayImage, PixelColorBlendingMode.Multiply, PixelAlphaCompositionMode.DestOver, intensity / 100));
+        sourceImage.Mutate(x => x.DrawImage(overlayImage, PixelColorBlendingMode.Multiply, PixelAlphaCompositionMode.SrcAtop, intensity / 100));
         
         var ms = new MemoryStream();
         

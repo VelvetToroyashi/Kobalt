@@ -1,7 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
-using Remora.Discord.Commands.Contexts;
+﻿using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Services;
-using Remora.Results;
+using IResult = Remora.Results.IResult;
 
 namespace Kobalt.Bot.Handlers;
 
