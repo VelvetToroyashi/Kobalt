@@ -76,29 +76,13 @@ public class ReminderService : IHostedService
                 }
 
                 var payload = JsonSerializer.SerializeToUtf8Bytes(reminder).AsMemory();
-
-                var sent = false;
-                
-                foreach ((var client, var cts) in _clients)
-                {
-                    var result = await ResultExtensions.TryCatchAsync(async () => await client.SendAsync(payload, WebSocketMessageType.Text, true, CancellationToken.None));
-
-                    if (!result.IsSuccess)
-                    {
-                        _logger.LogWarning("Failed to send reminder {ReminderID} to client, removing.", reminder.Id);
-                        _clients.Remove(client);
-                        cts.Cancel();
-                        continue;
-                    }
-                    
-                    sent = true;
-                    break;
-                }
+                var sent = await TryDispatchReminderAsync(payload, reminder.Id);
                 
                 if (!sent)
                 {
                     _logger.LogWarning("No clients connected to receive reminder {ReminderID}, requeing.", reminder.Id);
                     _reminders.Add(reminder);
+                    continue;
                 }
 
                 await _mediator.Send(new DeleteReminder.Request(reminder.Id, reminder.AuthorID.Value));
@@ -111,5 +95,38 @@ public class ReminderService : IHostedService
         {
             _ = await ResultExtensions.TryCatchAsync(async () => await client.CloseAsync(WebSocketCloseStatus.EndpointUnavailable, "Server shutting down.", CancellationToken.None));
         }
+    }
+
+    /// <summary>
+    /// Attempts to dispatch a reminder to the first connected client in a round-robin manner.
+    /// </summary>
+    /// <param name="payload">The payload to dispatch.</param>
+    /// <param name="reminderID">The reminder's ID</param>
+    /// <returns>Whether the dispatch succeeded</returns>
+    private async Task<bool> TryDispatchReminderAsync(Memory<byte> payload, int reminderID)
+    {
+        foreach ((var client, var cts) in _clients)
+        {
+            if (cts.IsCancellationRequested)
+            {
+                // Client disconnected, eject.
+                _clients.Remove(client);
+                continue;
+            }
+            
+            var result = await ResultExtensions.TryCatchAsync(async () => await client.SendAsync(payload, WebSocketMessageType.Text, true, CancellationToken.None));
+
+            if (!result.IsSuccess)
+            {
+                _logger.LogWarning("Failed to send reminder {ReminderID} to client, removing.", reminderID);
+                _clients.Remove(client);
+                cts.Cancel();
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }

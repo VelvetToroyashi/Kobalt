@@ -1,3 +1,4 @@
+using System.Buffers;
 using Kobalt.Infrastructure.Extensions.Remora;
 using Kobalt.ReminderService.API.Services;
 
@@ -11,7 +12,6 @@ builder.Services.AddHostedService(s => s.GetRequiredService<ReminderService>());
 var app = builder.Build();
 
 app.UseWebSockets();
-
 
 app.MapGet("/api/reminders", async (HttpContext context, ReminderService reminders) =>
 {
@@ -28,12 +28,21 @@ app.MapGet("/api/reminders", async (HttpContext context, ReminderService reminde
     
     // Hold the connection open for as long as the client is alive.
     // As soon as this handler returns ASP.NET closes the socket.
+    var buffer = ArrayPool<byte>.Shared.Rent(1024);
+    await ResultExtensions.TryCatchAsync
+    (
+        async () =>
+        {
+            while (!cts.IsCancellationRequested)
+            {
+                // It's fine to pass a CT here because we don't need to clean anything up.
+                _ = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
+            }
+        }
+    );
     
-    // ERRATA: The server should read from the socket in a loop even if the client isn't
-    // expected to send anything, as the client will still send control messages which
-    // aren't ever seen if we don't read. I was reminded of this by the following SO answer:
-    // https://stackoverflow.com/a/49605801 TODO: READ THE SOCKET!
-    await ResultExtensions.TryCatchAsync(async () => await Task.Delay(-1, cts.Token));
+    cts.Cancel();
+    ArrayPool<byte>.Shared.Return(buffer);
 });
 
 // List a user's reminders
