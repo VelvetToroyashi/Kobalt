@@ -1,11 +1,8 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using System.Web;
 using Kobalt.Infrastructure.Types.Booru;
 using Kobalt.Infrastructure.Types.Results;
-using Microsoft.Extensions.Options;
 using Remora.Rest.Json.Policies;
 using Remora.Results;
 

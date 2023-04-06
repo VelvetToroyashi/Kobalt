@@ -1,10 +1,7 @@
 ﻿using Kobalt.Infrastructure.Types;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Remora.Discord.Commands.Services;
 using Remora.Discord.Gateway;
-using Remora.Results;
 
 namespace Kobalt.Bot.Services.Discord;
 

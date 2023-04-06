@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Discord.Interactivity;
 using Remora.Discord.Interactivity.Extensions;
