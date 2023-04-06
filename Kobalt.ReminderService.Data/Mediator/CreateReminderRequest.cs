@@ -15,7 +15,7 @@ public static class CreateReminder
     /// <param name="ReplyContent">The content of the reminder.</param>
     /// <param name="Expiration">When the reminder expires.</param>
     /// <param name="ReplyMessageID">The ID of the message the reminder is replying to, if any.</param>
-    public record CreateReminderRequest
+    public record Request
     (
         ulong AuthorID,
         ulong ChannelID,
@@ -24,7 +24,7 @@ public static class CreateReminder
         ulong? ReplyMessageID
     ) : IRequest<ReminderDTO>;
 
-    internal class Handler : IRequestHandler<CreateReminderRequest, ReminderDTO>
+    internal class Handler : IRequestHandler<Request, ReminderDTO>
     {
         private readonly IDbContextFactory<ReminderContext> _context;
 
@@ -33,7 +33,7 @@ public static class CreateReminder
             _context = context;
         }
 
-        public async ValueTask<ReminderDTO> Handle(CreateReminderRequest request, CancellationToken cancellationToken)
+        public async ValueTask<ReminderDTO> Handle(Request request, CancellationToken cancellationToken)
         {
             var entity = new ReminderEntity
             {
