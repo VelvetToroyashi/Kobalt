@@ -52,6 +52,25 @@ public class ReminderService : IHostedService
     }
     
     /// <summary>
+    /// Creates a reminder.
+    /// </summary>
+    /// <param name="authorID">The ID of the user that created the reminder.</param>
+    /// <param name="channelID">The ID of the channel the reminder was set in.</param>
+    /// <param name="guildID">The ID of the guild the reminder was set in, if any.</param>
+    /// <param name="replyContent">The content of the reminder.</param>
+    /// <param name="creation">When the reminder was created.</param>
+    /// <param name="expiration">When the reminder expires.</param>
+    /// <param name="replyMessageID">The ID of the message the reminder is in response to, if any.</param>
+    /// <returns>The created reminder.</returns>
+    public async Task<ReminderCreationPayload> CreateReminderAsync(ulong authorID, ulong channelID, ulong? guildID, string replyContent, DateTimeOffset expiration, ulong? replyMessageID)
+    {
+        var created = await _mediator.Send(new CreateReminder.Request(authorID, channelID, guildID, replyContent, expiration, replyMessageID));
+        _reminders.Add(created);
+        
+        return new(created.Id, created.Expiration);
+    }
+    
+    /// <summary>
     /// Dispatches expired reminders in a round-robin fashion, requeing reminders that fail to send.
     /// </summary>
     /// <remarks>
