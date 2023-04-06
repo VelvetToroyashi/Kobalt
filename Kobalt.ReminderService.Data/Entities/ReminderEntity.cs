@@ -24,6 +24,11 @@ public class ReminderEntity
     public ulong ChannelID { get; set; }
     
     /// <summary>
+    /// The ID of the guild the reminder was set in, if any.
+    /// </summary>
+    public ulong? GuildID { get; set; }
+    
+    /// <summary>
     /// The content of the reminder.
     /// </summary>
     public string ReplyContent { get; set; }
@@ -55,6 +60,7 @@ public class ReminderEntity
             self.Id,
             DiscordSnowflake.New(self.AuthorID),
             DiscordSnowflake.New(self.ChannelID),
+            self.GuildID is null ? null : DiscordSnowflake.New(self.GuildID.Value),
             self.ReplyContent, 
             self.Creation,
             self.Expiration,
