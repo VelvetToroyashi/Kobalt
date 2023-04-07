@@ -9,7 +9,7 @@ public enum ArtistFlags
     PendingVerification,
     AutomaticallyVerified,
     ManuallyVerified,
-    PreviouslyVerified,
+    CreatesNSFWContent,
     MarkedAsSuspicious,
     KnownFraudulentArtist,
 }
