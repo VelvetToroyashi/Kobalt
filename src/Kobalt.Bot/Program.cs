@@ -7,6 +7,7 @@ using Kobalt.Infrastructure.Extensions.Remora;
 using Kobalt.Infrastructure.Services;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
+using Kobalt.Shared.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Remora.Discord.API.Abstractions.Gateway.Commands;
@@ -21,9 +22,6 @@ using Remora.Discord.Gateway.Extensions;
 using Remora.Discord.Interactivity.Extensions;
 using RemoraHTTPInteractions.Extensions;
 using RemoraHTTPInteractions.Services;
-using Serilog;
-using Serilog.Events;
-using Serilog.Templates;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +29,7 @@ builder.Configuration
        .AddEnvironmentVariables()
        .AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
-ConfigureLogging(builder.Logging);
+builder.Services.AddSerilogLogging();
 ConfigureKobaltBotServices(builder.Configuration, builder.Services);
 // TODO: replace either with runtimeProperties.json or a config
 builder.WebHost.ConfigureKestrel(c => c.ListenLocalhost(8001));
@@ -124,22 +122,4 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
     services.AddInteractivity();
     services.AddInteractivityFromAssembly(Assembly.GetExecutingAssembly());
-}
-
-void ConfigureLogging(ILoggingBuilder loggingBuilder)
-{
-    const string LogFormat = "[{@t:h:mm:ss ff tt}] [{@l:u3}] [{Substring(SourceContext, LastIndexOf(SourceContext, '.') + 1)}] {@m}\n{@x}";
-    
-    Log.Logger = new LoggerConfiguration()
-    #if DEBUG
-                 .MinimumLevel.Debug()
-    #endif
-                 .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
-                 .MinimumLevel.Override("System.Net", LogEventLevel.Error)
-                 .MinimumLevel.Override("Remora", LogEventLevel.Warning)
-                 .WriteTo.Console(new ExpressionTemplate(LogFormat))
-    .CreateLogger();
-
-    loggingBuilder.ClearProviders();
-    loggingBuilder.AddSerilog(Log.Logger);
 }
