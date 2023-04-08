@@ -21,8 +21,8 @@ public static class GetAllReminders
         {
             await using var context = await _context.CreateDbContextAsync();
             
-            var entities = await context.Reminders.ToListAsync(cancellationToken);
-            return entities.Cast<ReminderDTO>();
+            var entities = await context.Reminders.Select(r => (ReminderDTO)r).ToListAsync(cancellationToken);
+            return entities;
         }
     }
     
