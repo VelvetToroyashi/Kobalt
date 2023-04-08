@@ -35,6 +35,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Kobalt.Infrastructure\Kobalt.Infrastructure.csproj" />
+      <ProjectReference Include="..\Kobalt.Shared\Kobalt.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>
