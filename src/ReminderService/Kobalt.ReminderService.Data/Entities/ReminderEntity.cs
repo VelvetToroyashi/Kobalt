@@ -1,4 +1,7 @@
-﻿namespace Kobalt.ReminderService.Data.Entities;
+﻿using Kobalt.Infrastructure.DTOs.Reminders;
+using Remora.Discord.API;
+
+namespace Kobalt.ReminderService.Data.Entities;
 
 /// <summary>
 /// Represents a reminder.

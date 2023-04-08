@@ -1,4 +1,5 @@
-﻿using Kobalt.ReminderService.Data.Entities;
+﻿using Kobalt.Infrastructure.DTOs.Reminders;
+using Kobalt.ReminderService.Data.Entities;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
 
