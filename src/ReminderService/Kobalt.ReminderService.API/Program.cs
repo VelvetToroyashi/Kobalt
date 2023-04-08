@@ -82,28 +82,16 @@ app.MapGet("/api/reminders/{userID}", async (ulong userID, IMediator mediator) =
 });
 
 // Create a reminder
-app.MapPost("/api/reminders/{userID}", async (ulong userID, [FromBody] ReminderDTO reminder, IMediator mediator, ILogger<Program> logger, IOptions<JsonSerializerOptions> serializer) =>
-{
-    logger.LogInformation("Received request!");
-    var createdReminder = await mediator.Send
-    (
-        new CreateReminder.Request
-        (
-            reminder.AuthorID.Value,
-            reminder.ChannelID.Value,
-            reminder.GuildID?.Value,
-            reminder.ReplyContent,
-            reminder.Expiration,
-            reminder.ReplyMessageID?.Value
-        )
-    );
-
-    logger.LogInformation("Created reminder!");
-    var ret = new ReminderCreationPayload(createdReminder.Id, createdReminder.Expiration);
-    
-    logger.LogInformation("Returning result!");
-    return Results.Json(ret, serializer.Value);
-});
+app.MapPost("/api/reminders/{userID}", async (ulong userID, [FromBody] ReminderCreatePayload reminder, ReminderService reminders) =>
+            await reminders.CreateReminderAsync
+            (
+                userID,
+                reminder.ChannelID,
+                reminder.GuildID,
+                reminder.ReminderContent,
+                reminder.Expiration,
+                reminder.ReplyMessageID
+            ));
 
 // Delete one or more reminders
 app.MapDelete("/api/reminders/{userID}/", async ([FromBody] int[] reminderIDs, ulong userID, ReminderService reminders) =>
