@@ -51,11 +51,11 @@ As it stands right now, this project is not only in a very early stage, but also
     - [ ] Artist Verification Registration
 
 - [ ] Reminder Microservice
-    - [ ] Create Reminder
-    - [ ] Get Reminder
-    - [ ] Update Reminder
-    - [ ] Delete Reminder
-    - [ ] Dispatch Reminder (Requires Kobalt Support)
+    - [x] Create Reminder
+    - [x] Get Reminder
+    - [x] Update Reminder
+    - [x] Delete Reminder
+    - [x] Dispatch Reminder (Requires Kobalt Support)
 
 - [ ] Anti-Phish Microservice
     - [ ] Handle aggregated phishing sources
