@@ -31,7 +31,7 @@ public class ReminderEntity
     /// <summary>
     /// The content of the reminder.
     /// </summary>
-    public string ReplyContent { get; set; }
+    public string ReplyContent { get; set; } = null!;
     
     /// <summary>
     /// When the reminder was created.
