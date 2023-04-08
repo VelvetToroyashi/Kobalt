@@ -17,7 +17,7 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection to chain calls with.</returns>
     public static IServiceCollection AddReminderDbContext(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddPooledDbContextFactory<ReminderContext>(c => c.UseNpgsql(configuration.GetConnectionString("Reminders")));
+        services.AddPooledDbContextFactory<ReminderContext>(c => c.UseNpgsql(configuration.GetConnectionString("Reminders")).UseSnakeCaseNamingConvention());
         return services;
     }
 }
