@@ -3,16 +3,23 @@ using System.Text.Json;
 using Kobalt.Infrastructure.DTOs.Reminders;
 using Kobalt.Infrastructure.Extensions.Remora;
 using Kobalt.ReminderService.API.Services;
+using Kobalt.ReminderService.Data;
+using Kobalt.ReminderService.Data.Extensions;
 using Kobalt.ReminderService.Data.Mediator;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Remora.Discord.API;
 using Remora.Rest.Json;
 using Remora.Rest.Json.Policies;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddUserSecrets<Program>();
+
 builder.Services.AddMediator();
+builder.Services.AddReminderDbContext(builder.Configuration);
 
 builder.Services.AddSingleton<ReminderService>();
 builder.Services.AddHostedService(s => s.GetRequiredService<ReminderService>());
@@ -68,8 +75,9 @@ app.MapGet("/api/reminders/{userID}", async (ulong userID, IMediator mediator) =
 });
 
 // Create a reminder
-app.MapPost("/api/reminders/{userID}", async (ulong userID, [FromBody] ReminderDTO reminder, IMediator mediator) =>
+app.MapPost("/api/reminders/{userID}", async (ulong userID, [FromBody] ReminderDTO reminder, IMediator mediator, ILogger<Program> logger, IOptions<JsonSerializerOptions> serializer) =>
 {
+    logger.LogInformation("Received request!");
     var createdReminder = await mediator.Send
     (
         new CreateReminder.Request
@@ -83,9 +91,11 @@ app.MapPost("/api/reminders/{userID}", async (ulong userID, [FromBody] ReminderD
         )
     );
 
+    logger.LogInformation("Created reminder!");
     var ret = new ReminderCreationPayload(createdReminder.Id, createdReminder.Expiration);
     
-    return Results.Json(ret);
+    logger.LogInformation("Returning result!");
+    return Results.Json(ret, serializer.Value);
 });
 
 // Delete one or more reminders
@@ -105,4 +115,7 @@ app.MapDelete("/api/reminders/{userID}/", async ([FromBody] int[] reminderIDs, u
     
     return !result.CancelledReminders.Any() ? Results.NotFound() : Results.Json(result);
 });
-app.Run();
+
+await app.Services.GetRequiredService<IDbContextFactory<ReminderContext>>().CreateDbContext().Database.MigrateAsync();
+
+await app.RunAsync();
