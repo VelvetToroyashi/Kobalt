@@ -1,4 +1,6 @@
-﻿namespace Kobalt.ReminderService.API.Extensions;
+﻿using Kobalt.Infrastructure.Types;
+
+namespace Kobalt.ReminderService.API.Extensions;
 
 public static class IConfigurationExtensions
 {

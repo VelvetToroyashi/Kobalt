@@ -1,5 +1,6 @@
 ﻿using Mediator;
 using Microsoft.EntityFrameworkCore;
+using Remora.Results;
 
 namespace Kobalt.ReminderService.Data.Mediator;
 
