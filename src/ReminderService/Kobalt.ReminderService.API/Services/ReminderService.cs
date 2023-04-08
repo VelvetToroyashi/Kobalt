@@ -26,6 +26,7 @@ public class ReminderService : IHostedService
     {
         _mediator = mediator;
         _logger = logger;
+        _dispatchTask = DispatchReminders();
     }
     
     /// <inheritdoc/>

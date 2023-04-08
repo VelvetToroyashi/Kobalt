@@ -43,7 +43,8 @@ public class E6ButtonResponder : InteractionGroup
                                 .Message
                                 .Value
                                 .Embeds
-                                .Select(e => (e as Embed) with { Url = null })
+                                .Cast<Embed>()
+                                .Select(e => e with { Url = default })
                                 .ToArray()
                     )
                 )
@@ -74,7 +75,8 @@ public class E6ButtonResponder : InteractionGroup
                                 .Message
                                 .Value
                                 .Embeds
-                                .Select((e, n) => (e as Embed) with { Url = $"https://e621.net/posts?page={n / 4}" })
+                                .Cast<Embed>()
+                                .Select((e, n) => e with { Url = $"https://e621.net/posts?page={n / 4}" })
                                 .ToArray()
                     )
                 )
@@ -89,7 +91,7 @@ public class E6ButtonResponder : InteractionGroup
     /// <returns>A new list of components, containing a mixture of the old components and new (updated) components.</returns>
     private static IReadOnlyList<IActionRowComponent> GetComponents(IReadOnlyList<IMessageComponent> components)
     {
-        var realComponents = components.Select(c => c as IActionRowComponent).ToArray();
+        var realComponents = components.Cast<ActionRowComponent>().ToArray();
         var returnComponents = new IActionRowComponent[realComponents.Length];
 
         for (int i = 0; i < realComponents.Length; i++)
@@ -99,10 +101,14 @@ public class E6ButtonResponder : InteractionGroup
             for (int j = 0; j < realComponents[i].Components.Count; j++)
             {
                 var button = (IButtonComponent)realComponents[i].Components[j];
-
-                var hasCustomID = button.CustomID.IsDefined(out var customID);
                 
-                if (hasCustomID && customID.EndsWith("e6-mobile-mode"))
+                if (!button.CustomID.IsDefined(out var customID))
+                {
+                    buildingComponents.Add(button);
+                    continue;
+                }
+                
+                if (customID.EndsWith("e6-mobile-mode"))
                 {
                     buildingComponents.Add
                     (
@@ -115,7 +121,7 @@ public class E6ButtonResponder : InteractionGroup
                         )
                     );
                 }
-                else if (hasCustomID && customID.EndsWith("e6-desktop-mode"))
+                else if (customID.EndsWith("e6-desktop-mode"))
                 {
                     buildingComponents.Add
                     (
@@ -128,10 +134,7 @@ public class E6ButtonResponder : InteractionGroup
                         )
                     );
                 }
-                else
-                {
-                    buildingComponents.Add(button);
-                }
+
             }
             
             returnComponents[i] = new ActionRowComponent(buildingComponents);

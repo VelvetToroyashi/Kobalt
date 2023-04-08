@@ -51,17 +51,17 @@ public class UpdateInfractionRequestHandler : IRequestHandler<UpdateInfractionRe
             ); 
         }
 
-        if (request.IsHidden.TryGet(out var isHidden))
+        if (request.IsHidden.IsDefined(out var isHidden))
         {
             infraction.IsHidden = isHidden;
         }
 
-        if (request.Reason.TryGet(out var reason))
+        if (request.Reason.IsDefined(out var reason))
         {
             infraction.Reason = reason;
         }
 
-        if (request.ExpiresAt.TryGet(out var expiresAt))
+        if (request.ExpiresAt.IsDefined(out var expiresAt))
         {
             infraction.ExpiresAt = expiresAt;
         }

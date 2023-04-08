@@ -67,9 +67,6 @@ public class UpdateGuildInfractionRuleRequestHandler : IRequestHandler<UpdateGui
             {
                 return new InvalidOperationError($"Invalid match type (expected kick, ban, mute, or warning, got {matchType})");
             }
-            {
-                return new InvalidOperationError($"Invalid match type (expected regex, exact, or contains, got {matchType})");
-            }
             
             rule.MatchType = matchType;
         }

@@ -31,9 +31,11 @@ builder.Configuration
        .AddEnvironmentVariables()
        .AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
-builder.WebHost.ConfigureLogging(ConfigureLogging);
+ConfigureLogging(builder.Logging);
+ConfigureKobaltBotServices(builder.Configuration, builder.Services);
+// TODO: replace either with runtimeProperties.json or a config
 builder.WebHost.ConfigureKestrel(c => c.ListenLocalhost(8001));
-builder.WebHost.ConfigureServices(ConfigureKobaltBotServices);
+
 
 var host = builder.Build();
 
@@ -42,7 +44,7 @@ host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper ha
         var hasHeaders = DiscordHeaders.TryExtractHeaders(ctx.Request.Headers, out var timestamp, out var signature);
         var body = await new StreamReader(ctx.Request.Body).ReadToEndAsync();
         
-        if (!hasHeaders || !DiscordHeaders.VerifySignature(body, timestamp, signature, config.Value.Discord.PublicKey))
+        if (!hasHeaders || !DiscordHeaders.VerifySignature(body, timestamp!, signature!, config.Value.Discord.PublicKey!))
         {
             ctx.Response.StatusCode = 401;
             return;
@@ -58,7 +60,7 @@ host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper ha
         if (!content.Item2.HasValue)
         {
             ctx.Response.Headers.ContentType = "application/json";
-            ctx.Response.WriteAsync(content.Item1);
+            await ctx.Response.WriteAsync(content.Item1);
             return;
         }
         else
@@ -70,16 +72,16 @@ host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper ha
                 ret.Add(key, value);
             }
             
-            ret.ExecuteResultAsync(new ActionContext(ctx, ctx.GetRouteData(), new()));
+            await ret.ExecuteResultAsync(new ActionContext(ctx, ctx.GetRouteData(), new()));
         }
     }
 );
 
 await host.RunAsync();
 
-void ConfigureKobaltBotServices(WebHostBuilderContext hostBuilder, IServiceCollection services)
+void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection services)
 {
-    var config = hostBuilder.Configuration.Get<KobaltConfig>()!;
+    var config = hostConfig.Get<KobaltConfig>()!;
     services.AddSingleton(Options.Create(config));
     
     var token = config.Discord.Token;

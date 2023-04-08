@@ -18,8 +18,8 @@ public class InfractionService : BackgroundService, IInfractionService
     
     private CancellationToken _cancellationToken;
 
-    private Task _queueTask,
-                 _dispatcherTask;
+    private Task _queueTask = Task.CompletedTask,
+                 _dispatcherTask = Task.CompletedTask;
 
     public InfractionService(IMediator mediator, IRestHttpClient httpClient)
     {

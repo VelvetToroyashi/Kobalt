@@ -54,9 +54,12 @@ public sealed class KobaltDiscordGatewayService : BackgroundService
         try
         {
             _logger.LogInformation("Starting gateway client...");
-            gatewayResult = await _gateway.RunAsync(stoppingToken);  
+            gatewayResult = await _gateway.RunAsync(stoppingToken);
         }
-        catch { /* ignored */ }
+        catch (Exception e)
+        {
+            gatewayResult = e;
+        }
         
         if (!gatewayResult.IsSuccess)
         {
