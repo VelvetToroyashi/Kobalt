@@ -25,7 +25,7 @@ namespace Kobalt.ReminderService.Data.Migrations
                     author_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
                     channel_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
                     guild_id = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
-                    reply_content = table.Column<string>(type: "text", nullable: false),
+                    reminder_content = table.Column<string>(type: "text", nullable: false),
                     creation = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     expiration = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     reply_message_id = table.Column<decimal>(type: "numeric(20,0)", nullable: true)

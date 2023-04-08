@@ -52,10 +52,10 @@ namespace Kobalt.ReminderService.Data.Migrations
                         .HasColumnType("numeric(20,0)")
                         .HasColumnName("guild_id");
 
-                    b.Property<string>("ReplyContent")
+                    b.Property<string>("ReminderContent")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("reply_content");
+                        .HasColumnName("reminder_content");
 
                     b.Property<decimal?>("ReplyMessageID")
                         .HasColumnType("numeric(20,0)")

@@ -31,7 +31,7 @@ public class ReminderEntity
     /// <summary>
     /// The content of the reminder.
     /// </summary>
-    public string ReplyContent { get; set; } = null!;
+    public string ReminderContent { get; set; } = null!;
     
     /// <summary>
     /// When the reminder was created.
@@ -53,7 +53,7 @@ public class ReminderEntity
     /// </summary>
     /// <param name="self">The entity.</param>
     /// <returns>A DTO.</returns>
-    public static implicit operator ReminderDTO(ReminderEntity self)
+    public static explicit operator ReminderDTO(ReminderEntity self)
     {
         return new
         (
@@ -61,7 +61,7 @@ public class ReminderEntity
             DiscordSnowflake.New(self.AuthorID),
             DiscordSnowflake.New(self.ChannelID),
             self.GuildID is null ? null : DiscordSnowflake.New(self.GuildID.Value),
-            self.ReplyContent, 
+            self.ReminderContent, 
             self.Creation,
             self.Expiration,
             self.ReplyMessageID is null ? null : DiscordSnowflake.New(self.ReplyMessageID.Value)

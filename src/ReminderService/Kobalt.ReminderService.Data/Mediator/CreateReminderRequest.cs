@@ -13,7 +13,7 @@ public static class CreateReminder
     /// <param name="AuthorID">The ID of the user creating the reminder.</param>
     /// <param name="ChannelID">The ID of the channel the reminder was created in.</param>
     /// <param name="GuildID">The ID of the guild the reminder was created in, if any.</param>
-    /// <param name="ReplyContent">The content of the reminder.</param>
+    /// <param name="ReminderContent">The content of the reminder.</param>
     /// <param name="Expiration">When the reminder expires.</param>
     /// <param name="ReplyMessageID">The ID of the message the reminder is replying to, if any.</param>
     public record Request
@@ -21,7 +21,7 @@ public static class CreateReminder
         ulong AuthorID,
         ulong ChannelID,
         ulong? GuildID,
-        string ReplyContent,
+        string ReminderContent,
         DateTimeOffset Expiration,
         ulong? ReplyMessageID
     ) : IRequest<ReminderDTO>;
@@ -42,7 +42,7 @@ public static class CreateReminder
                 AuthorID = request.AuthorID,
                 ChannelID = request.ChannelID,
                 GuildID = request.GuildID,
-                ReplyContent = request.ReplyContent,
+                ReminderContent = request.ReminderContent,
                 Creation = DateTimeOffset.UtcNow,
                 Expiration = request.Expiration,
                 ReplyMessageID = request.ReplyMessageID
@@ -53,7 +53,7 @@ public static class CreateReminder
             await context.Reminders.AddAsync(entity, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
 
-            return entity;
+            return (ReminderDTO)entity;
         }
     } 
 }
