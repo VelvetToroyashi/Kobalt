@@ -10,7 +10,6 @@ using Kobalt.ReminderService.Data.Mediator;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Remora.Discord.API;
 using Remora.Rest.Json;
 using Remora.Rest.Json.Policies;
@@ -65,6 +64,8 @@ app.MapGet("/api/reminders", async (HttpContext context, ReminderService reminde
             {
                 // It's fine to pass a CT here because we don't need to clean anything up.
                 _ = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
+                
+                await Task.Delay(100, cts.Token);
             }
         }
     );
@@ -78,7 +79,7 @@ app.MapGet("/api/reminders/{userID}", async (ulong userID, IMediator mediator) =
 {
     var userReminders = await mediator.Send(new GetRemindersForUser.Request(userID));
 
-    return Results.Json(userReminders);
+    return userReminders;
 });
 
 // Create a reminder
@@ -108,7 +109,7 @@ app.MapDelete("/api/reminders/{userID}/", async ([FromBody] int[] reminderIDs, u
             result.InvalidReminders.Add(reminderID);
     }
     
-    return !result.CancelledReminders.Any() ? Results.NotFound() : Results.Json(result);
+    return !result.CancelledReminders.Any() ? Results.NotFound() : Results.Ok(result);
 });
 
 await app.Services.GetRequiredService<IDbContextFactory<ReminderContext>>().CreateDbContext().Database.MigrateAsync();
