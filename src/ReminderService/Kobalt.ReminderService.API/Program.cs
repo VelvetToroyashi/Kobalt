@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Kobalt.Infrastructure.DTOs.Reminders;
 using Kobalt.Infrastructure.Extensions.Remora;
 using Kobalt.ReminderService.API.Services;
@@ -23,12 +24,18 @@ builder.Services.AddReminderDbContext(builder.Configuration);
 
 builder.Services.AddSingleton<ReminderService>();
 builder.Services.AddHostedService(s => s.GetRequiredService<ReminderService>());
-builder.Services.Configure<JsonSerializerOptions>(
-    options =>
-    {
-        options.Converters.Insert(0, new SnowflakeConverter(Constants.DiscordEpoch));
-        options.PropertyNamingPolicy = new SnakeCaseNamingPolicy();
-    });
+
+//TODO: Extension method?
+var configure = (JsonSerializerOptions options) =>
+{
+    options.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
+    options.PropertyNamingPolicy = new SnakeCaseNamingPolicy();
+    options.Converters.Insert(0, new SnowflakeConverter(Constants.DiscordEpoch));
+};
+
+builder.Services
+       .ConfigureHttpJsonOptions(opt => configure(opt.SerializerOptions))
+       .Configure<JsonSerializerOptions>(configure);
 
 var app = builder.Build();
 

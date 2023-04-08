@@ -4,6 +4,7 @@ using Kobalt.Infrastructure.DTOs.Reminders;
 using Kobalt.Infrastructure.Extensions.Remora;
 using Kobalt.ReminderService.Data.Mediator;
 using Mediator;
+using Microsoft.Extensions.Options;
 using Remora.Results;
 
 namespace Kobalt.ReminderService.API.Services;
@@ -14,6 +15,10 @@ namespace Kobalt.ReminderService.API.Services;
 public class ReminderService : IHostedService
 {
     private readonly IMediator _mediator;
+    private readonly ILogger<ReminderService> _logger;
+    private readonly JsonSerializerOptions _serializer;
+    
+    private readonly List<ReminderDTO> _reminders = new();
     private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(1));
     private readonly Dictionary<WebSocket, CancellationTokenSource> _clients = new();
     private readonly List<ReminderDTO> _reminders = new();
@@ -26,6 +31,7 @@ public class ReminderService : IHostedService
     {
         _mediator = mediator;
         _logger = logger;
+        _serializer = options.Value;
         _dispatchTask = DispatchReminders();
     }
     
@@ -121,7 +127,7 @@ public class ReminderService : IHostedService
                     _reminders.RemoveAt(i);
                 }
 
-                var payload = JsonSerializer.SerializeToUtf8Bytes(reminder).AsMemory();
+                var payload = JsonSerializer.SerializeToUtf8Bytes(reminder, _serializer).AsMemory();
                 var sent = await TryDispatchReminderAsync(payload, reminder.Id);
                 
                 if (!sent)
