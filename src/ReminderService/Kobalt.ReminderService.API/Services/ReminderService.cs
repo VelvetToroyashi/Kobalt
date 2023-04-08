@@ -21,18 +21,18 @@ public class ReminderService : IHostedService
     private readonly List<ReminderDTO> _reminders = new();
     private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(1));
     private readonly Dictionary<WebSocket, CancellationTokenSource> _clients = new();
-    private readonly List<ReminderDTO> _reminders = new();
-    private readonly ILogger<ReminderService> _logger;
-    
+
     private readonly Task _dispatchTask;
     private readonly CancellationTokenSource _cts = new();
-    
-    public ReminderService(IMediator mediator, ILogger<ReminderService> logger)
+
+    public ReminderService(IMediator mediator, ILogger<ReminderService> logger, IOptions<JsonSerializerOptions> options)
     {
         _mediator = mediator;
         _logger = logger;
         _serializer = options.Value;
         _dispatchTask = DispatchReminders();
+        
+        _logger.LogInformation("Reminder service started.");
     }
     
     /// <inheritdoc/>
@@ -57,6 +57,7 @@ public class ReminderService : IHostedService
     public void AddClient(WebSocket client, CancellationTokenSource cts)
     {
         _clients.Add(client, cts);
+        _logger.LogDebug("Handling new client.");
     }
     
     /// <summary>
@@ -65,15 +66,16 @@ public class ReminderService : IHostedService
     /// <param name="authorID">The ID of the user that created the reminder.</param>
     /// <param name="channelID">The ID of the channel the reminder was set in.</param>
     /// <param name="guildID">The ID of the guild the reminder was set in, if any.</param>
-    /// <param name="replyContent">The content of the reminder.</param>
+    /// <param name="reminderContent">The content of the reminder.</param>
     /// <param name="creation">When the reminder was created.</param>
     /// <param name="expiration">When the reminder expires.</param>
     /// <param name="replyMessageID">The ID of the message the reminder is in response to, if any.</param>
     /// <returns>The created reminder.</returns>
-    public async Task<ReminderCreationPayload> CreateReminderAsync(ulong authorID, ulong channelID, ulong? guildID, string replyContent, DateTimeOffset expiration, ulong? replyMessageID)
+    public async Task<ReminderCreationPayload> CreateReminderAsync(ulong authorID, ulong channelID, ulong? guildID, string reminderContent, DateTimeOffset expiration, ulong? replyMessageID)
     {
-        var created = await _mediator.Send(new CreateReminder.Request(authorID, channelID, guildID, replyContent, expiration, replyMessageID));
+        var created = await _mediator.Send(new CreateReminder.Request(authorID, channelID, guildID, reminderContent, expiration, replyMessageID));
         _reminders.Add(created);
+        _logger.LogDebug("Added reminder to in-memory list.");
         
         return new(created.Id, created.Expiration);
     }
@@ -106,8 +108,9 @@ public class ReminderService : IHostedService
     /// </remarks>
     private async Task DispatchReminders()
     {
-        _logger.LogDebug("Loading reminders...");
+        _logger.LogInformation("Loading reminders...");
         var reminders = await _mediator.Send(new GetAllReminders.Request());
+        _logger.LogInformation("Loaded {ReminderCount} reminders.", _reminders.Count);
         
         _reminders.AddRange(reminders);
         
