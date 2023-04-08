@@ -1,10 +1,14 @@
 using System.Buffers;
+using System.Text.Json;
 using Kobalt.Infrastructure.DTOs.Reminders;
 using Kobalt.Infrastructure.Extensions.Remora;
 using Kobalt.ReminderService.API.Services;
 using Kobalt.ReminderService.Data.Mediator;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using Remora.Discord.API;
+using Remora.Rest.Json;
+using Remora.Rest.Json.Policies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +16,12 @@ builder.Services.AddMediator();
 
 builder.Services.AddSingleton<ReminderService>();
 builder.Services.AddHostedService(s => s.GetRequiredService<ReminderService>());
+builder.Services.Configure<JsonSerializerOptions>(
+    options =>
+    {
+        options.Converters.Insert(0, new SnowflakeConverter(Constants.DiscordEpoch));
+        options.PropertyNamingPolicy = new SnakeCaseNamingPolicy();
+    });
 
 var app = builder.Build();
 

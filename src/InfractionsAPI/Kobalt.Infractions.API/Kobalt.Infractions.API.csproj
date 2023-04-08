@@ -8,13 +8,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Mediator.Abstractions" Version="2.1.0-preview.5" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.0" />
         <PackageReference Include="Remora.Rest" Version="3.1.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Kobalt.Infractions.Infrastructure\Kobalt.Infractions.Infrastructure.csproj" />
+      <ProjectReference Include="..\Kobalt.Infractions.Shared\Kobalt.Infractions.Shared.csproj" />
     </ItemGroup>
 
 </Project>
