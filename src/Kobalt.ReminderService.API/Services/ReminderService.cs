@@ -4,6 +4,7 @@ using Kobalt.Infrastructure.DTOs.Reminders;
 using Kobalt.Infrastructure.Extensions.Remora;
 using Kobalt.ReminderService.Data.Mediator;
 using Mediator;
+using Remora.Results;
 
 namespace Kobalt.ReminderService.API.Services;
 
@@ -68,6 +69,26 @@ public class ReminderService : IHostedService
         _reminders.Add(created);
         
         return new(created.Id, created.Expiration);
+    }
+
+    /// <summary>
+    /// Removes a reminder both from the database and the in-memory list.
+    /// </summary>
+    /// <param name="reminderID">The ID of the reminder</param>
+    /// <param name="userID">The ID of the user attempting to delete the reminder.</param>
+    /// <returns>A result indicating whether the reminder was successfully deleted or not.</returns>
+    public async Task<Result> RemoveReminderAsync(int reminderID, ulong userID)
+    {
+        var reminder = await _mediator.Send(new DeleteReminder.Request(reminderID, userID));
+        
+        if (!reminder.IsSuccess)
+        {
+            return reminder;
+        }
+        
+        _reminders.RemoveAll(x => x.Id == reminderID);
+        
+        return Result.FromSuccess();
     }
     
     /// <summary>
