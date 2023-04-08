@@ -1,4 +1,5 @@
-﻿using Mediator;
+﻿using Kobalt.Infrastructure.DTOs.Reminders;
+using Mediator;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kobalt.ReminderService.Data.Mediator;
