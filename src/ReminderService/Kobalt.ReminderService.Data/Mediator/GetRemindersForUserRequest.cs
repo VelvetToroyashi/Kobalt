@@ -26,9 +26,10 @@ public static class GetRemindersForUser
             
             var reminders = await context.Reminders
                 .Where(r => r.AuthorID == request.UserID)
+                .Select(r => (ReminderDTO)r)
                 .ToListAsync(cancellationToken);
             
-            return reminders.Cast<ReminderDTO>();
+            return reminders;
         }
     }
 }
