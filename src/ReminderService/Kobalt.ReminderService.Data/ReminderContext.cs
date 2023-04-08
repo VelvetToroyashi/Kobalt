@@ -20,7 +20,7 @@ public class ReminderContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema("Kobalt.ReminderService");
+        modelBuilder.HasDefaultSchema("kobalt_reminders");
         base.OnModelCreating(modelBuilder);
     }
 

@@ -17,7 +17,7 @@ namespace Kobalt.ReminderService.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("Kobalt.ReminderService")
+                .HasDefaultSchema("kobalt_reminders")
                 .HasAnnotation("ProductVersion", "7.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -27,35 +27,44 @@ namespace Kobalt.ReminderService.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("AuthorID")
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("numeric(20,0)")
+                        .HasColumnName("author_id");
 
                     b.Property<decimal>("ChannelID")
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("numeric(20,0)")
+                        .HasColumnName("channel_id");
 
                     b.Property<DateTimeOffset>("Creation")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creation");
 
                     b.Property<DateTimeOffset>("Expiration")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expiration");
 
                     b.Property<decimal?>("GuildID")
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("numeric(20,0)")
+                        .HasColumnName("guild_id");
 
                     b.Property<string>("ReplyContent")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("reply_content");
 
                     b.Property<decimal?>("ReplyMessageID")
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("numeric(20,0)")
+                        .HasColumnName("reply_message_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_reminders");
 
-                    b.ToTable("Reminders", "Kobalt.ReminderService");
+                    b.ToTable("reminders", "kobalt_reminders");
                 });
 #pragma warning restore 612, 618
         }
