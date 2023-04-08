@@ -1,12 +1,14 @@
-﻿using Kobalt.Infrastructure.DTOs.Reminders;
-using Mediator;
+﻿using Mediator;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kobalt.ReminderService.Data.Mediator;
 
-public static class GetAllReminders
+/// <summary>
+/// Represents a request to get all reminders for a given user.
+/// </summary>
+public static class GetRemindersForUser
 {
-    public record Request : IRequest<IEnumerable<ReminderDTO>>;
+    public record Request(ulong UserID) : IRequest<IEnumerable<ReminderDTO>>;
     
     internal class Handler : IRequestHandler<Request, IEnumerable<ReminderDTO>>
     {
@@ -21,9 +23,11 @@ public static class GetAllReminders
         {
             await using var context = await _context.CreateDbContextAsync();
             
-            var entities = await context.Reminders.ToListAsync(cancellationToken);
-            return entities.Cast<ReminderDTO>();
+            var reminders = await context.Reminders
+                .Where(r => r.AuthorID == request.UserID)
+                .ToListAsync(cancellationToken);
+            
+            return reminders.Cast<ReminderDTO>();
         }
     }
-    
 }
