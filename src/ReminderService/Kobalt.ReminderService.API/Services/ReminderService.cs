@@ -107,6 +107,11 @@ public class ReminderService : IHostedService
         
         while (await _timer.WaitForNextTickAsync(_cts.Token))
         {
+            if (_clients.Count is 0)
+            {
+                continue;
+            }
+            
             for (int i = _reminders.Count - 1; i >= 0; i--)
             {
                 var reminder = _reminders[i];
