@@ -1,5 +1,6 @@
 ﻿using System.Net.WebSockets;
 using System.Text.Json;
+using Kobalt.Infrastructure.DTOs.Reminders;
 using Kobalt.ReminderService.Data.Mediator;
 using Mediator;
 

@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Kobalt.Infrastructure\Kobalt.Infrastructure.csproj" />
+      <ProjectReference Include="..\..\Kobalt.Infrastructure\Kobalt.Infrastructure.csproj" />
       <ProjectReference Include="..\Kobalt.ReminderService.Data\Kobalt.ReminderService.Data.csproj" />
     </ItemGroup>
 
