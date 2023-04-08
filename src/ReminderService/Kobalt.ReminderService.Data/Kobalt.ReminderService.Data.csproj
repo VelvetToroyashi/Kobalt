@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Kobalt.Infrastructure\Kobalt.Infrastructure.csproj" />
+      <ProjectReference Include="..\..\Kobalt.Infrastructure\Kobalt.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>
