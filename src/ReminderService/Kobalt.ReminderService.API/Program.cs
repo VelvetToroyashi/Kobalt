@@ -1,6 +1,4 @@
 using System.Buffers;
-using Kobalt.Infrastructure.DTOs.Reminders;
-using Kobalt.Infrastructure.Extensions.Remora;
 using Kobalt.ReminderService.API.Services;
 using Kobalt.ReminderService.Data.Mediator;
 using Mediator;
