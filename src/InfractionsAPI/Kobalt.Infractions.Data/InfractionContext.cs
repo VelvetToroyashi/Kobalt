@@ -7,4 +7,10 @@ public class InfractionContext : DbContext
 {
     public DbSet<Infraction> Infractions { get; set; }
     public DbSet<InfractionRule> InfractionRules { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasDefaultSchema("kobalt_infractions");
+        base.OnModelCreating(modelBuilder);
+    }
 }
