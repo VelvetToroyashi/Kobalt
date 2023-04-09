@@ -15,7 +15,8 @@ public record CreateInfractionRequest
     ulong ModeratorID,
     InfractionType Type,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? ExpiresAt
+    DateTimeOffset? ExpiresAt,
+    int? ReferencedId = null
 ) : IRequest<InfractionDTO>;
 
 public class CreateInfractionHandler : IRequestHandler<CreateInfractionRequest, InfractionDTO>
@@ -59,8 +60,7 @@ public class CreateInfractionHandler : IRequestHandler<CreateInfractionRequest, 
                     recentInfraction.ModeratorID,
                     recentInfraction.Type,
                     recentInfraction.CreatedAt,
-                    recentInfraction.ExpiresAt,
-                    true
+                    recentInfraction.ExpiresAt
                 );
             }
         }
@@ -73,7 +73,8 @@ public class CreateInfractionHandler : IRequestHandler<CreateInfractionRequest, 
             ModeratorID = request.ModeratorID,
             Type = request.Type,
             CreatedAt = request.CreatedAt,
-            ExpiresAt = request.ExpiresAt
+            ExpiresAt = request.ExpiresAt,
+            ReferencedId = request.ReferencedId
         };
 
         await _context.Infractions.AddAsync(infraction, cancellationToken);
