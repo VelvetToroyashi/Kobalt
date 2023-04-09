@@ -115,6 +115,70 @@ public class WebsocketManagerService
     }
 
     /// <summary>
+    /// Broadcasts a message to all connected clients indiscriminately.
+    /// </summary>
+    /// <param name="data">The data to broadcast to clients.</param>
+    /// <param name="ct">A cancellation token to cancel the operation.</param>
+    /// <returns>A result that may or not have succeeded.</returns>
+    public async ValueTask<Result> BroadcastAsync(Memory<byte> data, CancellationToken ct = default)
+    {
+        if (_sockets.Count is 0)
+        {
+            // Should this be considered successful?
+            return new InvalidOperationError("No clients are connected.");
+        }
+
+        return await SendAsync(data, false, ct);
+    }
+
+    /// <summary>
+    /// Sends a message to the first available client.
+    /// </summary>
+    /// <param name="data">The data to send.</param>
+    /// <param name="ct">A cancellation token to cancel the operation.</param>
+    /// <returns>A result that may or not have succeeded.</returns>
+    public async Task<Result> SendAsync(Memory<byte> data, CancellationToken ct = default)
+    {
+        if (_sockets.Count is 0)
+        {
+            // Should this be considered successful?
+            return new InvalidOperationError("No clients are connected.");
+        }
+
+        return await SendAsync(data, true, ct);
+    }
+
+
+    /// <summary>
+    /// Broadcasts a message either to all connected clients, or the first client that successfully receives the message.
+    /// </summary>
+    /// <param name="data">The data to send.</param>
+    /// <param name="stopOnFirstSuccess">Whether to stop on the first successful message.</param>
+    /// <param name="ct">A cancellation token to cancel the operation.</param>
+    private async Task<Result> SendAsync(Memory<byte> data, bool stopOnFirstSuccess, CancellationToken ct = default)
+    {
+        foreach ((var id, var conn) in _sockets)
+        {
+            var result = await ResultExtensions.TryCatchAsync(() => conn.Socket.SendAsync(new ReadOnlyMemory<byte>(data.ToArray()), WebSocketMessageType.Text, true, ct).AsTask());
+
+            if (!result.IsSuccess)
+            {
+                _logger.LogError("Failed to send message to client with connection ID {ID}: {Error}", id, result.Error);
+                RemoveClient(id);
+            }
+            else
+            {
+                if (stopOnFirstSuccess)
+                {
+                    return Result.FromSuccess();
+                }
+            }
+        }
+        
+        return Result.FromSuccess();
+    }
+
+    /// <summary>
     /// Receives input from a given socket, cancelling the associated CancellationTokenSource if the socket is disconnected.
     /// </summary>
     private async Task ReceiveAsync(Guid id, bool intendToRead, WebSocket socket, CancellationTokenSource cts, TaskCompletionSource tcs)
