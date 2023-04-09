@@ -1,8 +1,8 @@
 ﻿using System.Net.WebSockets;
 using System.Text.Json;
 using Kobalt.Infrastructure.DTOs.Reminders;
-using Kobalt.Infrastructure.Extensions.Remora;
 using Kobalt.ReminderService.Data.Mediator;
+using Kobalt.Shared.Extensions;
 using Mediator;
 using Microsoft.Extensions.Options;
 using Remora.Results;

@@ -1,6 +1,6 @@
 ﻿using Remora.Results;
 
-namespace Kobalt.Infrastructure.Extensions.Remora;
+namespace Kobalt.Shared.Extensions;
 
 public static class ResultExtensions
 {
