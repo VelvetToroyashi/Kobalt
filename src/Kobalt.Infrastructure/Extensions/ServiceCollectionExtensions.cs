@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Remora.Discord.Interactivity;
 using Remora.Discord.Interactivity.Extensions;
 
-namespace Kobalt.Infrastructure.Extensions.Remora;
+namespace Kobalt.Infrastructure.Extensions;
 
 /// <summary>
 /// Extensions for <see cref="IServiceCollection"/>.

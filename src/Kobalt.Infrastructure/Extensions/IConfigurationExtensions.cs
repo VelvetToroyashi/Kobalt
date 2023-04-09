@@ -1,4 +1,5 @@
 ﻿using Kobalt.Infrastructure.Types;
+using Microsoft.Extensions.Configuration;
 
 namespace Kobalt.ReminderService.API.Extensions;
 
