@@ -16,6 +16,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Kobalt.Shared\Kobalt.Shared.csproj" />
+      <ProjectReference Include="..\Kobalt.Infractions.Data\Kobalt.Infractions.Data.csproj" />
       <ProjectReference Include="..\Kobalt.Infractions.Shared\Kobalt.Infractions.Shared.csproj" />
     </ItemGroup>
 
