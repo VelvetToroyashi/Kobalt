@@ -36,9 +36,9 @@ public class CreateInfractionRuleRequestHandler : IRequestHandler<CreateInfracti
                                  .Where
                                  (
                                      ir =>
-                                     ir.GuildID           == request.GuildID    &&
-                                     ir.MatchType         == request.MatchType  &&
-                                     ir.MatchValue        == request.MatchValue &&
+                                     ir.GuildID       == request.GuildID    &&
+                                     ir.MatchType     == request.MatchType  &&
+                                     ir.MatchValue    == request.MatchValue &&
                                      ir.MatchTimeSpan == request.EffectiveTimespan
                                  )
                                  .FirstOrDefaultAsync(cancellationToken);
@@ -50,12 +50,12 @@ public class CreateInfractionRuleRequestHandler : IRequestHandler<CreateInfracti
         
         var rule = new InfractionRule
         {
-            GuildID           = request.GuildID,
-            ActionType        = request.ActionType,
-            MatchTimeSpan = request.EffectiveTimespan,
-            MatchValue        = request.MatchValue,
-            MatchType         = request.MatchType,
-            ActionDuration    = request.ActionDuration
+            GuildID        = request.GuildID,
+            ActionType     = request.ActionType,
+            MatchTimeSpan  = request.EffectiveTimespan,
+            MatchValue     = request.MatchValue,
+            MatchType      = request.MatchType,
+            ActionDuration = request.ActionDuration
         };
         
         _context.Add(rule);
