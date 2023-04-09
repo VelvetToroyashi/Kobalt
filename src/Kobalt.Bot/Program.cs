@@ -3,7 +3,7 @@ using System.Text;
 using Kobalt.Bot.Handlers;
 using Kobalt.Bot.Services;
 using Kobalt.Bot.Services.Discord;
-using Kobalt.Infrastructure.Extensions.Remora;
+using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
