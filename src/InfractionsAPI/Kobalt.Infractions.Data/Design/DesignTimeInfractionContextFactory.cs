@@ -1,4 +1,5 @@
 ﻿using Kobalt.Shared.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,5 +15,6 @@ public class DesignTimeInfractionContextFactory : IDesignTimeDbContextFactory<In
         .AddSingleton(new ConfigurationBuilder().AddUserSecrets<InfractionContext>().Build())
         .AddDbContextFactory<InfractionContext>("Infractions")
         .BuildServiceProvider()
-        .GetRequiredService<InfractionContext>();
+        .GetRequiredService<IDbContextFactory<InfractionContext>>()
+        .CreateDbContext();
 }
