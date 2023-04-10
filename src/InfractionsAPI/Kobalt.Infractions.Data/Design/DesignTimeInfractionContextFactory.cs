@@ -12,7 +12,7 @@ public class DesignTimeInfractionContextFactory : IDesignTimeDbContextFactory<In
         =>
         new ServiceCollection()
         .AddLogging()
-        .AddSingleton(new ConfigurationBuilder().AddUserSecrets<InfractionContext>().Build())
+        .AddSingleton<IConfiguration>(new ConfigurationBuilder().AddUserSecrets<InfractionContext>().Build())
         .AddDbContextFactory<InfractionContext>("Infractions")
         .BuildServiceProvider()
         .GetRequiredService<IDbContextFactory<InfractionContext>>()
