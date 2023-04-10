@@ -140,7 +140,9 @@ public class InfractionService : BackgroundService, IInfractionService
         {
             var dto = await _dispatcherChannel.Reader.ReadAsync();
             
-            var json = JsonSerializer.Serialize(dto);
+            var json = JsonSerializer.SerializeToUtf8Bytes(dto);
+
+            _socketManager.SendAsync(json, _cancellationToken);
         }
     }
 
