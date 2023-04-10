@@ -146,5 +146,5 @@ void AddInfractionServices(IServiceCollection services, IConfiguration configura
     // TODO: Change DbContext injections to IDbContextFactory
     services.AddMediator(opt => opt.ServiceLifetime = ServiceLifetime.Scoped);
 
-    services.AddDbContext<InfractionContext>(db => db.UseNpgsql(configuration.GetConnectionString("Infractions")));
+    services.AddDbContext<InfractionContext>(db => db.UseNpgsql(configuration.GetConnectionString("Infractions")).UseSnakeCaseNamingConvention());
 }
