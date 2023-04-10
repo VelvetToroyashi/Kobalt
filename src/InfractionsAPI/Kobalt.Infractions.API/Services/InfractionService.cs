@@ -88,7 +88,7 @@ public class InfractionService : BackgroundService, IInfractionService
     }
 
     /// <inheritdoc/>
-    async Task<Result<InfractionDTO>> IInfractionService.UpdateInfractionAsync(int id, Optional<string> reason, Optional<bool> isHidden, Optional<DateTimeOffset?> expiresAt)
+    async Task<Result<InfractionDTO>> IInfractionService.UpdateInfractionAsync(int id, ulong guildID, Optional<string> reason, Optional<bool> isHidden, Optional<DateTimeOffset?> expiresAt)
     {
         if (!reason.HasValue && !isHidden.HasValue && !expiresAt.HasValue)
             return new InvalidOperationError("You must provide at least one value to update.");
@@ -96,7 +96,7 @@ public class InfractionService : BackgroundService, IInfractionService
         if (expiresAt.IsDefined(out var expiration) && expiration < DateTimeOffset.UtcNow)
             return new InvalidOperationError("The expiration date must be in the future.");
             
-        var updateResult = await _mediator.Send(new UpdateInfractionRequest(id, isHidden, reason, expiresAt));
+        var updateResult = await _mediator.Send(new UpdateInfractionRequest(id, guildID, isHidden, reason, expiresAt));
 
         if (!updateResult.IsSuccess)
             return updateResult;
