@@ -10,6 +10,7 @@ namespace Kobalt.Infractions.Infrastructure.Mediator;
 public record UpdateInfractionRequest
 (
     int Id,
+    ulong GuildID,
     Optional<bool> IsHidden,
     Optional<string?> Reason,
     Optional<DateTimeOffset?> ExpiresAt
@@ -30,6 +31,11 @@ public class UpdateInfractionRequestHandler : IRequestHandler<UpdateInfractionRe
         var infraction = await _context.Infractions.FindAsync(request.Id, ct);
         
         if (infraction is null)
+        {
+            return new NotFoundError("Infraction not found");
+        }
+        
+        if (infraction.GuildID != request.GuildID)
         {
             return new NotFoundError("Infraction not found");
         }
