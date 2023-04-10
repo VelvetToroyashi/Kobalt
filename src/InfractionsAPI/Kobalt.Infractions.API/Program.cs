@@ -1,4 +1,5 @@
 using Kobalt.Infractions.API.Services;
+using Kobalt.Infractions.Data;
 using Kobalt.Infractions.Data.Mediator;
 using Kobalt.Infractions.Infrastructure.Interfaces;
 using Kobalt.Infractions.Infrastructure.Mediator;
@@ -9,6 +10,7 @@ using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Services;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,7 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddSerilogLogging();
 
-AddInfractionServices(builder.Services);
+AddInfractionServices(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 app.MapControllers();
@@ -46,6 +48,7 @@ app.MapPut("/infractions/guilds/{guildID}", async (HttpResponse response, ulong 
         ? Results.Ok(infraction) 
         : Results.CreatedAtRoute("/infractions/guilds/{guildID}/{id}", new { guildID, id = infraction.Id }, infraction);
 });
+
 app.MapGet("/infractions/guilds/{guildID}/{id}", async (ulong guildID, int id, IMediator mediator) =>
 {
     var result = await mediator.Send(new GetGuildInfractionRequest(id, guildID));
@@ -132,11 +135,16 @@ app.MapDelete("/infractions/{guildID}/rules/{id}", async (ulong guildID, int id,
 
 app.Run();
 
-void AddInfractionServices(IServiceCollection services)
+void AddInfractionServices(IServiceCollection services, IConfiguration configuration)
 {
     services.AddSingleton<InfractionService>();
     services.AddHostedService<InfractionService>();
     services.AddSingleton<IInfractionService>(x => x.GetRequiredService<InfractionService>());
 
     services.AddSingleton<WebsocketManagerService>();
+
+    // TODO: Change DbContext injections to IDbContextFactory
+    services.AddMediator(opt => opt.ServiceLifetime = ServiceLifetime.Scoped);
+
+    services.AddDbContext<InfractionContext>(db => db.UseNpgsql(configuration.GetConnectionString("Infractions")));
 }
