@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
@@ -18,7 +20,25 @@ public static class ServiceCollectionExtensions
         services.AddLogging(ConfigureLogging);
         return services;
     }
-    
+
+    /// <summary>
+    /// Adds a <see cref="AddDbContextFactory{TContext}"/> to the service collection, using the connection string from the configuration.
+    /// </summary>
+    /// <param name="services">The service provider to add the db context factory to.</param>
+    /// <param name="connectionStringName">The name of the connection string to pull from the <see cref="IConfiguration"/>.</param>
+    /// <typeparam name="TContext">The context to add.</typeparam>
+    /// <returns>The service collection to chain calls with.</returns>
+    public static IServiceCollection AddDbContextFactory<TContext>(this IServiceCollection services, string connectionStringName)
+        where TContext : DbContext
+        => services.AddPooledDbContextFactory<TContext>
+        (
+            (sp, db) =>
+            {
+                var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString(connectionStringName);
+                db.UseNpgsql(connectionString).UseSnakeCaseNamingConvention();
+            }
+        );
+
     /// <summary>
     /// Configures a logging builder, adding Serilog.
     /// </summary>
