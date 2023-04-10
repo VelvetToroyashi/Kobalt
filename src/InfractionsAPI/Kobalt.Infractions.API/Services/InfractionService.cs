@@ -138,11 +138,11 @@ public class InfractionService : BackgroundService, IInfractionService
     {
         while (await _dispatcherChannel.Reader.WaitToReadAsync(_cancellationToken))
         {
-            var dto = await _dispatcherChannel.Reader.ReadAsync();
+            var dto = await _dispatcherChannel.Reader.ReadAsync(CancellationToken.None);
             
-            var json = JsonSerializer.SerializeToUtf8Bytes(dto);
+            var json = JsonSerializer.SerializeToUtf8Bytes(dto, _serializer);
 
-            _socketManager.SendAsync(json, _cancellationToken);
+            await _socketManager.SendAsync(json, _cancellationToken);
         }
     }
 
