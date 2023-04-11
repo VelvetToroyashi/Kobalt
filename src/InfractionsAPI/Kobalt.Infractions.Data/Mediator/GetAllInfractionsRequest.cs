@@ -6,11 +6,11 @@ namespace Kobalt.Infractions.Data.Mediator;
 
 public record GetAllInfractionsRequest() : IRequest<IEnumerable<InfractionDTO>>;
 
-public class GetAllInfractionsHandlerRequest : IRequestHandler<GetAllInfractionsRequest, IEnumerable<InfractionDTO>>
+public class GetAllInfractionsHandler : IRequestHandler<GetAllInfractionsRequest, IEnumerable<InfractionDTO>>
 {
     private readonly InfractionContext _context;
 
-    public GetAllInfractionsHandlerRequest(InfractionContext context)
+    public GetAllInfractionsHandler(InfractionContext context)
     {
         _context = context;
     }
