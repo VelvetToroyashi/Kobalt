@@ -26,8 +26,5 @@ public record InfractionCreatePayload
     DateTimeOffset CreatedAt,
     
     [property: JsonPropertyName("expires_at")]
-    DateTimeOffset? ExpiresAt,
-    
-    [property: JsonPropertyName("is_updated")]
-    bool IsUpdated = false
+    DateTimeOffset? ExpiresAt
 );
