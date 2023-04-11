@@ -65,6 +65,8 @@ public class CreateInfractionHandler : IRequestHandler<CreateInfractionRequest, 
             }
         }
 
+        var isProcessable = request.ExpiresAt is not null && request.Type is InfractionType.Ban or InfractionType.Mute;
+
         var infraction = new Infraction
         {
             Reason = request.Reason,
@@ -72,6 +74,7 @@ public class CreateInfractionHandler : IRequestHandler<CreateInfractionRequest, 
             GuildID = request.GuildID,
             ModeratorID = request.ModeratorID,
             Type = request.Type,
+            IsProcessable = isProcessable,
             CreatedAt = request.CreatedAt,
             ExpiresAt = request.ExpiresAt,
             ReferencedId = request.ReferencedId
