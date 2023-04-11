@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading.Channels;
+using Kobalt.Infractions.Data.Mediator;
 using Kobalt.Infractions.Infrastructure.Interfaces;
 using Kobalt.Infractions.Infrastructure.Mediator;
 using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
@@ -79,7 +80,7 @@ public class InfractionService : BackgroundService, IInfractionService
         {
             _infractions.AddOrUpdate(infraction.Id, infraction, (_, _) => infraction);
         }
-        else
+        else if (type is InfractionType.Ban or InfractionType.Mute)
         {
             _infractions.TryRemove(infraction.Id, out _);
         }
@@ -117,10 +118,15 @@ public class InfractionService : BackgroundService, IInfractionService
 
     private async Task UnloadQueueAsync()
     {
+        var infractions = await _mediator.Send(new GetAllInfractionsRequest(), _cancellationToken);
+
+        foreach (var inf in infractions)
+        {
+            _infractions.TryAdd(inf.Id, inf);
+        }
+        
         while (await _dispatcherTimer.WaitForNextTickAsync(_cancellationToken))
         {
-            await _dispatcherLock.WaitAsync(_cancellationToken);
-
             foreach (var infraction in _infractions.Values)
             {
                 if (infraction.ExpiresAt > DateTimeOffset.UtcNow)
@@ -145,5 +151,4 @@ public class InfractionService : BackgroundService, IInfractionService
             await _socketManager.SendAsync(json, _cancellationToken);
         }
     }
-
 }
