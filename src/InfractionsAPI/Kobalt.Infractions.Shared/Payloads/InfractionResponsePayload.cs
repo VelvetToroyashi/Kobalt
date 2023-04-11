@@ -27,7 +27,6 @@ public record InfractionResponsePayload
     ModeratorID,
     Type,
     CreatedAt,
-    ExpiresAt,
-    IsUpdated
+    ExpiresAt
 );
 

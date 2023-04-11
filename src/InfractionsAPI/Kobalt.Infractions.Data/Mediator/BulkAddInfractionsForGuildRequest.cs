@@ -21,18 +21,21 @@ public class BulkAddInfractionsForGuildHandler : IRequestHandler<BulkAddInfracti
 
     public async ValueTask<IEnumerable<InfractionDTO>> Handle(BulkAddInfractionsForGuildRequest request, CancellationToken cancellationToken)
     {
-        var infractions = request.Infractions.Select(x => new Infraction
-        {
-            GuildID = request.GuildID,
-            UserID = x.UserID,
-            Reason = x.Reason,
-            Type = x.Type,
-            CreatedAt = x.CreatedAt,
-            ExpiresAt = x.ExpiresAt,
-            ModeratorID = x.ModeratorID
-        });
+        var infractions = request
+                          .Infractions
+                          .Select(x => new Infraction
+                          {
+                              GuildID = request.GuildID,
+                              UserID = x.UserID,
+                              Reason = x.Reason,
+                              Type = x.Type,
+                              CreatedAt = x.CreatedAt,
+                              ExpiresAt = x.ExpiresAt,
+                              ModeratorID = x.ModeratorID
+                          })
+                          .ToArray();
 
-        await _context.Infractions.AddRangeAsync(infractions, cancellationToken);
+        _context.Infractions.AddRange(infractions);
         await _context.SaveChangesAsync(cancellationToken);
 
         return infractions.Select
