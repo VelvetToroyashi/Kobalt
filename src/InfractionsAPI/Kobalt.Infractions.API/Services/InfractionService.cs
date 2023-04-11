@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading.Channels;
+using Kobalt.Infractions.Data.Mediator;
 using Kobalt.Infractions.Infrastructure.Interfaces;
 using Kobalt.Infractions.Infrastructure.Mediator;
 using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
@@ -79,7 +80,7 @@ public class InfractionService : BackgroundService, IInfractionService
         {
             _infractions.AddOrUpdate(infraction.Id, infraction, (_, _) => infraction);
         }
-        else
+        else if (type is InfractionType.Ban or InfractionType.Mute)
         {
             _infractions.TryRemove(infraction.Id, out _);
         }
@@ -88,7 +89,7 @@ public class InfractionService : BackgroundService, IInfractionService
     }
 
     /// <inheritdoc/>
-    async Task<Result<InfractionDTO>> IInfractionService.UpdateInfractionAsync(int id, Optional<string> reason, Optional<bool> isHidden, Optional<DateTimeOffset?> expiresAt)
+    async Task<Result<InfractionDTO>> IInfractionService.UpdateInfractionAsync(int id, ulong guildID, Optional<string> reason, Optional<bool> isHidden, Optional<DateTimeOffset?> expiresAt)
     {
         if (!reason.HasValue && !isHidden.HasValue && !expiresAt.HasValue)
             return new InvalidOperationError("You must provide at least one value to update.");
@@ -96,7 +97,7 @@ public class InfractionService : BackgroundService, IInfractionService
         if (expiresAt.IsDefined(out var expiration) && expiration < DateTimeOffset.UtcNow)
             return new InvalidOperationError("The expiration date must be in the future.");
             
-        var updateResult = await _mediator.Send(new UpdateInfractionRequest(id, isHidden, reason, expiresAt));
+        var updateResult = await _mediator.Send(new UpdateInfractionRequest(id, guildID, isHidden, reason, expiresAt));
 
         if (!updateResult.IsSuccess)
             return updateResult;
@@ -117,10 +118,15 @@ public class InfractionService : BackgroundService, IInfractionService
 
     private async Task UnloadQueueAsync()
     {
+        var infractions = await _mediator.Send(new GetAllInfractionsRequest(), _cancellationToken);
+
+        foreach (var inf in infractions)
+        {
+            _infractions.TryAdd(inf.Id, inf);
+        }
+        
         while (await _dispatcherTimer.WaitForNextTickAsync(_cancellationToken))
         {
-            await _dispatcherLock.WaitAsync(_cancellationToken);
-
             foreach (var infraction in _infractions.Values)
             {
                 if (infraction.ExpiresAt > DateTimeOffset.UtcNow)
@@ -138,10 +144,11 @@ public class InfractionService : BackgroundService, IInfractionService
     {
         while (await _dispatcherChannel.Reader.WaitToReadAsync(_cancellationToken))
         {
-            var dto = await _dispatcherChannel.Reader.ReadAsync();
+            var dto = await _dispatcherChannel.Reader.ReadAsync(CancellationToken.None);
             
-            var json = JsonSerializer.Serialize(dto);
+            var json = JsonSerializer.SerializeToUtf8Bytes(dto, _serializer);
+
+            await _socketManager.SendAsync(json, _cancellationToken);
         }
     }
-
 }

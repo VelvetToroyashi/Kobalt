@@ -33,6 +33,7 @@ public interface IInfractionService
     /// Updates an existing infraction with the provided changes.
     /// </summary>
     /// <param name="id">The ID of the infraction to update.</param>
+    /// <param name="guildID">The ID of the guild where the infraction took place.</param>
     /// <param name="reason">The updated reason for the infraction, if applicable.</param>
     /// <param name="isHidden">Whether the updated infraction is hidden.</param>
     /// <param name="expiresAt">When the updated infraction expires, if applicable.</param>
@@ -40,6 +41,7 @@ public interface IInfractionService
     Task<Result<InfractionDTO>> UpdateInfractionAsync
     (
         int id,
+        ulong guildID,
         Optional<string> reason,
         Optional<bool> isHidden,
         Optional<DateTimeOffset?> expiresAt

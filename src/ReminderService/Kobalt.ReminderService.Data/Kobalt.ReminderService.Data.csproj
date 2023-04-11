@@ -11,11 +11,11 @@
       <PackageReference Include="EFCore.NamingConventions" Version="7.0.2" />
       <PackageReference Include="Mediator.Abstractions" Version="2.1.1" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.4" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.4" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.4" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.4" />
-      <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0-preview.2.23128.3" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
-      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.1" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.3" />
       <PackageReference Include="Remora.Discord.API" Version="73.0.0" />
       <PackageReference Include="Remora.Results" Version="7.2.3" />
     </ItemGroup>
