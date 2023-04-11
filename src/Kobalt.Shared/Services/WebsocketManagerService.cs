@@ -21,6 +21,7 @@ internal record WebSocketConnection(WebSocket Socket, TaskCompletionSource Lifet
 /// <remarks>Currently, the API does not support receving inputs from sockets, and any received messages will be discarded.</remarks>
 public class WebsocketManagerService
 {
+    private readonly AsyncLocal<byte[]> _asyncLocal;
     private readonly ILogger<WebsocketManagerService> _logger;
     private readonly ConcurrentDictionary<Guid, WebSocketConnection> _sockets;
     
@@ -32,6 +33,8 @@ public class WebsocketManagerService
     {
         _logger = logger;
         _sockets = new();
+        _asyncLocal = new();
+        _asyncLocal.Value = new byte[1024];
     }
 
     /// <summary>
@@ -202,12 +205,10 @@ public class WebsocketManagerService
             _logger.LogDebug("Client with connection ID {ID} disconnected, or the server requested a disconnect.", id);
             return;
         }
-        
-        // This offers a whole host of issues. Perhaps we could read into a shared buffer? Everything is currently Discarded anyways.
-        var buffer = new byte[1024];
+
         while (!cts.IsCancellationRequested)
         {
-            var result = await ResultExtensions.TryCatchAsync(() => socket.ReceiveAsync(buffer, cts.Token));
+            var result = await ResultExtensions.TryCatchAsync(() => socket.ReceiveAsync(_asyncLocal.Value, cts.Token));
             if (!result.IsDefined(out var socketMessage) || socketMessage.MessageType is WebSocketMessageType.Close)
             {
                 tcs.TrySetResult();
