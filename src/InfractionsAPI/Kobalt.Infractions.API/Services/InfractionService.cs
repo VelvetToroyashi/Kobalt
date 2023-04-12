@@ -42,7 +42,7 @@ public class InfractionService : BackgroundService, IInfractionService
         _socketManager = socketManager;
         
         _dispatcherChannel = Channel.CreateUnbounded<InfractionDTO>();
-        _dispatcherTimer = new(TimeSpan.FromSeconds(1));
+        _dispatcherTimer = new(TimeSpan.FromMilliseconds(200));
     }
 
     /// <inheritdoc/>
@@ -129,7 +129,7 @@ public class InfractionService : BackgroundService, IInfractionService
         {
             foreach (var infraction in _infractions.Values)
             {
-                if (infraction.ExpiresAt > DateTimeOffset.UtcNow)
+                if (infraction.ExpiresAt < DateTimeOffset.UtcNow)
                 {
                     _infractions.Remove(infraction.Id, out _);
                     await _dispatcherChannel.Writer.WriteAsync(infraction, _cancellationToken);
@@ -148,7 +148,12 @@ public class InfractionService : BackgroundService, IInfractionService
             
             var json = JsonSerializer.SerializeToUtf8Bytes(dto, _serializer);
 
-            await _socketManager.SendAsync(json, _cancellationToken);
+            var res = await _socketManager.SendAsync(json, _cancellationToken);
+
+            if (res.IsSuccess && dto.Type is InfractionType.Ban or InfractionType.Mute)
+            {
+                await _mediator.Send(new UpdateInfractionRequest(dto.Id, dto.GuildID, default, default, default, false));
+            }
         }
     }
 }

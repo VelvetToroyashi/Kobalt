@@ -13,7 +13,8 @@ public record UpdateInfractionRequest
     ulong GuildID,
     Optional<bool> IsHidden,
     Optional<string?> Reason,
-    Optional<DateTimeOffset?> ExpiresAt
+    Optional<DateTimeOffset?> ExpiresAt,
+    Optional<bool> IsProcessable = default
 )
 : IRequest<Result<InfractionDTO>>;
 
@@ -40,7 +41,7 @@ public class UpdateInfractionRequestHandler : IRequestHandler<UpdateInfractionRe
             return new NotFoundError("Infraction not found");
         }
         
-        if (!request.IsHidden.HasValue && !request.Reason.HasValue && !request.ExpiresAt.HasValue)
+        if (!request.IsHidden.HasValue && !request.Reason.HasValue && !request.ExpiresAt.HasValue && !request.IsProcessable.HasValue)
         {
             return new InfractionDTO
             (
@@ -70,6 +71,11 @@ public class UpdateInfractionRequestHandler : IRequestHandler<UpdateInfractionRe
         if (request.ExpiresAt.IsDefined(out var expiresAt))
         {
             infraction.ExpiresAt = expiresAt;
+        }
+
+        if (request.IsProcessable.IsDefined(out var isProcessable))
+        {
+            infraction.IsProcessable = isProcessable;
         }
 
         await _context.SaveChangesAsync(ct);
