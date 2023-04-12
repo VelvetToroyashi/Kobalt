@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Kobalt.Shared\Kobalt.Shared.csproj" />
+      <ProjectReference Include="..\..\Kobalt\Kobalt.Shared\Kobalt.Shared.csproj" />
     </ItemGroup>
 
 </Project>
