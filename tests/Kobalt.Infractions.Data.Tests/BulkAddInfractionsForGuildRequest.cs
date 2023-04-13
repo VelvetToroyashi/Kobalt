@@ -72,14 +72,16 @@ public class BulkAddInfractionsForGuildRequest
 
         Infraction[] result = _db.Infractions.Local.ToArray();
         
-        Assert.AreEqual(2, result.Length);
-        
-        Assert.AreEqual(infraction_1.Id, result[0].Id);
-        Assert.AreEqual(infraction_1.UserID, result[0].UserID);
-        Assert.AreEqual(infraction_1.ModeratorID, result[0].ModeratorID);
-        
-        Assert.AreEqual(infraction_2.Id, result[1].Id);
-        Assert.AreEqual(infraction_2.UserID, result[1].UserID);
-        Assert.AreEqual(infraction_2.ModeratorID, result[1].ModeratorID);
+        Assert.That(result, Has.Length.EqualTo(2));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result[0].Id, Is.EqualTo(infraction_1.Id));
+            Assert.That(result[0].UserID, Is.EqualTo(infraction_1.UserID));
+            Assert.That(result[0].ModeratorID, Is.EqualTo(infraction_1.ModeratorID));
+
+            Assert.That(result[1].Id, Is.EqualTo(infraction_2.Id));
+            Assert.That(result[1].UserID, Is.EqualTo(infraction_2.UserID));
+            Assert.That(result[1].ModeratorID, Is.EqualTo(infraction_2.ModeratorID));
+        });
     }
 }

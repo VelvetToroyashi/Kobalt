@@ -56,8 +56,11 @@ public class InfractionServiceTests
         
         mediator.Verify(m => m.Send(It.IsAny<CreateInfractionRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         
-        Assert.IsTrue(result.IsSuccess, result.Error?.Message);
-        Assert.AreEqual(infraction, result.Entity);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, result.Error?.Message);
+            Assert.That(result.Entity, Is.EqualTo(infraction));
+        });
     }
 
     [Test]
@@ -69,11 +72,15 @@ public class InfractionServiceTests
 
         var service = (IInfractionService)new InfractionService(mediator, jsonOptions, socketManager);
 
-        var result = await service.CreateInfractionAsync(default, default, default, InfractionType.Ban, default, default(DateTimeOffset));
+        var result = await service.CreateInfractionAsync(default, default, default, InfractionType.Ban, InfractionReason, default(DateTimeOffset));
         
-        Assert.IsFalse(result.IsSuccess);
-        Assert.IsInstanceOf<InvalidOperationError>(result.Error);
-        Assert.AreEqual("The expiration date must be in the future.", result.Error.Message);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.Error, Is.InstanceOf<InvalidOperationError>());
+            Assert.That(result.Error!.Message, Is.EqualTo("The expiration date must be in the future."));
+        });
+        
     }
 
     [Test]
@@ -85,11 +92,14 @@ public class InfractionServiceTests
 
         var service = (IInfractionService)new InfractionService(mediator, jsonOptions, socketManager);
 
-        var result = await service.CreateInfractionAsync(default, default, default, InfractionType.Kick, default, DateTimeOffset.MaxValue);
-
-        Assert.IsFalse(result.IsSuccess);
-        Assert.IsInstanceOf<InvalidOperationError>(result.Error);
-        Assert.AreEqual("Only mutes and bans can have an expiration date.", result.Error.Message);
+        var result = await service.CreateInfractionAsync(default, default, default, InfractionType.Kick, InfractionReason, DateTimeOffset.MaxValue);
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.Error, Is.InstanceOf<InvalidOperationError>());
+            Assert.That(result.Error!.Message, Is.EqualTo("Only mutes and bans can have an expiration date."));
+        });
     }
 
     [Test]
@@ -120,7 +130,7 @@ public class InfractionServiceTests
         
         var result = await infractionService.CreateInfractionAsync(GuildID, UserID, ModeratorID, InfractionType.Ban, InfractionReason);
 
-        Assert.IsTrue(result.IsSuccess);
+        Assert.That(result.IsSuccess);
     }
 
     [Test]
@@ -191,10 +201,13 @@ public class InfractionServiceTests
 
         var result = await infractionService.UpdateInfractionAsync(InfractionID, GuildID, default, true, default);
         
-        Assert.IsTrue(result.IsSuccess);
-        Assert.AreEqual(infraction, result.Entity);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess);
+            Assert.That(result.Entity, Is.EqualTo(infraction));
+        });
     }
-    
+
     // TODO: Assert that updating a reminder does not dispatch; if we set an infraction to never expire, Kobalt should never know about it afterwards
 
     [Test]
@@ -204,9 +217,12 @@ public class InfractionServiceTests
 
         var result = await service.UpdateInfractionAsync(InfractionID, GuildID, default, default, default);
         
-        Assert.False(result.IsSuccess);
-        Assert.IsInstanceOf<InvalidOperationError>(result.Error);
-        Assert.AreEqual("You must provide at least one value to update.", result.Error.Message);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.Error, Is.InstanceOf<InvalidOperationError>());
+            Assert.That(result.Error!.Message, Is.EqualTo("You must provide at least one value to update."));
+        });
     }
 
     [Test]
@@ -216,8 +232,11 @@ public class InfractionServiceTests
 
         var result = await service.UpdateInfractionAsync(InfractionID, GuildID, default, default, DateTimeOffset.MinValue);
         
-        Assert.False(result.IsSuccess);
-        Assert.IsInstanceOf<InvalidOperationError>(result.Error);
-        Assert.AreEqual("The expiration date must be in the future.", result.Error.Message);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.Error, Is.InstanceOf<InvalidOperationError>());
+            Assert.That(result.Error!.Message, Is.EqualTo("The expiration date must be in the future."));
+        });
     }
 }

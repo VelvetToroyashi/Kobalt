@@ -78,10 +78,10 @@ public class GetInfractionsForUserTests
         
         var handler = new GetInfractionsForUserHandler(_db);
 
-        var res = await handler.Handle(new(GuildID, UserID), default);
+        var res = (await handler.Handle(new(GuildID, UserID), default)).ToArray();
 
-        Assert.IsNotEmpty(res);
-        Assert.AreEqual(InfractionID, res.First().Id);
+        Assert.That(res, Is.Not.Empty);
+        Assert.That(res.First().Id, Is.EqualTo(InfractionID));
     }
     
     [Test]
@@ -91,6 +91,6 @@ public class GetInfractionsForUserTests
         
         var res = await handler.Handle(new(GuildID, UserID), default);
 
-        Assert.IsEmpty(res);
+        Assert.That(res, Is.Empty);
     }
 }

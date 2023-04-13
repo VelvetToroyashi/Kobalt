@@ -42,7 +42,7 @@ public interface IInfractionService
     (
         int id,
         ulong guildID,
-        Optional<string> reason,
+        Optional<string?> reason,
         Optional<bool> isHidden,
         Optional<DateTimeOffset?> expiresAt
     );

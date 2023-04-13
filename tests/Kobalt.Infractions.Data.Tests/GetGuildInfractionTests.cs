@@ -80,12 +80,15 @@ public class GetGuildInfractionTests
         var handler = new GetGuildInfractionHandler(_db);
 
         var res = await handler.Handle(new(InfractionID, GuildID), default);
-
-        Assert.IsTrue(res.IsSuccess);
-        Assert.AreEqual(InfractionID, res.Entity.Id);
-        Assert.AreEqual(inf.Type, res.Entity.Type);
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(res.IsSuccess);
+            Assert.That(res.Entity.Id, Is.EqualTo(InfractionID));
+            Assert.That(res.Entity.Type, Is.EqualTo(inf.Type));
+        });
     }
-    
+
     [Test]
     public async Task ReturnsErrorForNonexistentInfraction()
     {

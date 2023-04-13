@@ -78,14 +78,17 @@ public class GetAllInfractionsTests
         
         var handler = new GetAllInfractionsHandler(_db);
 
-        var res = await handler.Handle(new(), default);
+        var res = (await handler.Handle(new(), default)).ToArray();
 
         var retrieved = res.FirstOrDefault();
         
-        Assert.AreEqual(1, res.Count());
-        Assert.AreEqual(inf.UserID, retrieved.UserID);
-        Assert.AreEqual(inf.ModeratorID, retrieved.ModeratorID);
-        Assert.AreEqual(inf.Type, retrieved.Type);
+        Assert.Multiple(() =>
+        {
+            Assert.That(res, Has.Length.EqualTo(1));
+            Assert.That(retrieved!.UserID, Is.EqualTo(inf.UserID));
+            Assert.That(retrieved.ModeratorID, Is.EqualTo(inf.ModeratorID));
+            Assert.That(retrieved.Type, Is.EqualTo(inf.Type));
+        });
     }
 
     [Test]

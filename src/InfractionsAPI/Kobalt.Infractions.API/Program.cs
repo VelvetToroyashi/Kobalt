@@ -38,9 +38,9 @@ app.MapPut("/infractions/guilds/{guildID}", async (HttpResponse response, ulong 
         infraction.ReferencedId
     );
 
-    if (!result.IsDefined(out infraction))
+    if (!result.IsDefined(out infraction!))
     {
-        return Results.BadRequest(result.Error.Message);
+        return Results.BadRequest(result.Error!.Message);
     }
     
     // If the infraction is freshly created, return 201, otherwise 200.
@@ -101,7 +101,7 @@ app.MapPost("/infractions/{guildID}/rules", async (ulong guildID, InfractionRule
     
     if (!result.IsDefined(out var createdRule))
     {
-        return Results.BadRequest(result.Error.Message);
+        return Results.BadRequest(result.Error!.Message);
     }
     
     return Results.CreatedAtRoute("/infractions/{guildID}/rules/{id}", new { guildID, id = createdRule.Id }, createdRule);

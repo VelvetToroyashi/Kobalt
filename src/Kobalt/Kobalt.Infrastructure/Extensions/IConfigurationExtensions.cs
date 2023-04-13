@@ -7,8 +7,7 @@ public static class IConfigurationExtensions
 {
     public static KobaltConfig GetKobaltConfig(this IConfiguration configuration)
     {
-        var config = new KobaltConfig();
-        configuration.GetSection("Kobalt").Bind(config);
+        var config = configuration.Get<KobaltConfig>()!;
         return config;
     }
 }

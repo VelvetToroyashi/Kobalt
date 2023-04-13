@@ -208,7 +208,7 @@ public class WebsocketManagerService
 
         while (!cts.IsCancellationRequested)
         {
-            var result = await ResultExtensions.TryCatchAsync(() => socket.ReceiveAsync(_asyncLocal.Value, cts.Token));
+            var result = await ResultExtensions.TryCatchAsync(() => socket.ReceiveAsync(_asyncLocal.Value!, cts.Token));
             if (!result.IsDefined(out var socketMessage) || socketMessage.MessageType is WebSocketMessageType.Close)
             {
                 tcs.TrySetResult();

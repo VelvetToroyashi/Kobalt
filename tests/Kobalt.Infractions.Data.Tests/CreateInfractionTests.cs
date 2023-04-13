@@ -66,10 +66,10 @@ public class CreateInfractionTests
 
         var res = await handler.Handle(req, default);
         
-        Assert.AreEqual(UserID, res.UserID);
-        Assert.AreEqual(GuildID, res.GuildID);
-        Assert.AreEqual(InfractionType.Ban, res.Type);
-        Assert.AreEqual(1, _db.Infractions.Local.Count);
+        Assert.That(res.UserID, Is.EqualTo(UserID));
+        Assert.That(res.GuildID, Is.EqualTo(GuildID));
+        Assert.That(res.Type, Is.EqualTo(InfractionType.Ban));
+        Assert.That(_db.Infractions.Local.Count, Is.EqualTo(1));
     }
 
     [Test]
@@ -81,6 +81,6 @@ public class CreateInfractionTests
 
         var res = await handler.Handle(req, default);
         
-        Assert.AreEqual(true, _db.Infractions.Local.First().IsProcessable);
+        Assert.That(_db.Infractions.Local.First().IsProcessable);
     }
 }

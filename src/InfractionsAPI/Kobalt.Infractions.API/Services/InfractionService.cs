@@ -64,8 +64,8 @@ public class InfractionService : BackgroundService, IInfractionService
         ulong moderatorID,
         InfractionType type,
         string reason,
-        DateTimeOffset? expiresAt = null,
-        int? referencedID = null
+        DateTimeOffset? expiresAt,
+        int? referencedID
     )
     {
         if (expiresAt is not null && expiresAt < DateTimeOffset.UtcNow)
@@ -89,7 +89,7 @@ public class InfractionService : BackgroundService, IInfractionService
     }
 
     /// <inheritdoc/>
-    async Task<Result<InfractionDTO>> IInfractionService.UpdateInfractionAsync(int id, ulong guildID, Optional<string> reason, Optional<bool> isHidden, Optional<DateTimeOffset?> expiresAt)
+    async Task<Result<InfractionDTO>> IInfractionService.UpdateInfractionAsync(int id, ulong guildID, Optional<string?> reason, Optional<bool> isHidden, Optional<DateTimeOffset?> expiresAt)
     {
         if (!reason.HasValue && !isHidden.HasValue && !expiresAt.HasValue)
             return new InvalidOperationError("You must provide at least one value to update.");

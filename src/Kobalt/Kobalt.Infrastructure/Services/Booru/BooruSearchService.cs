@@ -55,7 +55,7 @@ public sealed class BooruSearchService
 
         var content = await response.Content.ReadFromJsonAsync<PostHolder>(_jsonOptions);
 
-        var deserialized = content.Posts;
+        var deserialized = content!.Posts;
         
         if (!deserialized.Any())
         {
