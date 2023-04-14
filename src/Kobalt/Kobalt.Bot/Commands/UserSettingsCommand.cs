@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Kobalt.Bot.Services;
 using Kobalt.Data.Mediator;
 using Mediator;
 using NodaTime;
@@ -21,12 +22,14 @@ public class UserSettingsCommand : CommandGroup
     {
         private readonly IMediator _mediator;
         private readonly IInteractionContext _context;
+        private readonly IDateTimeZoneProvider _timezoneProvider;
         private readonly IDiscordRestInteractionAPI _interactions;
         
-        public Timezone(IMediator mediator, IInteractionContext context, IDiscordRestInteractionAPI interactions)
+        public Timezone(IMediator mediator, IInteractionContext context, IDateTimeZoneProvider timezoneProvider, IDiscordRestInteractionAPI interactions)
         {
             _mediator = mediator;
             _context = context;
+            _timezoneProvider = timezoneProvider;
             _interactions = interactions;
         }
 
@@ -36,9 +39,8 @@ public class UserSettingsCommand : CommandGroup
         (
             [Option("timezone")]
             [Description("Your timezone.")]
-            [DiscordTypeHint(TypeHint.String)]
             [AutocompleteProvider("TimezoneAutocomplete")]
-            Offset timezone,
+            string timezone,
             
             [Option("share_timezone")]
             [Description("Whether you want to share your timezone with other users.")]
@@ -49,10 +51,18 @@ public class UserSettingsCommand : CommandGroup
             {
                 return new InvalidOperationException("Could not get user ID.");
             }
+
+            var timezoneResult = TimeHelper.GetDateTimeZoneFromString(timezone, _timezoneProvider);
+            
+            if (!timezoneResult.IsDefined(out var extractedTimezone))
+            {
+                return (Result)timezoneResult;
+            }
             
             await _mediator.Send(new UpdateUser.Request(userId.Value, timezone, displayTimezone.AsOptional()));
 
-            var content = $"Done. It should be {DateTimeOffset.UtcNow + timezone.ToTimeSpan():f} for you now.";
+            var now = Instant.FromDateTimeOffset(DateTimeOffset.UtcNow);
+            var content = $"Done. It should be {DateTimeOffset.UtcNow + extractedTimezone.GetUtcOffset(now).ToTimeSpan():f} for you now.";
 
             return (Result)await _interactions.EditOriginalInteractionResponseAsync
             (
@@ -62,5 +72,4 @@ public class UserSettingsCommand : CommandGroup
             );
         }
     }
-
 }

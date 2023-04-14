@@ -1,6 +1,5 @@
 ﻿using Mediator;
 using Microsoft.EntityFrameworkCore;
-using NodaTime;
 using Remora.Rest.Core;
 using Remora.Results;
 
@@ -17,7 +16,7 @@ public static class UpdateUser
     public record Request
     (
         Snowflake ID,
-        Optional<Offset?> Timezone,
+        Optional<string> Timezone,
         Optional<bool> DisplayTimezone
     ) : IRequest<Result>;
     

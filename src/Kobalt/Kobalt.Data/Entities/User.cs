@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using NodaTime;
 using Remora.Rest.Core;
 
 namespace Kobalt.Data.Entities;
@@ -12,7 +11,7 @@ public class User
 {
     public Snowflake ID { get; set; }
     
-    public Offset? Timezone { get; set; }
+    public string? Timezone { get; set; }
     
     public bool DisplayTimezone { get; set; }
 
