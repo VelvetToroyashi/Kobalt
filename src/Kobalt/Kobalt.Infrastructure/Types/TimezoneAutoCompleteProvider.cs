@@ -15,6 +15,7 @@ public class TimezoneAutoCompleteProvider : IAutocompleteProvider
     
     public TimezoneAutoCompleteProvider(IMemoryCache cache)
     {
+        Console.WriteLine("Instantiating TimezoneAutoCompleteProvider");
         _cache = cache;
 
         if (_cache.TryGetValue("tz_cache", out IDictionary<string, string>? tzCache))
@@ -34,7 +35,7 @@ public class TimezoneAutoCompleteProvider : IAutocompleteProvider
     )
     {
         var tzCache = _cache.Get<IDictionary<string, string>>("tz_cache")!;
-        var suggestions = tzCache.Where(tz => Fuzz.Ratio(tz.Value, userInput) > 80)
+        var suggestions = tzCache.Where(tz => Fuzz.WeightedRatio(tz.Value, userInput) > 80)
             .Select(tz => new ApplicationCommandOptionChoice(tz.Value, tz.Key))
             .Take(25)
             .ToArray();
