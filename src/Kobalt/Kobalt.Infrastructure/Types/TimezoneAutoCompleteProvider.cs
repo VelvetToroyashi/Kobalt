@@ -15,7 +15,6 @@ public class TimezoneAutoCompleteProvider : IAutocompleteProvider
     
     public TimezoneAutoCompleteProvider(IMemoryCache cache)
     {
-        Console.WriteLine("Instantiating TimezoneAutoCompleteProvider");
         _cache = cache;
 
         if (_cache.TryGetValue("tz_cache", out IDictionary<string, string>? tzCache))
