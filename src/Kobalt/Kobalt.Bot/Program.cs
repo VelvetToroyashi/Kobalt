@@ -113,6 +113,8 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     
     services.AddPostExecutionEvent<PostExecutionHandler>();
 
+    services.AddOffsetServices();
+
     services.AddHttpClient("booru");
     services.AddTransient<BooruSearchService>();
     

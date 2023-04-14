@@ -1,5 +1,9 @@
 ﻿using System.Reflection;
+using Kobalt.Infrastructure.Types;
 using Microsoft.Extensions.DependencyInjection;
+using NodaTime;
+using NodaTime.TimeZones;
+using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Interactivity;
 using Remora.Discord.Interactivity.Extensions;
 
@@ -10,6 +14,20 @@ namespace Kobalt.Infrastructure.Extensions;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Adds timezone-related services.
+    /// </summary>
+    /// <param name="services">The service collection to add the services to.</param>
+    /// <returns>The service collection to chain calls with.</returns>
+    public static IServiceCollection AddOffsetServices(this IServiceCollection services)
+    {
+        services.AddAutocompleteProvider(typeof(TimezoneAutoCompleteProvider));
+        services.AddSingleton<IDateTimeZoneSource>(TzdbDateTimeZoneSource.Default)
+                .AddSingleton<IDateTimeZoneProvider, DateTimeZoneCache>();
+
+        return services;
+    }
+    
     /// <summary>
     /// Adds all interaction responders from the given assembly.
     /// </summary>

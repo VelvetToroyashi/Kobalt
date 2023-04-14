@@ -1,7 +1,8 @@
 ﻿namespace Kobalt.Infrastructure.Types;
 
-public class KobaltConfig
+public sealed class KobaltConfig
 {
+    public required int ApiPort { get; set; } = 3140;
     public required KobaltDiscordConfig Discord { get; set; }
 };
 
