@@ -1,8 +1,10 @@
 ﻿using System.Reflection;
+using Kobalt.Infrastructure.Parsers;
 using Kobalt.Infrastructure.Types;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 using NodaTime.TimeZones;
+using Remora.Commands.Extensions;
 using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Interactivity;
 using Remora.Discord.Interactivity.Extensions;
@@ -24,6 +26,8 @@ public static class ServiceCollectionExtensions
         services.AddAutocompleteProvider(typeof(TimezoneAutoCompleteProvider));
         services.AddSingleton<IDateTimeZoneSource>(TzdbDateTimeZoneSource.Default)
                 .AddSingleton<IDateTimeZoneProvider, DateTimeZoneCache>();
+
+        services.AddParser<OffsetParser>();
 
         return services;
     }
