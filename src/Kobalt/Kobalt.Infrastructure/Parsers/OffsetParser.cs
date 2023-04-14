@@ -1,4 +1,5 @@
-﻿using NodaTime;
+﻿using Kobalt.Shared.Extensions;
+using NodaTime;
 using Remora.Commands.Parsers;
 using Remora.Commands.Results;
 using Remora.Results;
@@ -16,6 +17,15 @@ public class OffsetParser : AbstractTypeParser<Offset>
 
     public override ValueTask<Result<Offset>> TryParseAsync(string token, CancellationToken ct = default)
     {
+        var tzInfoResult = ResultExtensions.TryCatch(() => TimeZoneInfo.FindSystemTimeZoneById(token));
+     
+        if (tzInfoResult.IsDefined(out var tzInfo))
+        {
+            var offset = Offset.FromHours(tzInfo.BaseUtcOffset.Hours);
+            
+            return ValueTask.FromResult<Result<Offset>>(offset);
+        }
+        
         var offsetName = _dateTimeZoneProvider.GetZoneOrNull(token);
         
         if (offsetName is null)

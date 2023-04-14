@@ -3,6 +3,7 @@ using System.Text;
 using Kobalt.Bot.Handlers;
 using Kobalt.Bot.Services;
 using Kobalt.Bot.Services.Discord;
+using Kobalt.Data;
 using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services;
 using Kobalt.Infrastructure.Services.Booru;
@@ -10,6 +11,7 @@ using Kobalt.Infrastructure.Types;
 using Kobalt.ReminderService.API.Extensions;
 using Kobalt.Shared.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Remora.Discord.API.Abstractions.Gateway.Commands;
 using Remora.Discord.API.Abstractions.Objects;
@@ -33,6 +35,7 @@ builder.Configuration
 
 builder.Services.AddSerilogLogging();
 
+
 ConfigureKobaltBotServices(builder.Configuration, builder.Services);
 var initResult = PluginHelper.LoadPlugins(builder.Services);
 
@@ -54,6 +57,8 @@ if (!initResult.IsSuccess)
     Log.Fatal("Failed to initialize plugins: {Error}", initResult.Error);
     return;
 }
+
+await host.Services.GetRequiredService<IDbContextFactory<KobaltContext>>().CreateDbContext().Database.MigrateAsync();
 
 host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper handler, IOptions<KobaltConfig> config) =>
     {
@@ -99,6 +104,9 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 {
     var config = hostConfig.Get<KobaltConfig>()!;
     services.AddSingleton(Options.Create(config));
+    
+    builder.Services.AddMediator();
+    builder.Services.AddDbContextFactory<KobaltContext>("Kobalt");
     
     var token = config.Discord.Token;
 
