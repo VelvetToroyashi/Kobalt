@@ -21,7 +21,7 @@ public class OffsetParser : AbstractTypeParser<Offset>
      
         if (tzInfoResult.IsDefined(out var tzInfo))
         {
-            var offset = Offset.FromHours(tzInfo.BaseUtcOffset.Hours);
+            var offset = Offset.FromHours(tzInfo.GetUtcOffset(DateTimeOffset.UtcNow).Hours);
             
             return ValueTask.FromResult<Result<Offset>>(offset);
         }
