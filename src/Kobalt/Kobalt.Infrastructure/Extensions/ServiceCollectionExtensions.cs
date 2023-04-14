@@ -27,7 +27,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDateTimeZoneSource>(TzdbDateTimeZoneSource.Default)
                 .AddSingleton<IDateTimeZoneProvider, DateTimeZoneCache>();
 
-        services.AddParser<OffsetParser>();
+        services.AddParser<DateTimeZoneParser>();
+        services.AddParser<ZonedDateTimeParser>();
 
         return services;
     }

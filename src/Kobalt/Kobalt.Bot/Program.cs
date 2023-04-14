@@ -13,6 +13,7 @@ using Kobalt.Shared.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Polly;
 using Remora.Discord.API.Abstractions.Gateway.Commands;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Gateway.Commands;
@@ -126,6 +127,8 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
     services.AddHttpClient("booru");
     services.AddTransient<BooruSearchService>();
+
+    services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(Policy<HttpResponseMessage>.Handle<HttpRequestException>().WaitAndRetryAsync(5, i => TimeSpan.FromSeconds(Math.Log(i * i) + 1)));
     
     services.Configure<DiscordGatewayClientOptions>
     (
