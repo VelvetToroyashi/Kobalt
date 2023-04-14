@@ -7,6 +7,7 @@ using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
+using Kobalt.ReminderService.API.Extensions;
 using Kobalt.Shared.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -22,6 +23,7 @@ using Remora.Discord.Gateway.Extensions;
 using Remora.Discord.Interactivity.Extensions;
 using RemoraHTTPInteractions.Extensions;
 using RemoraHTTPInteractions.Services;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,12 +32,28 @@ builder.Configuration
        .AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
 builder.Services.AddSerilogLogging();
-ConfigureKobaltBotServices(builder.Configuration, builder.Services);
-// TODO: replace either with runtimeProperties.json or a config
-builder.WebHost.ConfigureKestrel(c => c.ListenLocalhost(8001));
 
+ConfigureKobaltBotServices(builder.Configuration, builder.Services);
+var initResult = PluginHelper.LoadPlugins(builder.Services);
+
+if (!initResult.IsSuccess)
+{
+    Log.Fatal("Failed to load plugins: {Error}", initResult.Error);
+    return;
+}
+
+// TODO: replace either with runtimeProperties.json or a config
+builder.WebHost.ConfigureKestrel(c => c.ListenLocalhost(builder.Configuration.GetKobaltConfig().ApiPort));
 
 var host = builder.Build();
+
+initResult = await PluginHelper.InitializePluginsAsync(host.Services);
+
+if (!initResult.IsSuccess)
+{
+    Log.Fatal("Failed to initialize plugins: {Error}", initResult.Error);
+    return;
+}
 
 host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper handler, IOptions<KobaltConfig> config) =>
     {
