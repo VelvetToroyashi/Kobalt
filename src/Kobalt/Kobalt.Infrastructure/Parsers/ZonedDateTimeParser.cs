@@ -44,7 +44,7 @@ public class ZonedDateTimeParser : AbstractTypeParser<ZonedDateTime>
         
         if (extractionResult.IsSuccess)
         {
-            return ZonedDateTime.FromDateTimeOffset(extractionResult.Entity);
+            return ZonedDateTime.FromDateTimeOffset(extractionResult.Entity.ToUniversalTime());
         }
         
         return new ParsingError<ZonedDateTime>("Invalid date.");

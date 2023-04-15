@@ -61,7 +61,7 @@ public class ReminderCommands : CommandGroup
         }
 
         var reminder = result.Entity;
-        var content = $"Got it; your reminder's ID is `{reminder}`. See you *<t:{expiration.ToUnixTimeSeconds()}:R>**.";
+        var content = $"Got it; your reminder's ID is `{reminder}`. See you <t:{expiration.ToUnixTimeSeconds()}:R>.";
 
         return (Result)await _interactions.EditOriginalInteractionResponseAsync(_context.Interaction.ApplicationID, _context.Interaction.Token, content);
     }

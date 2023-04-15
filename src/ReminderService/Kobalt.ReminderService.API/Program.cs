@@ -29,7 +29,7 @@ var configure = (JsonSerializerOptions options) =>
 {
     options.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
     options.PropertyNamingPolicy = new SnakeCaseNamingPolicy();
-    options.Converters.Insert(0, new SnowflakeConverter(Constants.DiscordEpoch));
+    options.Converters.Insert(0, new SnowflakeConverter(Constants.DiscordEpoch));    options.Converters.Insert(1, new ISO8601DateTimeOffsetConverter());
 };
 
 builder.Services
