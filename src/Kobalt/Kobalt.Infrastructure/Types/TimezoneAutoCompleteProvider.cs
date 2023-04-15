@@ -1,5 +1,6 @@
 ﻿using FuzzySharp;
 using Microsoft.Extensions.Caching.Memory;
+using NodaTime;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Autocomplete;
@@ -13,7 +14,7 @@ public class TimezoneAutoCompleteProvider : IAutocompleteProvider
  
     public string Identity => "TimezoneAutocomplete";
     
-    public TimezoneAutoCompleteProvider(IMemoryCache cache)
+    public TimezoneAutoCompleteProvider(IMemoryCache cache, IDateTimeZoneProvider provider)
     {
         _cache = cache;
 
@@ -22,7 +23,12 @@ public class TimezoneAutoCompleteProvider : IAutocompleteProvider
             return;
         }
 
-        tzCache = TZNames.GetDisplayNames("en");
+        tzCache = provider.Ids
+                          .Select(id => (id, TZNames.GetDisplayNameForTimeZone(id, "en")!))
+                          .Where(kvp => (string?)kvp.Item2 is not null)
+                          .DistinctBy(tuple => tuple.Item2)
+                          .ToDictionary(kvp => kvp.id, kvp => kvp.Item2);
+        
         _cache.Set("tz_cache", tzCache);
     }
 
