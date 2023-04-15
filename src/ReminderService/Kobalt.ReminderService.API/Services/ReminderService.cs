@@ -126,7 +126,7 @@ public class ReminderService : IHostedService
             {
                 var reminder = _reminders[i];
                 
-                if (reminder.Expiration <= DateTime.UtcNow)
+                if (reminder.Expiration <= DateTimeOffset.UtcNow)
                 {
                     _reminders.RemoveAt(i);
                 }
