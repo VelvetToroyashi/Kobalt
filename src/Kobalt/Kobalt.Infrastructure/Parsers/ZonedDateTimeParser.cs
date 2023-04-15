@@ -73,7 +73,7 @@ public class ZonedDateTimeParser : AbstractTypeParser<ZonedDateTime>
             return Result<DateTimeOffset>.FromError(new NotFoundError());
         }
         
-        return new DateTimeOffset(res.Value);
+        return DateTimeOffset.UtcNow + (res.Value - refTime);
     }
 
 }
