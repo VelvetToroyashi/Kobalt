@@ -175,7 +175,7 @@ public class ReminderAPIService : BackgroundService
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
         if (isPrivate)
         {
-            message = $"Hey, <t:{reminder.Expiration.ToUnixTimeSeconds()}:R> you asked me remind you in <#{reminder.ChannelID}>:\n {reminder.ReminderContent}";
+            message = $"Hey, <t:{reminder.Expiration.ToUnixTimeSeconds()}:R> you asked me remind you:\n {reminder.ReminderContent}";
         }
         else
         {
