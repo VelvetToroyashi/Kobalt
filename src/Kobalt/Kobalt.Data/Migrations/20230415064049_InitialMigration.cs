@@ -11,8 +11,12 @@ namespace Kobalt.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "kobalt_core");
+
             migrationBuilder.CreateTable(
                 name: "guild",
+                schema: "kobalt_core",
                 columns: table => new
                 {
                     id = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
@@ -24,10 +28,11 @@ namespace Kobalt.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "users",
+                schema: "kobalt_core",
                 columns: table => new
                 {
                     id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    timezone = table.Column<int>(type: "integer", nullable: true),
+                    timezone = table.Column<string>(type: "text", nullable: true),
                     display_timezone = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
@@ -37,6 +42,7 @@ namespace Kobalt.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "guild_user_joiner",
+                schema: "kobalt_core",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
@@ -50,12 +56,14 @@ namespace Kobalt.Data.Migrations
                     table.ForeignKey(
                         name: "fk_guild_user_joiner_guild_guild_id",
                         column: x => x.guild_id,
+                        principalSchema: "kobalt_core",
                         principalTable: "guild",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_guild_user_joiner_users_user_id",
                         column: x => x.user_id,
+                        principalSchema: "kobalt_core",
                         principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -63,11 +71,13 @@ namespace Kobalt.Data.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "ix_guild_user_joiner_guild_id",
+                schema: "kobalt_core",
                 table: "guild_user_joiner",
                 column: "guild_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_guild_user_joiner_user_id",
+                schema: "kobalt_core",
                 table: "guild_user_joiner",
                 column: "user_id");
         }
@@ -76,13 +86,16 @@ namespace Kobalt.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "guild_user_joiner");
+                name: "guild_user_joiner",
+                schema: "kobalt_core");
 
             migrationBuilder.DropTable(
-                name: "guild");
+                name: "guild",
+                schema: "kobalt_core");
 
             migrationBuilder.DropTable(
-                name: "users");
+                name: "users",
+                schema: "kobalt_core");
         }
     }
 }

@@ -19,6 +19,7 @@ public class KobaltContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasDefaultSchema("kobalt_core");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(KobaltContext).Assembly);
     }
 

@@ -16,6 +16,7 @@ namespace Kobalt.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("kobalt_core")
                 .HasAnnotation("ProductVersion", "7.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -30,7 +31,7 @@ namespace Kobalt.Data.Migrations
                     b.HasKey("ID")
                         .HasName("pk_guild");
 
-                    b.ToTable("guild", (string)null);
+                    b.ToTable("guild", "kobalt_core");
                 });
 
             modelBuilder.Entity("Kobalt.Data.Entities.GuildUserJoiner", b =>
@@ -59,7 +60,7 @@ namespace Kobalt.Data.Migrations
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_guild_user_joiner_user_id");
 
-                    b.ToTable("guild_user_joiner", (string)null);
+                    b.ToTable("guild_user_joiner", "kobalt_core");
                 });
 
             modelBuilder.Entity("Kobalt.Data.Entities.User", b =>
@@ -79,7 +80,7 @@ namespace Kobalt.Data.Migrations
                     b.HasKey("ID")
                         .HasName("pk_users");
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("users", "kobalt_core");
                 });
 
             modelBuilder.Entity("Kobalt.Data.Entities.GuildUserJoiner", b =>
