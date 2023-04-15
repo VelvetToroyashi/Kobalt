@@ -38,6 +38,7 @@ public static class UpdateUser
             if (user is null)
             {
                 user = new() { ID = request.ID };
+                context.Users.Add(user);
             }
             
             if (request.Timezone.HasValue)
