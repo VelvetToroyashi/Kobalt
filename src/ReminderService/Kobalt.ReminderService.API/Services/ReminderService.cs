@@ -110,9 +110,10 @@ public class ReminderService : IHostedService
     {
         _logger.LogInformation("Loading reminders...");
         var reminders = await _mediator.Send(new GetAllReminders.Request());
-        _logger.LogInformation("Loaded {ReminderCount} reminders.", _reminders.Count);
         
         _reminders.AddRange(reminders);
+        
+        _logger.LogInformation("Loaded {ReminderCount} reminders.", _reminders.Count);
         
         while (await _timer.WaitForNextTickAsync(_cts.Token))
         {
