@@ -125,12 +125,15 @@ public class ReminderService : IHostedService
             for (int i = _reminders.Count - 1; i >= 0; i--)
             {
                 var reminder = _reminders[i];
-                
-                if (reminder.Expiration <= DateTimeOffset.UtcNow)
-                {
-                    _reminders.RemoveAt(i);
-                }
 
+                if (reminder.Expiration > DateTimeOffset.UtcNow)
+                {
+                    continue;
+                }
+                
+                _reminders.RemoveAt(i);
+                _logger.LogInformation("Reminder {ReminderID} has expired, dispatching.", reminder.Id);
+                
                 var payload = JsonSerializer.SerializeToUtf8Bytes(reminder, _serializer).AsMemory();
                 var sent = await TryDispatchReminderAsync(payload, reminder.Id);
                 
@@ -141,7 +144,12 @@ public class ReminderService : IHostedService
                     continue;
                 }
 
-                await _mediator.Send(new DeleteReminder.Request(reminder.Id, reminder.AuthorID.Value));
+                var res = await _mediator.Send(new DeleteReminder.Request(reminder.Id, reminder.AuthorID.Value));
+                
+                if (!res.IsSuccess)
+                {
+                    _logger.LogWarning("Failed to delete reminder {ReminderID} from database: {Error}", reminder.Id, res.Error);
+                }
             }
         }
         
