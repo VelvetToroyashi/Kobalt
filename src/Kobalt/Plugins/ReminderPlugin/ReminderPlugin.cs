@@ -26,6 +26,8 @@ public sealed class ReminderPlugin : IPluginDescriptor
         );
         
         serviceCollection.AddSingleton<ReminderAPIService>();
+        serviceCollection.AddHostedService(s => s.GetRequiredService<ReminderAPIService>());
+        
         serviceCollection.AddCommandTree().WithCommandGroup<ReminderCommands>();
         
         return Result.FromSuccess();
