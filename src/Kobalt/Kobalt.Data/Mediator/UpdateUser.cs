@@ -37,7 +37,7 @@ public static class UpdateUser
             
             if (user is null)
             {
-                return new NotFoundError("User not found.");
+                user = new() { ID = request.ID };
             }
             
             if (request.Timezone.HasValue)
