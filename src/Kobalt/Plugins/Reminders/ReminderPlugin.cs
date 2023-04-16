@@ -1,15 +1,15 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Kobalt.Plugins.Reminders.Commands;
+using Kobalt.Plugins.Reminders.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ReminderPlugin.Commands;
-using ReminderPlugin.Services;
 using Remora.Commands.Extensions;
 using Remora.Plugins.Abstractions;
 using Remora.Plugins.Abstractions.Attributes;
 using Remora.Results;
 
-[assembly: RemoraPlugin(typeof(ReminderPlugin.ReminderPlugin))]
+[assembly: RemoraPlugin(typeof(Kobalt.Plugins.Reminders.ReminderPlugin))]
 
-namespace ReminderPlugin;
+namespace Kobalt.Plugins.Reminders;
 
 public sealed class ReminderPlugin : IPluginDescriptor
 {

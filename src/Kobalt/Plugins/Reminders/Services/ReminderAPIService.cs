@@ -13,7 +13,7 @@ using Remora.Discord.API.Objects;
 using Remora.Rest.Core;
 using Remora.Results;
 
-namespace ReminderPlugin.Services;
+namespace Kobalt.Plugins.Reminders.Services;
 
 public class ReminderAPIService : BackgroundService
 {

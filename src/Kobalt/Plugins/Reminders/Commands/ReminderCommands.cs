@@ -1,26 +1,29 @@
 ﻿using System.ComponentModel;
+using Kobalt.Plugins.Reminders.Services;
 using NodaTime;
 using OneOf;
-using ReminderPlugin.Services;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.Commands.Attributes;
 using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Extensions;
+using Remora.Discord.Commands.Feedback.Services;
 using Remora.Results;
 
-namespace ReminderPlugin.Commands;
+namespace Kobalt.Plugins.Reminders.Commands;
 
 [Group("reminder")]
 public class ReminderCommands : CommandGroup
 {
+    private readonly FeedbackService _feedback;
     private readonly IInteractionContext _context;
     private readonly ReminderAPIService _reminders;
     private readonly IDiscordRestInteractionAPI _interactions;
     
     public ReminderCommands
     (
+        FeedbackService feedback,
         IInteractionContext context,
         ReminderAPIService reminders,
         IDiscordRestInteractionAPI interactions
@@ -70,6 +73,28 @@ public class ReminderCommands : CommandGroup
     [Description("I'll list all your reminders.")]
     public async Task<Result> ListAsync()
     {
+        if (!_context.TryGetUserID(out var userId))
+        {
+            return new InvalidOperationError("Could not get user ID.");
+        }
+        
+        var remindersResult = await _reminders.GetRemindersAsync(userId.Value);
+        
+        if (!remindersResult.IsDefined(out var reminders))
+        {
+            return (Result)remindersResult;
+        }
+
+        if (!reminders.Any())
+        {
+            return (Result)await _interactions.EditOriginalInteractionResponseAsync
+            (
+                _context.Interaction.ApplicationID, 
+                _context.Interaction.Token,
+                "You don't have any reminders."
+            );
+        }
+
         return default;
     }
     
