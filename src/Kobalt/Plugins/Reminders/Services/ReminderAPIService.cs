@@ -105,6 +105,7 @@ public class ReminderAPIService : BackgroundService
     public async Task<Result> DeleteRemindersAsync(Snowflake userID, int[] reminderIDs)
     {
         using var request = new HttpRequestMessage(HttpMethod.Delete, $"api/reminders/{userID}") { Content = new StringContent(JsonSerializer.Serialize(reminderIDs)) };
+        request.Content.Headers.ContentType = new("application/json");
         using var response = await _policy.ExecuteAsync(async () => await _client.SendAsync(request));
 
         if (!response.IsSuccessStatusCode)
