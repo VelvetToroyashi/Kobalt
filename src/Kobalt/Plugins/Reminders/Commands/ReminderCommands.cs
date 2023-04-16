@@ -1,14 +1,19 @@
 ﻿using System.ComponentModel;
+using System.Drawing;
+using Humanizer;
+using Kobalt.Infrastructure.DTOs.Reminders;
 using Kobalt.Plugins.Reminders.Services;
 using NodaTime;
 using OneOf;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Abstractions.Rest;
+using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Attributes;
 using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Commands.Feedback.Services;
+using Remora.Discord.Pagination.Extensions;
 using Remora.Results;
 
 namespace Kobalt.Plugins.Reminders.Commands;
@@ -95,13 +100,71 @@ public class ReminderCommands : CommandGroup
             );
         }
 
-        return default;
+        var pages = reminders.Chunk(10)
+                             .Select
+                             (
+                                 page => new Embed
+                                 {
+                                     Title = "Active Reminders",
+                                     Colour = Color.DodgerBlue,
+                                     Description = GetPageContent(page)
+                                 }
+                             )
+                             .ToArray();
+        
+        return (Result)await _feedback.SendContextualPaginatedMessageAsync(userId.Value, pages);
+
+        string GetPageContent(IEnumerable<ReminderDTO> pageContent)
+        {
+            return string.Join
+            (
+                "\n",
+                pageContent.Select
+                (
+                    r =>
+                    {
+                        var replyTo = r.ReplyMessageID is null
+                            ? null
+                            : $" (replying to https://discord.com/channels/{r.GuildID?.ToString() ?? "@me"}{r.ChannelID}/{r.ReplyMessageID} )";
+
+                        return $"`{r.Id}`:{replyTo} {r.ReminderContent.Truncate(100, "[...]")}";
+                    }
+                )
+            );
+        }
     }
-    
+
     [Command("delete")]
     [Description("I'll delete a reminder.")]
-    public async Task<Result> DeleteAsync([DiscordTypeHint(TypeHint.String)] string id)
+    public async Task<Result> DeleteAsync
+    (
+        [AutocompleteProvider("Plugins:Reminders")]
+        int id
+    )
     {
-        return default;
+        if (!_context.TryGetUserID(out var userId))
+        {
+            return new InvalidOperationError("Could not get user ID.");
+        }
+        
+        var result = await _reminders.DeleteRemindersAsync(userId.Value, new [] { id });
+
+        if (!result.IsSuccess)
+        {
+            return (Result)await _interactions
+            .EditOriginalInteractionResponseAsync
+            (
+                _context.Interaction.ApplicationID,
+                _context.Interaction.Token,
+                "I don't see a reminder by that ID, sorry."
+            );
+        }
+
+        return (Result)await _interactions.EditOriginalInteractionResponseAsync
+        (
+            _context.Interaction.ApplicationID, 
+            _context.Interaction.Token,
+            "Consider it gone."
+        );
     }
 }
