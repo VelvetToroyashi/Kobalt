@@ -101,6 +101,7 @@ public class ReminderCommands : CommandGroup
             );
         }
 
+        // TODO: Avoid pagination if it would be a single page
         var pages = reminders.Chunk(10)
                              .Select
                              (
