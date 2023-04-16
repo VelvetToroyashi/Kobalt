@@ -128,7 +128,7 @@ public class ReminderCommands : CommandGroup
                             ? null
                             : $" (replying to https://discord.com/channels/{r.GuildID?.ToString() ?? "@me"}{r.ChannelID}/{r.ReplyMessageID} )";
 
-                        return $"`{r.Id}`:{replyTo} {r.ReminderContent.Truncate(100, "[...]")}";
+                        return $"`{r.Id}` ➜ <t:{r.Expiration.ToUnixTimeSeconds()}:R>:{replyTo} {r.ReminderContent.Truncate(75, "[...]")}";
                     }
                 )
             );
