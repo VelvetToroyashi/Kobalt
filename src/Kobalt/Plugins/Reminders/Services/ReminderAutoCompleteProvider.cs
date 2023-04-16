@@ -58,7 +58,7 @@ public class ReminderAutoCompleteProvider : IAutocompleteProvider
 
         var suggestions = reminders!
                           .Select(r => (r, Fuzz.PartialRatio(r.ReminderContent, userInput)))
-                          .Where(rt => rt.Item2 > 80)
+                          .Where(rt => rt.Item2 > 60)
                           .OrderByDescending(rt => rt.Item2)
                           .ThenByDescending(rt => rt.r.Expiration)
                           .Select(rt => rt.r)
