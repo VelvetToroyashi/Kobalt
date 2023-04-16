@@ -91,7 +91,7 @@ public class ReminderAPIService : BackgroundService
         }
 
         var stream = await response.Content.ReadAsStreamAsync();
-        var result = await JsonSerializer.DeserializeAsync<ReminderDTO[]>(stream);
+        var result = await JsonSerializer.DeserializeAsync<ReminderDTO[]>(stream, _serializerOptions);
 
         return result;
     }
