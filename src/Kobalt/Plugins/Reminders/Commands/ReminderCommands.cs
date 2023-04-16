@@ -34,6 +34,7 @@ public class ReminderCommands : CommandGroup
         IDiscordRestInteractionAPI interactions
     )
     {
+        _feedback = feedback;
         _context = context;
         _reminders = reminders;
         _interactions = interactions;
