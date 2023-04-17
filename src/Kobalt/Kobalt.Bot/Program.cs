@@ -115,7 +115,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddHTTPInteractionAPIs();
     services.AddDiscordCommands(true);
     services.Configure<InteractionResponderOptions>(s => s.UseEphemeralResponses = true);
-    services.AddCommandGroupsFromAssembly(Assembly.GetExecutingAssembly());
+    services.AddCommandGroupsFromAssembly(Assembly.GetExecutingAssembly(), typeFilter: t => !t.IsNested);
     services.AddInteractivityFromAssembly(Assembly.GetExecutingAssembly());
     services.AddHostedService<KobaltDiscordGatewayService>();
     services.AddTransient<ImageOverlayService>();
