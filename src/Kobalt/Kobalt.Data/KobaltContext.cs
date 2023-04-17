@@ -13,6 +13,8 @@ namespace Kobalt.Data;
 public class KobaltContext : DbContext
 {
     public DbSet<User> Users { get; set; } = default!;
+    public DbSet<Guild> Guilds { get; set; } = default!;
+    public DbSet<LogChannel> LogChannels { get; set; } = default!;
 
 
     public KobaltContext(DbContextOptions<KobaltContext> options) : base(options) { }
