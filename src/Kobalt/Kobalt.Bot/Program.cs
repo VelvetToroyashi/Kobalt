@@ -10,12 +10,15 @@ using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
 using Kobalt.ReminderService.API.Extensions;
 using Kobalt.Shared.Extensions;
+using Kobalt.Shared.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Polly;
 using Remora.Discord.API.Abstractions.Gateway.Commands;
 using Remora.Discord.API.Abstractions.Objects;
+using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Gateway.Commands;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Extensions;
@@ -48,6 +51,7 @@ if (!initResult.IsSuccess)
 
 // TODO: replace either with runtimeProperties.json or a config
 builder.WebHost.ConfigureKestrel(c => c.ListenLocalhost(builder.Configuration.GetKobaltConfig().ApiPort));
+builder.Host.AddStartupTaskSupport();
 
 var host = builder.Build();
 
@@ -122,6 +126,30 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     
     services.AddPostExecutionEvent<PostExecutionHandler>();
 
+    const string CacheKey = "<>k__SelfUserCacheKey_d270867";
+    services.AddStartupTask
+    (
+        async provider =>
+        {
+            var cache = provider.GetRequiredService<IMemoryCache>();
+            var users = provider.GetRequiredService<IDiscordRestUserAPI>();
+            
+            var result = await users.GetCurrentUserAsync();
+            
+            if (!result.IsSuccess)
+            {
+                Log.Fatal("Failed to get current user: {Error}", result.Error);
+                throw new InvalidOperationException("Failed to get current user");
+            }
+            
+            cache.Set(CacheKey, result.Entity);
+        }
+    );
+
+    services.AddSingleton<IUser>(s => s.GetRequiredService<IMemoryCache>().Get<IUser>(CacheKey)!);
+    
+    services.AddTransient<IChannelLoggerService, ChannelLoggerService>();
+    
     services.AddOffsetServices();
     services.AddMemoryCache();
 
