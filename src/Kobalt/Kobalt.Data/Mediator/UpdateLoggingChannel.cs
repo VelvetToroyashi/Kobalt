@@ -23,7 +23,7 @@ public static class UpdateLoggingChannel
         {
             await using var context = await _context.CreateDbContextAsync(cancellationToken);
             
-            var channel = await context.LogChannels.FindAsync(request.ChannelID);
+            var channel = await context.LogChannels.FirstOrDefaultAsync(l => l.ChannelID == request.ChannelID, cancellationToken);
             if (channel is null)
             {
                 return new NotFoundError();
