@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kobalt.Data.Migrations
 {
     [DbContext(typeof(KobaltContext))]
-    [Migration("20230415064049_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20230419000425_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,9 +32,9 @@ namespace Kobalt.Data.Migrations
                         .HasColumnName("id");
 
                     b.HasKey("ID")
-                        .HasName("pk_guild");
+                        .HasName("pk_guilds");
 
-                    b.ToTable("guild", "kobalt_core");
+                    b.ToTable("guilds", "kobalt_core");
                 });
 
             modelBuilder.Entity("Kobalt.Data.Entities.GuildUserJoiner", b =>
@@ -66,6 +66,44 @@ namespace Kobalt.Data.Migrations
                     b.ToTable("guild_user_joiner", "kobalt_core");
                 });
 
+            modelBuilder.Entity("Kobalt.Data.Entities.LogChannel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<ulong>("ChannelID")
+                        .HasColumnType("numeric(20,0)")
+                        .HasColumnName("channel_id");
+
+                    b.Property<ulong>("GuildID")
+                        .HasColumnType("numeric(20,0)")
+                        .HasColumnName("guild_id");
+
+                    b.Property<decimal>("Type")
+                        .HasColumnType("numeric(20,0)")
+                        .HasColumnName("type");
+
+                    b.Property<ulong?>("WebhookID")
+                        .HasColumnType("numeric(20,0)")
+                        .HasColumnName("webhook_id");
+
+                    b.Property<string>("WebhookToken")
+                        .HasColumnType("text")
+                        .HasColumnName("webhook_token");
+
+                    b.HasKey("Id")
+                        .HasName("pk_log_channels");
+
+                    b.HasIndex("GuildID")
+                        .HasDatabaseName("ix_log_channels_guild_id");
+
+                    b.ToTable("log_channels", "kobalt_core");
+                });
+
             modelBuilder.Entity("Kobalt.Data.Entities.User", b =>
                 {
                     b.Property<ulong>("ID")
@@ -93,7 +131,7 @@ namespace Kobalt.Data.Migrations
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_guild_user_joiner_guild_guild_id");
+                        .HasConstraintName("fk_guild_user_joiner_guilds_guild_id");
 
                     b.HasOne("Kobalt.Data.Entities.User", "User")
                         .WithMany("Guilds")
@@ -107,8 +145,20 @@ namespace Kobalt.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Kobalt.Data.Entities.LogChannel", b =>
+                {
+                    b.HasOne("Kobalt.Data.Entities.Guild", null)
+                        .WithMany("LogChannels")
+                        .HasForeignKey("GuildID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_log_channels_guilds_guild_id");
+                });
+
             modelBuilder.Entity("Kobalt.Data.Entities.Guild", b =>
                 {
+                    b.Navigation("LogChannels");
+
                     b.Navigation("Users");
                 });
 

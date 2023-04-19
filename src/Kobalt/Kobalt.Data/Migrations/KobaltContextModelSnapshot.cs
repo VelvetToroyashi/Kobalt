@@ -29,9 +29,9 @@ namespace Kobalt.Data.Migrations
                         .HasColumnName("id");
 
                     b.HasKey("ID")
-                        .HasName("pk_guild");
+                        .HasName("pk_guilds");
 
-                    b.ToTable("guild", "kobalt_core");
+                    b.ToTable("guilds", "kobalt_core");
                 });
 
             modelBuilder.Entity("Kobalt.Data.Entities.GuildUserJoiner", b =>
@@ -84,7 +84,7 @@ namespace Kobalt.Data.Migrations
                         .HasColumnType("numeric(20,0)")
                         .HasColumnName("type");
 
-                    b.Property<decimal?>("WebhookID")
+                    b.Property<ulong?>("WebhookID")
                         .HasColumnType("numeric(20,0)")
                         .HasColumnName("webhook_id");
 
@@ -93,12 +93,12 @@ namespace Kobalt.Data.Migrations
                         .HasColumnName("webhook_token");
 
                     b.HasKey("Id")
-                        .HasName("pk_log_channel");
+                        .HasName("pk_log_channels");
 
                     b.HasIndex("GuildID")
-                        .HasDatabaseName("ix_log_channel_guild_id");
+                        .HasDatabaseName("ix_log_channels_guild_id");
 
-                    b.ToTable("log_channel", "kobalt_core");
+                    b.ToTable("log_channels", "kobalt_core");
                 });
 
             modelBuilder.Entity("Kobalt.Data.Entities.User", b =>
@@ -128,7 +128,7 @@ namespace Kobalt.Data.Migrations
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_guild_user_joiner_guild_guild_id");
+                        .HasConstraintName("fk_guild_user_joiner_guilds_guild_id");
 
                     b.HasOne("Kobalt.Data.Entities.User", "User")
                         .WithMany("Guilds")
@@ -149,7 +149,7 @@ namespace Kobalt.Data.Migrations
                         .HasForeignKey("GuildID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_log_channel_guild_guild_id");
+                        .HasConstraintName("fk_log_channels_guilds_guild_id");
                 });
 
             modelBuilder.Entity("Kobalt.Data.Entities.Guild", b =>

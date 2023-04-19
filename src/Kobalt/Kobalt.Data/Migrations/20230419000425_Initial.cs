@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kobalt.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,7 +15,7 @@ namespace Kobalt.Data.Migrations
                 name: "kobalt_core");
 
             migrationBuilder.CreateTable(
-                name: "guild",
+                name: "guilds",
                 schema: "kobalt_core",
                 columns: table => new
                 {
@@ -23,7 +23,7 @@ namespace Kobalt.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_guild", x => x.id);
+                    table.PrimaryKey("pk_guilds", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -41,6 +41,31 @@ namespace Kobalt.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "log_channels",
+                schema: "kobalt_core",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    guild_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    channel_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    webhook_id = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    webhook_token = table.Column<string>(type: "text", nullable: true),
+                    type = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_log_channels", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_log_channels_guilds_guild_id",
+                        column: x => x.guild_id,
+                        principalSchema: "kobalt_core",
+                        principalTable: "guilds",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "guild_user_joiner",
                 schema: "kobalt_core",
                 columns: table => new
@@ -54,10 +79,10 @@ namespace Kobalt.Data.Migrations
                 {
                     table.PrimaryKey("pk_guild_user_joiner", x => x.id);
                     table.ForeignKey(
-                        name: "fk_guild_user_joiner_guild_guild_id",
+                        name: "fk_guild_user_joiner_guilds_guild_id",
                         column: x => x.guild_id,
                         principalSchema: "kobalt_core",
-                        principalTable: "guild",
+                        principalTable: "guilds",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -80,6 +105,12 @@ namespace Kobalt.Data.Migrations
                 schema: "kobalt_core",
                 table: "guild_user_joiner",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_log_channels_guild_id",
+                schema: "kobalt_core",
+                table: "log_channels",
+                column: "guild_id");
         }
 
         /// <inheritdoc />
@@ -90,11 +121,15 @@ namespace Kobalt.Data.Migrations
                 schema: "kobalt_core");
 
             migrationBuilder.DropTable(
-                name: "guild",
+                name: "log_channels",
                 schema: "kobalt_core");
 
             migrationBuilder.DropTable(
                 name: "users",
+                schema: "kobalt_core");
+
+            migrationBuilder.DropTable(
+                name: "guilds",
                 schema: "kobalt_core");
         }
     }
