@@ -1,6 +1,7 @@
 ﻿using Kobalt.Infractions.Data;
 using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 using Remora.Rest.Core;
 using Remora.Results;
 
@@ -20,16 +21,18 @@ public record UpdateInfractionRequest
 
 public class UpdateInfractionRequestHandler : IRequestHandler<UpdateInfractionRequest, Result<InfractionDTO>>
 {
-    private readonly InfractionContext _context;
+    private readonly IDbContextFactory<InfractionContext> _context;
 
-    public UpdateInfractionRequestHandler(InfractionContext context)
+    public UpdateInfractionRequestHandler(IDbContextFactory<InfractionContext> context)
     {
         _context = context;
     }
 
     public async ValueTask<Result<InfractionDTO>> Handle(UpdateInfractionRequest request, CancellationToken ct = default)
     {
-        var infraction = await _context.Infractions.FindAsync(request.Id, ct);
+        await using var context = await _context.CreateDbContextAsync(ct);
+        
+        var infraction = await context.Infractions.FindAsync(request.Id, ct);
         
         if (infraction is null)
         {
@@ -78,7 +81,7 @@ public class UpdateInfractionRequestHandler : IRequestHandler<UpdateInfractionRe
             infraction.IsProcessable = isProcessable;
         }
 
-        await _context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(ct);
 
         return new InfractionDTO
         (

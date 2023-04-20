@@ -10,16 +10,18 @@ public record GetInfractionsForUserRequest(ulong GuildID, ulong UserID) : IReque
 
 public class GetInfractionsForUserHandler : IRequestHandler<GetInfractionsForUserRequest, IEnumerable<InfractionDTO>>
 {
-    private readonly InfractionContext _db;
+    private readonly IDbContextFactory<InfractionContext> _context;
 
-    public GetInfractionsForUserHandler(InfractionContext db)
+    public GetInfractionsForUserHandler(IDbContextFactory<InfractionContext> context)
     {
-        _db = db;
+        _context = context;
     }
 
     public async ValueTask<IEnumerable<InfractionDTO>> Handle(GetInfractionsForUserRequest request, CancellationToken cancellationToken)
     {
-        var infractions = await _db.Infractions
+        await using var context = await _context.CreateDbContextAsync(cancellationToken);
+        
+        var infractions = await context.Infractions
             .Where(x => x.GuildID == request.GuildID && x.UserID == request.UserID)
             .ToListAsync(cancellationToken);
 

@@ -1,5 +1,6 @@
 ﻿using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
 namespace Kobalt.Infractions.Data.Mediator;
@@ -14,16 +15,18 @@ public record GetGuildInfractionRequest(int InfractionID, ulong GuildID) : IRequ
 
 public class GetGuildInfractionHandler : IRequestHandler<GetGuildInfractionRequest, Result<InfractionDTO>>
 {
-    private readonly InfractionContext _context;
+    private readonly IDbContextFactory<InfractionContext> _context;
     
-    public GetGuildInfractionHandler(InfractionContext context)
+    public GetGuildInfractionHandler(IDbContextFactory<InfractionContext> context)
     {
         _context = context;
     }
 
     public async ValueTask<Result<InfractionDTO>> Handle(GetGuildInfractionRequest request, CancellationToken cancellationToken)
     {
-        var infraction = await _context.Infractions.FindAsync(request.InfractionID);
+        await using var context = await _context.CreateDbContextAsync(cancellationToken);
+
+        var infraction = await context.Infractions.FindAsync(request.InfractionID);
 
         if (infraction is null)
         {

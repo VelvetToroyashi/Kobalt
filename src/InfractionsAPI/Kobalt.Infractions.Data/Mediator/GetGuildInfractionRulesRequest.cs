@@ -9,18 +9,20 @@ public record GetGuildInfractionRulesRequest(ulong GuildID) : IRequest<IEnumerab
 
 public class GetGuildInfractionRulesHandler : IRequestHandler<GetGuildInfractionRulesRequest, IEnumerable<InfractionRuleDTO>>
 {
-    private readonly InfractionContext _context;
+    private readonly IDbContextFactory<InfractionContext> _context;
 
-    public GetGuildInfractionRulesHandler(InfractionContext context)
+    public GetGuildInfractionRulesHandler(IDbContextFactory<InfractionContext> context)
     {
         _context = context;
     }
 
     public async ValueTask<IEnumerable<InfractionRuleDTO>> Handle(GetGuildInfractionRulesRequest request, CancellationToken cancellationToken)
     {
-        var rules = await _context.InfractionRules
-            .Where(x => x.GuildID == request.GuildID)
-            .ToListAsync(cancellationToken);
+        await using var context = await _context.CreateDbContextAsync(cancellationToken);
+        
+        var rules = await context.InfractionRules
+                                 .Where(x => x.GuildID == request.GuildID)
+                                 .ToListAsync(cancellationToken);
 
         return rules.Select
         (

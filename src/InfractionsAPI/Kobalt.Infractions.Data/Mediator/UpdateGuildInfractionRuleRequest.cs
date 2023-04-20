@@ -13,17 +13,19 @@ public record UpdateGuildInfractionRuleRequest(int Id, ulong GuildID, Infraction
 
 public class UpdateGuildInfractionRuleRequestHandler : IRequestHandler<UpdateGuildInfractionRuleRequest, Result<InfractionRuleDTO>>
 {
-    private readonly InfractionContext _context;
+    private readonly IDbContextFactory<InfractionContext> _context;
 
-    public UpdateGuildInfractionRuleRequestHandler(InfractionContext context)
+    public UpdateGuildInfractionRuleRequestHandler(IDbContextFactory<InfractionContext> context)
     {
         _context = context;
     }
 
     public async ValueTask<Result<InfractionRuleDTO>> Handle(UpdateGuildInfractionRuleRequest request, CancellationToken ct)
     {
+        await using var context = await _context.CreateDbContextAsync(ct);
+        
         var update = request.Update;
-        var rule = await _context.InfractionRules
+        var rule = await context.InfractionRules
                                  .FirstOrDefaultAsync(ir => ir.Id == request.Id && ir.GuildID == request.GuildID, ct);
 
         if (rule is null)
@@ -81,8 +83,8 @@ public class UpdateGuildInfractionRuleRequestHandler : IRequestHandler<UpdateGui
             rule.MatchValue = matchValue;
         }
         
-        _context.Update(rule);
-        await _context.SaveChangesAsync(ct);
+        context.Update(rule);
+        await context.SaveChangesAsync(ct);
 
         return new InfractionRuleDTO
         (

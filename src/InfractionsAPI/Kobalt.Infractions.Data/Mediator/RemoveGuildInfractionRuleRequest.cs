@@ -1,4 +1,5 @@
 ﻿using Mediator;
+using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
 namespace Kobalt.Infractions.Data.Mediator;
@@ -7,16 +8,18 @@ public record RemoveGuildInfractionRuleRequest(int Id, ulong GuildID) : IRequest
 
 public class RemoveGuildInfractionRuleRequestHandler : IRequestHandler<RemoveGuildInfractionRuleRequest, Result>
 {
-    private readonly InfractionContext _context;
+    private readonly IDbContextFactory<InfractionContext> _context;
 
-    public RemoveGuildInfractionRuleRequestHandler(InfractionContext context)
+    public RemoveGuildInfractionRuleRequestHandler(IDbContextFactory<InfractionContext> context)
     {
         _context = context;
     }
 
     public async ValueTask<Result> Handle(RemoveGuildInfractionRuleRequest request, CancellationToken ct = default)
     {
-        var rule = await _context.InfractionRules.FindAsync(request.Id, ct);
+        await using var context = await _context.CreateDbContextAsync(ct);
+        
+        var rule = await context.InfractionRules.FindAsync(request.Id, ct);
 
         if (rule is null)
         {
@@ -28,9 +31,8 @@ public class RemoveGuildInfractionRuleRequestHandler : IRequestHandler<RemoveGui
             return new NotFoundError("Infraction rule not found");
         }
 
-        _context.InfractionRules.Remove(rule);
-
-        await _context.SaveChangesAsync(ct);
+        context.InfractionRules.Remove(rule);
+        await context.SaveChangesAsync(ct);
 
         return Result.FromSuccess();
     }

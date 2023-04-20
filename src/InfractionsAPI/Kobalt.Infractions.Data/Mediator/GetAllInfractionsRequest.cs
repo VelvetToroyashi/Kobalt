@@ -4,20 +4,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kobalt.Infractions.Data.Mediator;
 
-public record GetAllInfractionsRequest() : IRequest<IEnumerable<InfractionDTO>>;
+public record GetAllInfractionsRequest : IRequest<IEnumerable<InfractionDTO>>;
 
 public class GetAllInfractionsHandler : IRequestHandler<GetAllInfractionsRequest, IEnumerable<InfractionDTO>>
 {
-    private readonly InfractionContext _context;
+    private readonly IDbContextFactory<InfractionContext> _context;
 
-    public GetAllInfractionsHandler(InfractionContext context)
+    public GetAllInfractionsHandler(IDbContextFactory<InfractionContext> context)
     {
         _context = context;
     }
 
     public async ValueTask<IEnumerable<InfractionDTO>> Handle(GetAllInfractionsRequest request, CancellationToken cancellationToken)
     {
-        return await _context
+        await using var context = await _context.CreateDbContextAsync(cancellationToken);
+        
+        return await context
                      .Infractions
                      .Where(inf => inf.IsProcessable)
                      .Select
@@ -36,6 +38,6 @@ public class GetAllInfractionsHandler : IRequestHandler<GetAllInfractionsRequest
                              x.ExpiresAt
                          )
                      )
-                     .ToArrayAsync();
+                     .ToArrayAsync(cancellationToken);
     }
 }

@@ -18,7 +18,7 @@ public class BulkAddInfractionsForGuildRequest
     private const string InfractionReason = "Test infraction";
     
     
-    private InfractionContext _db;
+    private IDbContextFactory<InfractionContext> _db;
     // Ensure 'Expose daemon on tcp://localhost:2375 without TLS' is enabled if you're running under WSL2
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
                                                   .WithDockerEndpoint("tcp://localhost:2375")
@@ -35,21 +35,21 @@ public class BulkAddInfractionsForGuildRequest
     {
         await _container.StartAsync();
         
-        var db = new ServiceCollection().AddDbContext<InfractionContext>(o => o.UseNpgsql(_container.GetConnectionString()).UseSnakeCaseNamingConvention()).BuildServiceProvider();
+        var db = new ServiceCollection().AddDbContextFactory<InfractionContext>(o => o.UseNpgsql(_container.GetConnectionString()).UseSnakeCaseNamingConvention()).BuildServiceProvider();
 
-        _db = db.GetRequiredService<InfractionContext>();
+        _db = db.GetRequiredService<IDbContextFactory<InfractionContext>>();
     }
 
     [SetUp]
     public async Task SetupAsync()
     {
-        await _db.Database.EnsureCreatedAsync();
+        await _db.CreateDbContext().Database.EnsureCreatedAsync();
     }
 
     [TearDown]
     public async Task TeardownAsync()
     {
-        await _db.Database.EnsureDeletedAsync();
+        await _db.CreateDbContext().Database.EnsureDeletedAsync();
     }
 
     [OneTimeTearDown]
@@ -63,23 +63,23 @@ public class BulkAddInfractionsForGuildRequest
     {
         var now = DateTimeOffset.UtcNow;
 
-        var infraction_1 = new InfractionCreatePayload(InfractionID, false, InfractionReason, UserID, ModeratorID, InfractionType.Ban, now, null);
-        var infraction_2 = new InfractionCreatePayload(InfractionID + 1, false, InfractionReason, UserID + 1, ModeratorID, InfractionType.Ban, now, null);
+        var infraction_1 = new InfractionCreatePayload(InfractionReason, UserID, ModeratorID, null, InfractionType.Ban, null);
+        var infraction_2 = new InfractionCreatePayload(InfractionReason, UserID + 1, ModeratorID, null, InfractionType.Ban, null);
 
         var handler = new BulkAddInfractionsForGuildHandler(_db);
 
         await handler.Handle(new(GuildID, new[] { infraction_1, infraction_2 }), CancellationToken.None);
 
-        Infraction[] result = _db.Infractions.Local.ToArray();
+        Infraction[] result = _db.CreateDbContext().Infractions.Local.ToArray();
         
         Assert.That(result, Has.Length.EqualTo(2));
         Assert.Multiple(() =>
         {
-            Assert.That(result[0].Id, Is.EqualTo(infraction_1.Id));
+            Assert.That(result[0].Id, Is.EqualTo(1));
             Assert.That(result[0].UserID, Is.EqualTo(infraction_1.UserID));
             Assert.That(result[0].ModeratorID, Is.EqualTo(infraction_1.ModeratorID));
 
-            Assert.That(result[1].Id, Is.EqualTo(infraction_2.Id));
+            Assert.That(result[1].Id, Is.EqualTo(2));
             Assert.That(result[1].UserID, Is.EqualTo(infraction_2.UserID));
             Assert.That(result[1].ModeratorID, Is.EqualTo(infraction_2.ModeratorID));
         });

@@ -3,6 +3,7 @@ using Kobalt.Infractions.Data.Entities;
 using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Kobalt.Infractions.Shared.Payloads;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kobalt.Infractions.Infrastructure.Mediator.Mediator;
 
@@ -12,11 +13,11 @@ public record BulkAddInfractionsForGuildRequest(ulong GuildID, IReadOnlyList<Inf
 
 public class BulkAddInfractionsForGuildHandler : IRequestHandler<BulkAddInfractionsForGuildRequest, IEnumerable<InfractionDTO>>
 {
-    private readonly InfractionContext _context;
+    private readonly IDbContextFactory<InfractionContext> _contextFactory;
 
-    public BulkAddInfractionsForGuildHandler(InfractionContext context)
+    public BulkAddInfractionsForGuildHandler(IDbContextFactory<InfractionContext> contextFactory)
     {
-        _context = context;
+        _contextFactory = contextFactory;
     }
 
     public async ValueTask<IEnumerable<InfractionDTO>> Handle(BulkAddInfractionsForGuildRequest request, CancellationToken cancellationToken)
@@ -35,9 +36,11 @@ public class BulkAddInfractionsForGuildHandler : IRequestHandler<BulkAddInfracti
                               ModeratorID = x.ModeratorID
                           })
                           .ToArray();
+        
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
-        _context.Infractions.AddRange(infractions);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.Infractions.AddRange(infractions);
+        await context.SaveChangesAsync(cancellationToken);
 
         return infractions.Select
         (

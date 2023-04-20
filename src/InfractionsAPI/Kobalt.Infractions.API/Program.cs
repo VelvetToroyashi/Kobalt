@@ -10,7 +10,6 @@ using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Services;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -144,7 +143,7 @@ void AddInfractionServices(IServiceCollection services, IConfiguration configura
     services.AddSingleton<WebsocketManagerService>();
 
     // TODO: Change DbContext injections to IDbContextFactory
-    services.AddMediator(opt => opt.ServiceLifetime = ServiceLifetime.Scoped);
+    services.AddMediator();
 
-    services.AddDbContext<InfractionContext>(db => db.UseNpgsql(configuration.GetConnectionString("Infractions")).UseSnakeCaseNamingConvention());
+    services.AddDbContextFactory<InfractionContext>("Infractions");
 }

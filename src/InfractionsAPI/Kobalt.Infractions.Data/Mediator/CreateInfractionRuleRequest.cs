@@ -22,16 +22,17 @@ public record CreateInfractionRuleRequest
 
 public class CreateInfractionRuleRequestHandler : IRequestHandler<CreateInfractionRuleRequest, Result<InfractionRuleDTO>>
 {
-    private readonly InfractionContext _context;
+    private readonly IDbContextFactory<InfractionContext> _context;
 
-    public CreateInfractionRuleRequestHandler(InfractionContext context)
+    public CreateInfractionRuleRequestHandler(IDbContextFactory<InfractionContext> context)
     {
         _context = context;
     }
 
     public async ValueTask<Result<InfractionRuleDTO>> Handle(CreateInfractionRuleRequest request, CancellationToken cancellationToken)
     {
-        var matchingRule = await _context
+        await using var context = await _context.CreateDbContextAsync(cancellationToken);
+        var matchingRule = await context
                                  .InfractionRules
                                  .Where
                                  (
@@ -58,8 +59,8 @@ public class CreateInfractionRuleRequestHandler : IRequestHandler<CreateInfracti
             ActionDuration = request.ActionDuration
         };
         
-        _context.Add(rule);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.Add(rule);
+        await context.SaveChangesAsync(cancellationToken);
 
         return new InfractionRuleDTO
         (

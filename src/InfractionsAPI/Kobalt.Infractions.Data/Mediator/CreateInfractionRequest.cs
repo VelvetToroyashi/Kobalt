@@ -21,19 +21,21 @@ public record CreateInfractionRequest
 
 public class CreateInfractionHandler : IRequestHandler<CreateInfractionRequest, InfractionDTO>
 {
-    private readonly InfractionContext _context;
+    private readonly IDbContextFactory<InfractionContext> _context;
 
-    public CreateInfractionHandler(InfractionContext context)
+    public CreateInfractionHandler(IDbContextFactory<InfractionContext> context)
     {
         _context = context;
     }
 
     public async ValueTask<InfractionDTO> Handle(CreateInfractionRequest request, CancellationToken cancellationToken)
     {
+        await using var context = await _context.CreateDbContextAsync(cancellationToken);
+        
         if (request.Type is InfractionType.Mute or InfractionType.Ban)
         {
             var recentInfraction = await 
-            _context
+            context
             .Infractions
             .FirstOrDefaultAsync
             (
@@ -80,8 +82,8 @@ public class CreateInfractionHandler : IRequestHandler<CreateInfractionRequest, 
             ReferencedId = request.ReferencedId
         };
 
-        await _context.Infractions.AddAsync(infraction, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.Infractions.AddAsync(infraction, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
         return new InfractionDTO
         (
