@@ -16,7 +16,7 @@ public class CreateInfractionTests
     private const string InfractionReason = "Test infraction";
     
     
-    private InfractionContext _db;
+    private IDbContextFactory<InfractionContext> _db;
     // Ensure 'Expose daemon on tcp://localhost:2375 without TLS' is enabled if you're running under WSL2
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
                                                       .WithDockerEndpoint("tcp://localhost:2375")
@@ -33,22 +33,23 @@ public class CreateInfractionTests
     {
         await _container.StartAsync();
         
-        var db = new ServiceCollection().AddDbContext<InfractionContext>(o => o.UseNpgsql(_container.GetConnectionString()).UseSnakeCaseNamingConvention()).BuildServiceProvider();
+        var db = new ServiceCollection().AddDbContextFactory<InfractionContext>(o => o.UseNpgsql(_container.GetConnectionString()).UseSnakeCaseNamingConvention()).BuildServiceProvider();
 
-        _db = db.GetRequiredService<InfractionContext>();
+        _db = db.GetRequiredService<IDbContextFactory<InfractionContext>>();
     }
 
     [SetUp]
     public async Task SetupAsync()
     {
-        await _db.Database.EnsureCreatedAsync();
+        await _db.CreateDbContext().Database.EnsureCreatedAsync();
     }
 
     [TearDown]
     public async Task TeardownAsync()
     {
-        await _db.Database.EnsureDeletedAsync();
-        _db.ChangeTracker.Clear();
+        var db = _db.CreateDbContext();
+        await db.Database.EnsureDeletedAsync();
+        db.ChangeTracker.Clear();
     }
 
     [OneTimeTearDown]
@@ -69,7 +70,7 @@ public class CreateInfractionTests
         Assert.That(res.UserID, Is.EqualTo(UserID));
         Assert.That(res.GuildID, Is.EqualTo(GuildID));
         Assert.That(res.Type, Is.EqualTo(InfractionType.Ban));
-        Assert.That(_db.Infractions.Local.Count, Is.EqualTo(1));
+        Assert.That(_db.CreateDbContext().Infractions.ToArray().Count, Is.EqualTo(1));
     }
 
     [Test]
@@ -81,6 +82,6 @@ public class CreateInfractionTests
 
         var res = await handler.Handle(req, default);
         
-        Assert.That(_db.Infractions.Local.First().IsProcessable);
+        Assert.That(_db.CreateDbContext().Infractions.First().IsProcessable);
     }
 }

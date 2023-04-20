@@ -17,7 +17,7 @@ public class GetInfractionsForUserTests
     private const string InfractionReason = "Test infraction";
     
     
-    private InfractionContext _db;
+    private IDbContextFactory<InfractionContext> _db;
     // Ensure 'Expose daemon on tcp://localhost:2375 without TLS' is enabled if you're running under WSL2
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
                                                       .WithDockerEndpoint("tcp://localhost:2375")
@@ -36,20 +36,21 @@ public class GetInfractionsForUserTests
         
         var db = new ServiceCollection().AddDbContext<InfractionContext>(o => o.UseNpgsql(_container.GetConnectionString()).UseSnakeCaseNamingConvention()).BuildServiceProvider();
 
-        _db = db.GetRequiredService<InfractionContext>();
+        _db = db.GetRequiredService<IDbContextFactory<InfractionContext>>();
     }
 
     [SetUp]
     public async Task SetupAsync()
     {
-        await _db.Database.EnsureCreatedAsync();
+        await _db.CreateDbContext().Database.EnsureCreatedAsync();
     }
 
     [TearDown]
     public async Task TeardownAsync()
     {
-        _db.ChangeTracker.Clear();
-        await _db.Database.EnsureDeletedAsync();
+        var db = _db.CreateDbContext();
+        db.ChangeTracker.Clear();
+        await db.Database.EnsureDeletedAsync();
     }
 
     [OneTimeTearDown]
@@ -72,9 +73,11 @@ public class GetInfractionsForUserTests
             CreatedAt = DateTimeOffset.UtcNow,
             ExpiresAt = DateTimeOffset.UtcNow
         };
+        
+        await using var db = _db.CreateDbContext();
 
-        _db.Infractions.Add(inf);
-        await _db.SaveChangesAsync();
+        db.Infractions.Add(inf);
+        await db.SaveChangesAsync();
         
         var handler = new GetInfractionsForUserHandler(_db);
 
