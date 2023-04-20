@@ -27,11 +27,6 @@ public class EnsureHierarchyCondition : ICondition<EnsureHierarchyAttribute>, IC
         var expectedLevel = attribute.Level;
         var target = attribute.Target;
 
-        if (target is not HierarchyTarget.Invoker)
-        {
-            return new InvalidOperationError($"{nameof(HierarchyTarget.Self)} is not supported for a command-level attribute.");
-        }
-        
         var targetEntity = _context.Interaction.Member.Value.User.Value;
         var hierarchyResult = await GetHierarchyAsync(targetEntity, target, ct);
 
@@ -64,13 +59,7 @@ public class EnsureHierarchyCondition : ICondition<EnsureHierarchyAttribute>, IC
         var expectedLevel = attribute.Level;
         var target = attribute.Target;
 
-        if (target is not HierarchyTarget.Invoker)
-        {
-            return new InvalidOperationError($"{nameof(HierarchyTarget.Self)} is not supported for a command-level attribute.");
-        }
-        
-        var targetEntity = _context.Interaction.Member.Value.User.Value;
-        var hierarchyResult = await GetHierarchyAsync(targetEntity, target, ct);
+        var hierarchyResult = await GetHierarchyAsync(data, target, ct);
 
         if (!hierarchyResult.IsSuccess)
         {
@@ -95,7 +84,7 @@ public class EnsureHierarchyCondition : ICondition<EnsureHierarchyAttribute>, IC
         return new InvalidOperationError(errorMessage);
     }
 
-    private async Task<Result<HierarchyLevel>> GetHierarchyAsync(IUser targetEntity, HierarchyTarget target, CancellationToken ct)
+    private async Task<Result<HierarchyLevel>> GetHierarchyAsync(IUser comparisionEntity, HierarchyTarget target, CancellationToken ct)
     {
         var secondaryTargetID = target switch
         {
@@ -113,7 +102,7 @@ public class EnsureHierarchyCondition : ICondition<EnsureHierarchyAttribute>, IC
         
         var secondaryTargetMember = secondaryTargetResult.Entity;
         
-        var targetMemberResult = await _guilds.GetGuildMemberAsync(_context.Interaction.GuildID.Value, targetEntity.ID, ct);
+        var targetMemberResult = await _guilds.GetGuildMemberAsync(_context.Interaction.GuildID.Value, comparisionEntity.ID, ct);
         
         if (!targetMemberResult.IsSuccess)
         {
