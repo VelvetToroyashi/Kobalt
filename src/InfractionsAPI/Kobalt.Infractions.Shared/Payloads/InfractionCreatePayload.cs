@@ -1,30 +1,20 @@
-﻿using System.Text.Json.Serialization;
+﻿namespace Kobalt.Infractions.Shared.Payloads;
 
-namespace Kobalt.Infractions.Shared.Payloads;
-
+/// <summary>
+/// Represents a payload for creating a new infraction.
+/// </summary>
+/// <param name="Reason">The reason the payload is being created.</param>
+/// <param name="UserID">The ID of the infraction's target.</param>
+/// <param name="ModeratorID">The ID of the moderator responsible for the infraction.</param>
+/// <param name="ReferencedID">The ID of the infraction this infraction references (e.g. </param>
+/// <param name="Type"></param>
+/// <param name="ExpiresAt"></param>
 public record InfractionCreatePayload
 (
-    [property: JsonPropertyName("id")]
-    int Id,
-    
-    [property: JsonPropertyName("is_hidden")]
-    bool IsHidden,
-    
-    [property: JsonPropertyName("reason")]
     string Reason,
-    
-    [property: JsonPropertyName("user_id")]
     ulong UserID,
-    
-    [property: JsonPropertyName("moderator_id")]
     ulong ModeratorID,
-    
-    [property: JsonPropertyName("type")]
+    int? ReferencedID,
     InfractionType Type,
-    
-    [property: JsonPropertyName("created_at")]
-    DateTimeOffset CreatedAt,
-    
-    [property: JsonPropertyName("expires_at")]
     DateTimeOffset? ExpiresAt
 );
