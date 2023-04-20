@@ -21,6 +21,7 @@ public class BulkAddInfractionsForGuildHandler : IRequestHandler<BulkAddInfracti
 
     public async ValueTask<IEnumerable<InfractionDTO>> Handle(BulkAddInfractionsForGuildRequest request, CancellationToken cancellationToken)
     {
+        var now = DateTimeOffset.UtcNow;
         var infractions = request
                           .Infractions
                           .Select(x => new Infraction
@@ -29,7 +30,7 @@ public class BulkAddInfractionsForGuildHandler : IRequestHandler<BulkAddInfracti
                               UserID = x.UserID,
                               Reason = x.Reason,
                               Type = x.Type,
-                              CreatedAt = x.CreatedAt,
+                              CreatedAt = now,
                               ExpiresAt = x.ExpiresAt,
                               ModeratorID = x.ModeratorID
                           })
