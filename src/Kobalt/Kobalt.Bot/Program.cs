@@ -4,6 +4,7 @@ using Kobalt.Bot.Handlers;
 using Kobalt.Bot.Services;
 using Kobalt.Bot.Services.Discord;
 using Kobalt.Data;
+using Kobalt.Infrastructure;
 using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services;
 using Kobalt.Infrastructure.Services.Booru;
@@ -16,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Polly;
+using Remora.Commands.Extensions;
 using Remora.Discord.API.Abstractions.Gateway.Commands;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
@@ -157,6 +159,8 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddTransient<BooruSearchService>();
 
     services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(Policy<HttpResponseMessage>.Handle<HttpRequestException>().WaitAndRetryAsync(5, i => TimeSpan.FromSeconds(Math.Log(i * i) + 1)));
+
+    services.AddCondition<EnsureHierarchyCondition>();
     
     services.Configure<DiscordGatewayClientOptions>
     (
