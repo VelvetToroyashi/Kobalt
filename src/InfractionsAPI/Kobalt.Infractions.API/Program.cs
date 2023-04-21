@@ -133,7 +133,7 @@ app.MapDelete("/infractions/{guildID}/rules/{id}", async (ulong guildID, int id,
     return Results.NoContent();
 });
 
-await app.Services.GetRequiredService<InfractionContext>().Database.MigrateAsync();
+await app.Services.GetRequiredService<IDbContextFactory<InfractionContext>>().CreateDbContext().Database.MigrateAsync();
 
 app.Run();
 
