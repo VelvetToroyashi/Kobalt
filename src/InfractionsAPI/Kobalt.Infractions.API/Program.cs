@@ -1,3 +1,4 @@
+using System.Reflection;
 using Kobalt.Infractions.API.Services;
 using Kobalt.Infractions.Data;
 using Kobalt.Infractions.Data.Mediator;
@@ -18,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddSerilogLogging();
+builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
 AddInfractionServices(builder.Services, builder.Configuration);
 
@@ -145,8 +147,6 @@ void AddInfractionServices(IServiceCollection services, IConfiguration configura
 
     services.AddSingleton<WebsocketManagerService>();
 
-    // TODO: Change DbContext injections to IDbContextFactory
     services.AddMediator();
-
     services.AddDbContextFactory<InfractionContext>("Infractions");
 }
