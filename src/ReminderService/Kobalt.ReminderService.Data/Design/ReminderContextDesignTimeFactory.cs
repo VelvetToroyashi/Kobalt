@@ -1,4 +1,4 @@
-﻿using Kobalt.ReminderService.Data.Extensions;
+﻿using Kobalt.Shared.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -15,10 +15,11 @@ public class ReminderContextDesignTimeFactory : IDesignTimeDbContextFactory<Remi
         =>
         new ServiceCollection()
         .AddLogging()
-        .AddReminderDbContext(new ConfigurationBuilder()
+        .AddSingleton<IConfiguration>(new ConfigurationBuilder()
                               .AddUserSecrets<ReminderContext>()
                               .Build())
-        .BuildServiceProvider()
-        .GetRequiredService<IDbContextFactory<ReminderContext>>()
-        .CreateDbContext();
+       .AddDbContextFactory<ReminderContext>("Reminders")
+       .BuildServiceProvider()
+       .GetRequiredService<IDbContextFactory<ReminderContext>>()
+       .CreateDbContext();
 }
