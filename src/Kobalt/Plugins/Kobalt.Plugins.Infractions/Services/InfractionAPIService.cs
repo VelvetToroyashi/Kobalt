@@ -27,8 +27,8 @@ public class InfractionAPIService
     private readonly IChannelLoggerService _channelLogger;
     private readonly IDiscordRestChannelAPI _channels;
     private readonly JsonSerializerOptions _serializerOptions;
-    
-    
+
+
     public InfractionAPIService
     (
         IHttpClientFactory client,
@@ -48,7 +48,7 @@ public class InfractionAPIService
         _channels = channels;
         _serializerOptions = serializerOptions.Get("Discord");
     }
-    
+
     /// <summary>
     /// Kicks a user from a guild.
     /// </summary>
@@ -60,21 +60,23 @@ public class InfractionAPIService
     public async Task<Result> KickUserAsync(Snowflake guildID, IUser user, IUser moderator, string reason)
     {
         var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Kick);
-        
+
         if (!infractionResult.IsSuccess)
+        {
             return Result.FromError(infractionResult.Error);
-        
+        }
+
         var kickResult = await _guilds.RemoveGuildMemberAsync(guildID, user.ID, reason.Truncate(100));
 
         if (!kickResult.IsSuccess)
         {
             return new InvalidOperationError("Failed to kick. Are they still in the server?");
         }
-        
+
         var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
-        
+
         await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
-        
+
         return Result.FromSuccess();
     }
 
@@ -94,7 +96,7 @@ public class InfractionAPIService
         {
             fieldsList.Add(new EmbedField("Expires", infraction.ExpiresAt.Value.ToTimestamp(), true));
         }
-        
+
         if (infraction.ReferencedId is {} referencedId)
         {
             fieldsList.Add(new EmbedField("Referenced Case", $"`#{referencedId}`", true));
@@ -116,7 +118,7 @@ public class InfractionAPIService
             },
             Fields: fieldsList
         );
-        
+
         return embed;
     }
 
@@ -131,7 +133,7 @@ public class InfractionAPIService
     {
         var payload = new InfractionCreatePayload(reason, userID.Value, moderatorID.Value, null, type, null);
 
-        var response = await _client.PostAsJsonAsync($"{_apiUrl}/guilds/{guildID}/infractions", payload, _serializerOptions);
+        var response = await _client.PutAsJsonAsync($"{_apiUrl}/guilds/{guildID}", payload, _serializerOptions);
 
         if (!response.IsSuccessStatusCode)
         {
