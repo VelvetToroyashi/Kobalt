@@ -26,7 +26,7 @@ public class ReminderAPIService : BackgroundService
     private readonly JsonSerializerOptions _serializerOptions;
     private readonly IAsyncPolicy<HttpResponseMessage> _policy;
 
-    public ReminderAPIService
+    public  ReminderAPIService
     (
         IHttpClientFactory client,
         IConfiguration config,
