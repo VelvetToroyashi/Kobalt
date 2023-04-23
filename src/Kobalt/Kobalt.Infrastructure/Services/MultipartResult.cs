@@ -19,9 +19,7 @@ public class MultipartResult : IActionResult
     public MultipartResult(IEnumerable<KeyValuePair<string, Stream>> contents) : this()
     {
         foreach (var item in contents)
-        {
             _contents.Add(item.Key, item.Value);
-        }
     }
 
     public MultipartResult AddPayload(Stream json)

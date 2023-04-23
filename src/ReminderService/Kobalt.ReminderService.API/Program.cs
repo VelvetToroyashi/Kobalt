@@ -104,9 +104,13 @@ app.MapDelete("/api/reminders/{userID}", async ([FromBody] int[] reminderIDs, ul
         var deletionResult = await reminders.RemoveReminderAsync(reminderID, userID);
 
         if (deletionResult.IsSuccess)
+        {
             result.CancelledReminders.Add(reminderID);
+        }
         else
+        {
             result.InvalidReminders.Add(reminderID);
+        }
     }
 
     return !result.CancelledReminders.Any() ? Results.NotFound() : Results.Ok(result);

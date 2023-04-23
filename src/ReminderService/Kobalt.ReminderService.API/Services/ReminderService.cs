@@ -156,9 +156,7 @@ public class ReminderService : IHostedService
         _logger.LogInformation("Shutting down. Releasing all clients.");
         
         foreach (var client in _clients.Keys)
-        {
             _ = await ResultExtensions.TryCatchAsync(async () => await client.CloseAsync(WebSocketCloseStatus.EndpointUnavailable, "Server shutting down.", CancellationToken.None));
-        }
     }
 
     /// <summary>

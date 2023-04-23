@@ -45,10 +45,8 @@ public static class ServiceCollectionExtensions
             .Where(t => t.IsClass && !t.IsAbstract && t.IsAssignableTo(typeof(InteractionGroup)));
 
         foreach (var type in typesToAdd)
-        {
             serviceCollection.AddInteractiveEntity(type);
-        }    
-        
+
         return serviceCollection;
     }
 }

@@ -96,10 +96,8 @@ host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper ha
             var ret = new MultipartResult().AddPayload(new MemoryStream(Encoding.UTF8.GetBytes(result.Entity.Item1)));
             
             foreach ((var key, var value) in result.Entity.Item2.Value)
-            {
                 ret.Add(key, value);
-            }
-            
+
             await ret.ExecuteResultAsync(new ActionContext(ctx, ctx.GetRouteData(), new()));
         }
     }
