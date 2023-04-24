@@ -83,11 +83,14 @@ public class InfractionEntityConfig : IEntityTypeConfiguration<Infraction>
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedOnAdd();
 
-        builder.Property(x => x.IsHidden).IsRequired();
         builder.Property(x => x.Reason).IsRequired();
-
+        builder.Property(x => x.IsHidden).IsRequired();
+        
         builder.Property(x => x.LastUpdated).IsRowVersion();
 
+        builder.HasIndex(x => x.UserID);
+        builder.HasIndex(x => x.GuildID);
+        
         builder.HasOne(x => x.Referenced)
                .WithOne()
                .HasForeignKey<Infraction>(x => x.ReferencedId)
