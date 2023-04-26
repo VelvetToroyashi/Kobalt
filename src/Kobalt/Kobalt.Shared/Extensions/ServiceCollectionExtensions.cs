@@ -1,7 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
+using Remora.Rest.Json;
 using Serilog;
 using Serilog.Events;
 using Serilog.Templates;
@@ -18,6 +21,53 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddSerilogLogging(this IServiceCollection services)
     {
         services.AddLogging(ConfigureLogging);
+        return services;
+    }
+
+    /// <summary>
+    /// Adds RabbitMQ (via MassTransit) to the service collection.
+    /// </summary>
+    /// <param name="services">The services to add RabbitMQ to.</param>
+    /// <param name="config">A configuration to retrieve the connection string from.</param>
+    /// <param name="addConsumers">A delegate to configure the bus further, most commonly adding consumers.</param>
+    /// <returns>The configured service collection.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method uses connection strings from the passed <paramref name="config"/> with the name of <code>"RabbitMQ"</code>.
+    ///
+    /// If this this is not present, it will not be known until `IBus` is resolved, and thusly, runtime exceptions may cause unexpected failure.
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddRabbitMQ(this IServiceCollection services, IConfiguration config, Action<IBusRegistrationConfigurator>? addConsumers = null)
+    {
+        services.AddMassTransit
+        (
+            bus =>
+            {
+                bus.SetSnakeCaseEndpointNameFormatter();
+                bus.UsingRabbitMq(Configure);
+                addConsumers?.Invoke(bus);
+            }
+        );
+
+        void Configure(IBusRegistrationContext ctx, IRabbitMqBusFactoryConfigurator rmq)
+        {
+            rmq.ConfigureEndpoints(ctx);
+            rmq.Host(new Uri(config.GetConnectionString("RabbitMQ")!));
+
+            rmq.ExchangeType = ExchangeType.Direct;
+
+            rmq.Durable = true;
+            rmq.ConfigureJsonSerializerOptions
+            (
+                json =>
+                {
+                    json.Converters.Insert(0, new SnowflakeConverter(1420070400000));
+                    return json;
+                }
+            );
+        }
+
         return services;
     }
 
@@ -46,7 +96,7 @@ public static class ServiceCollectionExtensions
     private static void ConfigureLogging(ILoggingBuilder loggingBuilder)
     {
         const string LogFormat = "[{@t:h:mm:ss ff tt}] [{@l:u3}] [{Substring(SourceContext, LastIndexOf(SourceContext, '.') + 1)}] {@m}\n{@x}";
-    
+
         Log.Logger = new LoggerConfiguration()
                      #if DEBUG
                      .MinimumLevel.Debug()
