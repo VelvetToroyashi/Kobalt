@@ -5,14 +5,12 @@ using Kobalt.ReminderService.API.Services;
 using Kobalt.ReminderService.Data;
 using Kobalt.ReminderService.Data.Mediator;
 using Kobalt.Shared.Extensions;
-using MassTransit;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RabbitMQ.Client;
+using Remora.Discord.API;
 using Remora.Rest.Json;
 using Remora.Rest.Json.Policies;
-using Constants = Remora.Discord.API.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,9 +21,7 @@ builder.Services.AddDbContextFactory<ReminderContext>("Reminders");
 
 builder.Services.AddSingleton<ReminderService>();
 builder.Services.AddHostedService(s => s.GetRequiredService<ReminderService>());
-
-AddRabbitMQ(builder.Services, builder.Configuration);
-
+builder.Services.AddRabbitMQ(builder.Configuration);
 //TODO: Extension method?
 var configure = (JsonSerializerOptions options) =>
 {
@@ -86,32 +82,3 @@ app.MapDelete("/api/reminders/{userID}", async ([FromBody] int[] reminderIDs, ul
 await app.Services.GetRequiredService<IDbContextFactory<ReminderContext>>().CreateDbContext().Database.MigrateAsync();
 
 await app.RunAsync();
-
-
-void AddRabbitMQ(IServiceCollection services, IConfiguration config)
-{
-    services.AddMassTransit(bus =>
-        {
-            bus.SetSnakeCaseEndpointNameFormatter();
-            bus.UsingRabbitMq(Configure);
-        }
-    );
-
-    void Configure(IBusRegistrationContext ctx, IRabbitMqBusFactoryConfigurator rmq)
-    {
-        rmq.ConfigureEndpoints(ctx);
-        rmq.Host(new Uri(config.GetConnectionString("RabbitMQ")!));
-
-        rmq.ExchangeType = ExchangeType.Direct;
-
-        rmq.Durable = true;
-        rmq.ConfigureJsonSerializerOptions
-        (
-            json =>
-            {
-                json.Converters.Insert(0, new SnowflakeConverter(Constants.DiscordEpoch));
-                return json;
-            }
-        );
-    }
-}
