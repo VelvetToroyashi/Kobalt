@@ -1,11 +1,7 @@
-﻿using System.Buffers;
-using System.Net.Http.Json;
-using System.Net.WebSockets;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
 using Kobalt.Infrastructure.DTOs.Reminders;
-using Kobalt.Shared.Extensions;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
+using MassTransit;
 using Microsoft.Extensions.Options;
 using Polly;
 using Remora.Discord.API.Abstractions.Rest;
@@ -15,30 +11,22 @@ using Remora.Results;
 
 namespace Kobalt.Plugins.Reminders.Services;
 
-public class ReminderAPIService : BackgroundService
+public class ReminderAPIService : IConsumer<ReminderDTO>
 {
-    private ClientWebSocket _websocket;
-
-    private readonly Uri _apiUrl;
     private readonly HttpClient _client;
-    private readonly IDiscordRestUserAPI _users;
     private readonly IDiscordRestChannelAPI _channels;
     private readonly JsonSerializerOptions _serializerOptions;
     private readonly IAsyncPolicy<HttpResponseMessage> _policy;
 
-    public  ReminderAPIService
+    public ReminderAPIService
     (
         IHttpClientFactory client,
-        IConfiguration config,
-        IDiscordRestUserAPI users,
         IDiscordRestChannelAPI channels,
         IOptionsMonitor<JsonSerializerOptions> serializerOptions,
         IAsyncPolicy<HttpResponseMessage> policy
     )
     {
-        _apiUrl = new(config["Plugins:Reminders:ApiUrl"]!.Replace("http", "ws").Replace("https", "wss"));
         _client = client.CreateClient("Reminders");
-        _users = users;
         _channels = channels;
         _serializerOptions = serializerOptions.Get("Discord");
         _policy = policy;
@@ -116,50 +104,6 @@ public class ReminderAPIService : BackgroundService
         return Result.FromSuccess();
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        var connectPolicy = Policy.Handle<WebSocketException>().WaitAndRetryAsync(5, r => TimeSpan.FromSeconds(Math.Pow(2, r)));
-        await ReconnectAsync(connectPolicy, stoppingToken);
-
-        var buffer = ArrayPool<byte>.Shared.Rent(1024 * 4);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            await using var stream = new MemoryStream();
-
-            var result = await ResultExtensions.TryCatchAsync
-            (
-                async () =>
-                {
-                    //TODO: Use Microsoft.Toolkit.HighPerformance (see  https://github.com/VelvetThePanda/FurCord.NET/blob/bc0abf5/src/FurCord.NET/Net/Clients/Websocket/WebSocketClient.cs#L129-L148 )
-                    var res = await _websocket.ReceiveAsync(new ArraySegment<byte>(buffer), stoppingToken);
-
-                    stream.Write(buffer, 0, res.Count);
-
-                    return res;
-                }
-            );
-
-            if (!result.IsSuccess && !stoppingToken.IsCancellationRequested)
-            {
-                await ReconnectAsync(connectPolicy, stoppingToken);
-            }
-
-            if (result.Entity.MessageType == WebSocketMessageType.Close)
-            {
-                await ReconnectAsync(connectPolicy, stoppingToken);
-            }
-
-            stream.Seek(0, SeekOrigin.Begin);
-
-            var reminder = JsonSerializer.Deserialize<ReminderDTO>(stream, _serializerOptions)!;
-
-            await DispatchAsync(reminder, stoppingToken);
-        }
-
-        ArrayPool<byte>.Shared.Return(buffer, true);
-    }
-
     private async Task DispatchAsync(ReminderDTO reminder, CancellationToken ct)
     {
         var isPrivate = reminder.GuildID is null;
@@ -194,26 +138,9 @@ public class ReminderAPIService : BackgroundService
         _ = sendResult;
     }
 
-    private async Task ReconnectAsync(AsyncPolicy policy, CancellationToken ct)
+    public async Task Consume(ConsumeContext<ReminderDTO> context)
     {
-        await ResultExtensions.TryCatchAsync(async () => await _websocket?.CloseAsync(WebSocketCloseStatus.NormalClosure, "Reconnecting", CancellationToken.None)!);
-
-        _websocket = new ClientWebSocket();
-
-        await policy.ExecuteAsync
-        (
-            async (context, token) =>
-            {
-                await ((ClientWebSocket)context["socket"]).ConnectAsync((Uri)context["uri"], token);
-
-                return (ClientWebSocket)context["socket"];
-            },
-            new Context()
-            {
-                {"socket", _websocket},
-                {"uri", _apiUrl}
-            },
-            ct
-        );
+        Console.WriteLine("Received reminder");
+        await DispatchAsync(context.Message, context.CancellationToken);
     }
 }

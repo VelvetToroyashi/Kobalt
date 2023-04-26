@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Kobalt.Infrastructure.DTOs.Reminders;
@@ -6,12 +5,14 @@ using Kobalt.ReminderService.API.Services;
 using Kobalt.ReminderService.Data;
 using Kobalt.ReminderService.Data.Mediator;
 using Kobalt.Shared.Extensions;
+using MassTransit;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Remora.Discord.API;
+using RabbitMQ.Client;
 using Remora.Rest.Json;
 using Remora.Rest.Json.Policies;
+using Constants = Remora.Discord.API.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,8 @@ builder.Services.AddDbContextFactory<ReminderContext>("Reminders");
 builder.Services.AddSingleton<ReminderService>();
 builder.Services.AddHostedService(s => s.GetRequiredService<ReminderService>());
 
+AddRabbitMQ(builder.Services, builder.Configuration);
+
 //TODO: Extension method?
 var configure = (JsonSerializerOptions options) =>
 {
@@ -33,46 +36,10 @@ var configure = (JsonSerializerOptions options) =>
 };
 
 builder.Services
-       .ConfigureHttpJsonOptions(opt => configure(opt.SerializerOptions))
-       .Configure<JsonSerializerOptions>(configure);
+       .Configure(configure)
+       .ConfigureHttpJsonOptions(opt => configure(opt.SerializerOptions));
 
 var app = builder.Build();
-
-app.UseWebSockets();
-
-app.MapGet("/api/reminders", async (HttpContext context, ReminderService reminders) =>
-{
-    if (!context.WebSockets.IsWebSocketRequest)
-    {
-        context.Response.StatusCode = 400;
-        return;
-    }
-
-    var cts = new CancellationTokenSource();
-    var socket = await context.WebSockets.AcceptWebSocketAsync();
-
-    reminders.AddClient(socket, cts);
-
-    // Hold the connection open for as long as the client is alive.
-    // As soon as this handler returns ASP.NET closes the socket.
-    var buffer = ArrayPool<byte>.Shared.Rent(1024);
-    await ResultExtensions.TryCatchAsync
-    (
-        async () =>
-        {
-            while (!cts.IsCancellationRequested)
-            {
-                // It's fine to pass a CT here because we don't need to clean anything up.
-                _ = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
-
-                await Task.Delay(100, cts.Token);
-            }
-        }
-    );
-
-    cts.Cancel();
-    ArrayPool<byte>.Shared.Return(buffer);
-});
 
 // List a user's reminders
 app.MapGet("/api/reminders/{userID}", async (ulong userID, IMediator mediator) =>
@@ -119,3 +86,32 @@ app.MapDelete("/api/reminders/{userID}", async ([FromBody] int[] reminderIDs, ul
 await app.Services.GetRequiredService<IDbContextFactory<ReminderContext>>().CreateDbContext().Database.MigrateAsync();
 
 await app.RunAsync();
+
+
+void AddRabbitMQ(IServiceCollection services, IConfiguration config)
+{
+    services.AddMassTransit(bus =>
+        {
+            bus.SetSnakeCaseEndpointNameFormatter();
+            bus.UsingRabbitMq(Configure);
+        }
+    );
+
+    void Configure(IBusRegistrationContext ctx, IRabbitMqBusFactoryConfigurator rmq)
+    {
+        rmq.ConfigureEndpoints(ctx);
+        rmq.Host(new Uri(config.GetConnectionString("RabbitMQ")!));
+
+        rmq.ExchangeType = ExchangeType.Direct;
+
+        rmq.Durable = true;
+        rmq.ConfigureJsonSerializerOptions
+        (
+            json =>
+            {
+                json.Converters.Insert(0, new SnowflakeConverter(Constants.DiscordEpoch));
+                return json;
+            }
+        );
+    }
+}
