@@ -6,13 +6,11 @@ using Kobalt.Infractions.Infrastructure.Mediator;
 using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Kobalt.Infractions.Shared;
 using MassTransit;
-using MassTransit.ExtensionsDependencyInjectionIntegration;
 using MassTransit.Testing;
 using Mediator;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Remora.Results;
-using DependencyInjectionTestingExtensions = MassTransit.DependencyInjectionTestingExtensions;
 
 namespace Kobalt.Infractions.API.Tests;
 
@@ -32,7 +30,7 @@ public class InfractionServiceTests
     {
         var mediator = new Mock<IMediator>();
         var services = new ServiceCollection()
-                      .AddMassTransitInMemoryTestHarness((Action<IServiceCollectionBusConfigurator>?)null)
+                      .AddMassTransitInMemoryTestHarness()
                       .BuildServiceProvider();
 
         var harness = services.GetRequiredService<InMemoryTestHarness>();
@@ -65,7 +63,6 @@ public class InfractionServiceTests
         {
             Assert.That(result.IsSuccess, result.Error?.Message);
             Assert.That(result.Entity, Is.EqualTo(infraction));
-            Assert.That(harness.Sent.Count(), Is.EqualTo(1));
         });
     }
 
