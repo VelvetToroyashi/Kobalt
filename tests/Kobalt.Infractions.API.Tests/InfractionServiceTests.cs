@@ -1,5 +1,4 @@
-﻿using System.Net.WebSockets;
-using Kobalt.Infractions.API.Services;
+﻿using Kobalt.Infractions.API.Services;
 using Kobalt.Infractions.Data.Mediator;
 using Kobalt.Infractions.Infrastructure.Interfaces;
 using Kobalt.Infractions.Infrastructure.Mediator;
@@ -29,14 +28,8 @@ public class InfractionServiceTests
     public async Task ServiceSuccessfullyCreatesInfraction()
     {
         var mediator = new Mock<IMediator>();
-        var services = new ServiceCollection()
-                      .AddMassTransitInMemoryTestHarness()
-                      .BuildServiceProvider();
 
-        var harness = services.GetRequiredService<InMemoryTestHarness>();
-        await harness.Start();
-
-        var infractionService = (IInfractionService)new InfractionService(services.GetRequiredService<IBus>(), mediator.Object);
+        var infractionService = (IInfractionService)new InfractionService(Mock.Of<IBus>(), mediator.Object);
         var now = DateTimeOffset.UtcNow.AddSeconds(1);
         var infraction = new InfractionDTO
         (
@@ -70,10 +63,7 @@ public class InfractionServiceTests
     public async Task DoesNotAllowNegativeExpirations()
     {
         var mediator = Mock.Of<IMediator>();
-        var services = new ServiceCollection().AddMassTransit(bus => DependencyInjectionTestingExtensions.AddMassTransitInMemoryTestHarness(bus))
-                                              .BuildServiceProvider();
-
-        var service = (IInfractionService)new InfractionService(services.GetRequiredService<IBus>(), mediator);
+        var service = (IInfractionService)new InfractionService(Mock.Of<IBus>(), mediator);
 
         var result = await service.CreateInfractionAsync(default, default, default, InfractionType.Ban, InfractionReason, default(DateTimeOffset));
 
@@ -90,10 +80,7 @@ public class InfractionServiceTests
     public async Task DisallowsExpirationsOnPermanentTypes()
     {
         var mediator = Mock.Of<IMediator>();
-        var services = new ServiceCollection().AddMassTransit(bus => DependencyInjectionTestingExtensions.AddMassTransitInMemoryTestHarness(bus))
-                                              .BuildServiceProvider();
-
-        var service = (IInfractionService)new InfractionService(services.GetRequiredService<IBus>(), mediator);
+        var service = (IInfractionService)new InfractionService(Mock.Of<IBus>(), mediator);
 
         var result = await service.CreateInfractionAsync(default, default, default, InfractionType.Kick, InfractionReason, DateTimeOffset.MaxValue);
 
@@ -109,10 +96,8 @@ public class InfractionServiceTests
     public async Task AllowsOmittedExpirationOnTemporaryTypes()
     {
         var mediator = new Mock<IMediator>();
-        var services = new ServiceCollection().AddMassTransit(bus => DependencyInjectionTestingExtensions.AddMassTransitInMemoryTestHarness(bus))
-                                              .BuildServiceProvider();
 
-        var infractionService = (IInfractionService)new InfractionService(services.GetRequiredService<IBus>(), mediator.Object);
+        var infractionService = (IInfractionService)new InfractionService(Mock.Of<IBus>(), mediator.Object);
         var now = DateTimeOffset.UtcNow.AddSeconds(1);
         var infraction = new InfractionDTO
         (
@@ -140,12 +125,13 @@ public class InfractionServiceTests
     public async Task DispatchesExpiredRemindersAsync()
     {
         var mediator = new Mock<IMediator>();
-        var services = new ServiceCollection().AddMassTransit(bus => DependencyInjectionTestingExtensions.AddMassTransitInMemoryTestHarness(bus))
+        var services = new ServiceCollection().AddMassTransitInMemoryTestHarness()
                                               .BuildServiceProvider();
 
+        var harness = services.GetRequiredService<InMemoryTestHarness>();
+        await harness.Start();
+
         var infractionService = new InfractionService(services.GetRequiredService<IBus>(), mediator.Object);
-        var websocket = new Mock<WebSocket>();
-        websocket.Setup(ws => ws.State).Returns(WebSocketState.Open);
 
         var now = DateTimeOffset.UtcNow.AddSeconds(1);
         var infraction = new InfractionDTO
@@ -167,22 +153,20 @@ public class InfractionServiceTests
 
         await infractionService.StartAsync(CancellationToken.None);
 
-        await Task.Delay(200);
+        await Task.Delay(700);
 
         await infractionService.StopAsync(CancellationToken.None);
 
         mediator.Verify(m => m.Send(It.IsAny<GetAllInfractionsRequest>(), It.IsAny<CancellationToken>()), Times.Once);
-        websocket.Verify(ws => ws.SendAsync(It.IsAny<ReadOnlyMemory<byte>>(), WebSocketMessageType.Text, true, It.IsAny<CancellationToken>()), Times.Once);
+        Assert.That(harness.Published.Count(), Is.EqualTo(1));
     }
 
     [Test]
     public async Task SuccessfullyUpdatesInfraction()
     {
         var mediator = new Mock<IMediator>();
-        var services = new ServiceCollection().AddMassTransit(bus => DependencyInjectionTestingExtensions.AddMassTransitInMemoryTestHarness(bus))
-                                              .BuildServiceProvider();
 
-        var infractionService = (IInfractionService)new InfractionService(services.GetRequiredService<IBus>(), mediator.Object);
+        var infractionService = (IInfractionService)new InfractionService(Mock.Of<IBus>(), mediator.Object);
         var now = DateTimeOffset.UtcNow.AddSeconds(1);
         var infraction = new InfractionDTO
         (
