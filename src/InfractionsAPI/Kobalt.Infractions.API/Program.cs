@@ -8,7 +8,6 @@ using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Kobalt.Infractions.Infrastructure.Mediator.Mediator;
 using Kobalt.Infractions.Shared.Payloads;
 using Kobalt.Shared.Extensions;
-using Kobalt.Shared.Services;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,9 +18,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddSerilogLogging();
+builder.Services.AddRabbitMQ(builder.Configuration);
 builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
-AddInfractionServices(builder.Services, builder.Configuration);
+AddInfractionServices(builder.Services);
 
 var app = builder.Build();
 app.MapControllers();
@@ -139,13 +139,11 @@ await app.Services.GetRequiredService<IDbContextFactory<InfractionContext>>().Cr
 
 app.Run();
 
-void AddInfractionServices(IServiceCollection services, IConfiguration configuration)
+void AddInfractionServices(IServiceCollection services)
 {
     services.AddSingleton<InfractionService>();
     services.AddHostedService<InfractionService>();
     services.AddSingleton<IInfractionService>(x => x.GetRequiredService<InfractionService>());
-
-    services.AddSingleton<WebsocketManagerService>();
 
     services.AddMediator();
     services.AddDbContextFactory<InfractionContext>("Infractions");

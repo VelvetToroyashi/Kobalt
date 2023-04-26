@@ -1,14 +1,12 @@
 ﻿using System.Collections.Concurrent;
-using System.Text.Json;
 using System.Threading.Channels;
 using Kobalt.Infractions.Data.Mediator;
 using Kobalt.Infractions.Infrastructure.Interfaces;
 using Kobalt.Infractions.Infrastructure.Mediator;
 using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Kobalt.Infractions.Shared;
-using Kobalt.Shared.Services;
+using MassTransit;
 using Mediator;
-using Microsoft.Extensions.Options;
 using Remora.Rest.Core;
 using Remora.Results;
 
@@ -16,12 +14,9 @@ namespace Kobalt.Infractions.API.Services;
 
 public class InfractionService : BackgroundService, IInfractionService
 {
+    private readonly IBus _bus;
     private readonly IMediator _mediator;
-    private readonly JsonSerializerOptions _serializer;
-    private readonly WebsocketManagerService _socketManager;
-
     private readonly PeriodicTimer _dispatcherTimer;
-    private readonly SemaphoreSlim _dispatcherLock = new(1, 1);
     private readonly Channel<InfractionDTO> _dispatcherChannel;
     private readonly ConcurrentDictionary<int, InfractionDTO> _infractions = new();
 
@@ -33,16 +28,14 @@ public class InfractionService : BackgroundService, IInfractionService
     /// <summary>
     /// Creates a new <see cref="InfractionService"/>.
     /// </summary>
+    /// <param name="bus">RabbitMQ message bus</param>
     /// <param name="mediator">A mediator.</param>
-    /// <param name="socketManager">A websocket manager.</param>
-    public InfractionService(IMediator mediator, IOptions<JsonSerializerOptions> jsonOptions, WebsocketManagerService socketManager)
+    public InfractionService(IBus bus, IMediator mediator)
     {
+        _bus = bus;
         _mediator = mediator;
-        _serializer = jsonOptions.Value;
-        _socketManager = socketManager;
-
         _dispatcherChannel = Channel.CreateUnbounded<InfractionDTO>();
-        _dispatcherTimer = new(TimeSpan.FromMilliseconds(200));
+        _dispatcherTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(400));
     }
 
     /// <inheritdoc/>
@@ -137,12 +130,13 @@ public class InfractionService : BackgroundService, IInfractionService
         {
             foreach (var infraction in _infractions.Values)
             {
-                if (infraction.ExpiresAt < DateTimeOffset.UtcNow)
+                if (infraction.ExpiresAt > DateTimeOffset.UtcNow)
                 {
-                    _infractions.Remove(infraction.Id, out _);
-                    await _dispatcherChannel.Writer.WriteAsync(infraction, _cancellationToken);
                     continue;
                 }
+
+                _infractions.Remove(infraction.Id, out _);
+                await _dispatcherChannel.Writer.WriteAsync(infraction, _cancellationToken);
             }
         }
     }
@@ -154,11 +148,9 @@ public class InfractionService : BackgroundService, IInfractionService
         {
             var dto = await _dispatcherChannel.Reader.ReadAsync(CancellationToken.None);
 
-            var json = JsonSerializer.SerializeToUtf8Bytes(dto, _serializer);
+            await _bus.Publish(dto, _cancellationToken);
 
-            var res = await _socketManager.SendAsync(json, _cancellationToken);
-
-            if (res.IsSuccess && dto.Type is InfractionType.Ban or InfractionType.Mute)
+            if (dto.Type is InfractionType.Ban or InfractionType.Mute)
             {
                 await _mediator.Send(new UpdateInfractionRequest(dto.Id, dto.GuildID, default, default, default, false));
             }
