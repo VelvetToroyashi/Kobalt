@@ -19,9 +19,10 @@ builder.Configuration.AddUserSecrets<Program>();
 builder.Services.AddMediator();
 builder.Services.AddDbContextFactory<ReminderContext>("Reminders");
 
+builder.Services.AddRabbitMQ();
 builder.Services.AddSingleton<ReminderService>();
 builder.Services.AddHostedService(s => s.GetRequiredService<ReminderService>());
-builder.Services.AddRabbitMQ(builder.Configuration);
+
 //TODO: Extension method?
 var configure = (JsonSerializerOptions options) =>
 {

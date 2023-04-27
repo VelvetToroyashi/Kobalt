@@ -33,13 +33,10 @@ public sealed class ReminderPlugin : IPluginDescriptor
             }
         );
 
-        serviceCollection.AddAutocompleteProvider(typeof(ReminderAutoCompleteProvider));
+        serviceCollection.AddRabbitMQ();
         serviceCollection.AddSingleton<ReminderAPIService>();
-
         serviceCollection.AddCommandTree().WithCommandGroup<ReminderCommands>();
-
-        var config = serviceCollection.BuildServiceProvider().GetRequiredService<IConfiguration>();
-        serviceCollection.AddRabbitMQ(config);
+        serviceCollection.AddAutocompleteProvider(typeof(ReminderAutoCompleteProvider));
 
         return Result.FromSuccess();
     }

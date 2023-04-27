@@ -28,17 +28,9 @@ public static class ServiceCollectionExtensions
     /// Adds RabbitMQ (via MassTransit) to the service collection.
     /// </summary>
     /// <param name="services">The services to add RabbitMQ to.</param>
-    /// <param name="config">A configuration to retrieve the connection string from.</param>
     /// <param name="addConsumers">A delegate to configure the bus further, most commonly adding consumers.</param>
     /// <returns>The configured service collection.</returns>
-    /// <remarks>
-    /// <para>
-    /// This method uses connection strings from the passed <paramref name="config"/> with the name of <code>"RabbitMQ"</code>.
-    ///
-    /// If this this is not present, it will not be known until `IBus` is resolved, and thusly, runtime exceptions may cause unexpected failure.
-    /// </para>
-    /// </remarks>
-    public static IServiceCollection AddRabbitMQ(this IServiceCollection services, IConfiguration config, Action<IBusRegistrationConfigurator>? addConsumers = null)
+    public static IServiceCollection AddRabbitMQ(this IServiceCollection services, Action<IBusRegistrationConfigurator>? addConsumers = null)
     {
         services.AddMassTransit
         (
@@ -52,7 +44,7 @@ public static class ServiceCollectionExtensions
 
         void Configure(IBusRegistrationContext ctx, IRabbitMqBusFactoryConfigurator rmq)
         {
-            var connString = config.GetConnectionString("RabbitMQ");
+            var connString = ctx.GetRequiredService<IConfiguration>().GetConnectionString("RabbitMQ");
 
             if (string.IsNullOrEmpty(connString))
             {
@@ -60,7 +52,7 @@ public static class ServiceCollectionExtensions
             }
 
             rmq.ConfigureEndpoints(ctx);
-            rmq.Host(new Uri(config.GetConnectionString("RabbitMQ")!));
+            rmq.Host(new Uri(connString));
 
             rmq.ExchangeType = ExchangeType.Direct;
 

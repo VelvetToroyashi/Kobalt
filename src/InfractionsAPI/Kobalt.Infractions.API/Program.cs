@@ -16,9 +16,9 @@ using Remora.Results;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddRabbitMQ();
 builder.Services.AddControllers();
 builder.Services.AddSerilogLogging();
-builder.Services.AddRabbitMQ(builder.Configuration);
 builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
 AddInfractionServices(builder.Services);
