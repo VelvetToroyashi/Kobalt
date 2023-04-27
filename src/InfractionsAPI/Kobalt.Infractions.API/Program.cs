@@ -26,7 +26,7 @@ AddInfractionServices(builder.Services);
 var app = builder.Build();
 app.MapControllers();
 
-app.MapPut("/infractions/guilds/{guildID}", async (HttpResponse response, ulong guildID, [FromBody] InfractionDTO infraction, IInfractionService infractions) =>
+app.MapPut("/infractions/guilds/{guildID}", async (ulong guildID, [FromBody] InfractionDTO infraction, IInfractionService infractions) =>
 {
     var now = DateTimeOffset.UtcNow;
     var result = await infractions.CreateInfractionAsync
@@ -49,6 +49,20 @@ app.MapPut("/infractions/guilds/{guildID}", async (HttpResponse response, ulong 
     return infraction.CreatedAt < now
         ? Results.Ok(infraction)
         : Results.CreatedAtRoute("/infractions/guilds/{guildID}/{id}", new { guildID, id = infraction.Id }, infraction);
+});
+
+app.MapPost("/infractions/guilds/{guildID}/rules/evaluate/{userID}", async (IInfractionService infractions, ulong guildID, ulong userID) =>
+{
+    var result = await infractions.EvaluateInfractionsAsync(guildID, userID);
+
+    if (result.IsDefined(out var matched))
+    {
+        return Results.Json(matched);
+    }
+    else
+    {
+        return Results.NoContent();
+    }
 });
 
 app.MapGet("/infractions/guilds/{guildID}/{id}", async (ulong guildID, int id, IMediator mediator) =>

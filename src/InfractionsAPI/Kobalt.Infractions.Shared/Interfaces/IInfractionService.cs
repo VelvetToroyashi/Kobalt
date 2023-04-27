@@ -28,7 +28,7 @@ public interface IInfractionService
         DateTimeOffset? expiresAt = null,
         int? referencedID = null
     );
-    
+
     /// <summary>
     /// Updates an existing infraction with the provided changes.
     /// </summary>
@@ -46,7 +46,13 @@ public interface IInfractionService
         Optional<bool> isHidden,
         Optional<DateTimeOffset?> expiresAt
     );
-    
 
+    /// <summary>
+    /// Evaluates a server's configured infraction rules, returning the first match, if any.
+    /// </summary>
+    /// <param name="guildID">The ID of the guild the rules should be evaluated on.</param>
+    /// <param name="userID">The ID of the user to evaluate infractions for.</param>
+    /// <returns>A match of the infraction, if any.</returns>
+    Task<Optional<InfractionRuleMatch>> EvaluateInfractionsAsync(ulong guildID, ulong userID);
 
 }

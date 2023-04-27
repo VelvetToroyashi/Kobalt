@@ -4,6 +4,7 @@ using Kobalt.Infractions.Data.Mediator;
 using Kobalt.Infractions.Infrastructure.Interfaces;
 using Kobalt.Infractions.Infrastructure.Mediator;
 using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
+using Kobalt.Infractions.Infrastructure.Mediator.Mediator;
 using Kobalt.Infractions.Shared;
 using MassTransit;
 using Mediator;
@@ -117,6 +118,56 @@ public class InfractionService : BackgroundService, IInfractionService
         }
 
         return infraction;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Optional<InfractionRuleMatch>> EvaluateInfractionsAsync(ulong guildID, ulong userID)
+    {
+        var rules = await _mediator.Send(new GetGuildInfractionRulesRequest(guildID));
+
+        if (!rules.Any())
+        {
+            return default;
+        }
+
+        var infractions = await _mediator.Send(new GetInfractionsForUserRequest(guildID, userID));
+
+        if (!infractions.Any())
+        {
+            return default;
+        }
+
+        // Get all infractions that have not been pardoned, else we'd erroneously
+        // esclate infractions retroactively.
+        var nonPardonedInfractions = infractions
+                                    .Where(inf => inf.Type is >= InfractionType.Kick and <= InfractionType.Warning)
+                                    .Where(inf => infractions.All(i => i.ReferencedId != inf.Id))
+                                    .ToArray();
+
+        if (!nonPardonedInfractions.Any())
+        {
+            return default;
+        }
+
+        // Group so we can avoid potentially making multiple queries for the same type.
+        foreach (var ruleGroup in rules.GroupBy(g => g.MatchType))
+        {
+            var preliminaryFilter = nonPardonedInfractions.Where(inf => inf.Type == ruleGroup.Key).ToArray();
+
+            foreach (var rule in ruleGroup)
+            {
+                var matchPeriod = rule.EffectiveTimespan ?? TimeSpan.MaxValue;
+                var meetsThreshold = preliminaryFilter.Length >= rule.MatchValue;
+                var meetsTimeThreshold = preliminaryFilter.Count(inf => inf.CreatedAt > DateTimeOffset.UtcNow.Add(-matchPeriod)) >= rule.MatchValue;
+
+                if (meetsThreshold && meetsTimeThreshold)
+                {
+                    return new InfractionRuleMatch(rule.ActionType, rule.ActionDuration);
+                }
+            }
+        }
+
+        return default;
     }
 
     private async Task UnloadQueueAsync()
