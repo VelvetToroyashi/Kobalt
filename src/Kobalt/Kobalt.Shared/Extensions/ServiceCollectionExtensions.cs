@@ -52,6 +52,13 @@ public static class ServiceCollectionExtensions
 
         void Configure(IBusRegistrationContext ctx, IRabbitMqBusFactoryConfigurator rmq)
         {
+            var connString = config.GetConnectionString("RabbitMQ");
+
+            if (string.IsNullOrEmpty(connString))
+            {
+                throw new InvalidOperationException("RabbitMQ connection string was not present in the configuration.");
+            }
+
             rmq.ConfigureEndpoints(ctx);
             rmq.Host(new Uri(config.GetConnectionString("RabbitMQ")!));
 
