@@ -20,7 +20,18 @@ public class InfractionPlugin : IPluginDescriptor
 
     public Result ConfigureServices(IServiceCollection serviceCollection)
     {
-        serviceCollection.AddHttpClient("Infractions", (s, c) => c.BaseAddress = new(s.GetService<IConfiguration>()!["Plugins:Infractions:ApiUrl"]!));
+        serviceCollection.AddHttpClient
+        (
+            "Infractions",
+            (s, c) =>
+            {
+                var address = s.GetService<IConfiguration>()!["Plugins:Infractions:ApiUrl"] ??
+                              throw new KeyNotFoundException("The API url was not configured.");
+
+                c.BaseAddress = new Uri(address);
+            }
+        );
+
         serviceCollection.AddSingleton<InfractionAPIService>();
 
         serviceCollection.AddCommandTree().WithCommandGroup<KickCommand>();
