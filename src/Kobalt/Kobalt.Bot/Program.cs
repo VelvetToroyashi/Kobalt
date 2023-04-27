@@ -71,10 +71,11 @@ host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper ha
     {
         var hasHeaders = DiscordHeaders.TryExtractHeaders(ctx.Request.Headers, out var timestamp, out var signature);
         var body = await new StreamReader(ctx.Request.Body).ReadToEndAsync();
-        
+
         if (!hasHeaders || !DiscordHeaders.VerifySignature(body, timestamp!, signature!, config.Value.Discord.PublicKey!))
         {
             ctx.Response.StatusCode = 401;
+            Console.WriteLine("Interaction Validation Failed.");
             return;
         }
 
@@ -82,6 +83,7 @@ host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper ha
         if (!result.IsDefined(out var content))
         {
             ctx.Response.StatusCode = 500;
+            Console.WriteLine($"Interaction Handling Failed. Result: {result.Error}");
             return;
         }
 
@@ -94,7 +96,7 @@ host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper ha
         else
         {
             var ret = new MultipartResult().AddPayload(new MemoryStream(Encoding.UTF8.GetBytes(result.Entity.Item1)));
-            
+
             foreach ((var key, var value) in result.Entity.Item2.Value)
                 ret.Add(key, value);
 
@@ -109,10 +111,10 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 {
     var config = hostConfig.Get<KobaltConfig>()!;
     services.AddSingleton(Options.Create(config));
-    
+
     builder.Services.AddMediator();
     builder.Services.AddDbContextFactory<KobaltContext>("Kobalt");
-    
+
     var token = config.Discord.Token;
 
     services.AddDiscordGateway(_ => token);
@@ -123,7 +125,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddInteractivityFromAssembly(Assembly.GetExecutingAssembly());
     services.AddHostedService<KobaltDiscordGatewayService>();
     services.AddTransient<ImageOverlayService>();
-    
+
     services.AddPostExecutionEvent<PostExecutionHandler>();
 
     const string CacheKey = "<>k__SelfUserCacheKey_d270867";
@@ -133,23 +135,23 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
         {
             var cache = provider.GetRequiredService<IMemoryCache>();
             var users = provider.GetRequiredService<IDiscordRestUserAPI>();
-            
+
             var result = await users.GetCurrentUserAsync();
-            
+
             if (!result.IsSuccess)
             {
                 Log.Fatal("Failed to get current user: {Error}", result.Error);
                 throw new InvalidOperationException("Failed to get current user");
             }
-            
+
             cache.Set(CacheKey, result.Entity);
         }
     );
 
     services.AddSingleton<IUser>(s => s.GetRequiredService<IMemoryCache>().Get<IUser>(CacheKey)!);
-    
+
     services.AddTransient<IChannelLoggerService, ChannelLoggerService>();
-    
+
     services.AddOffsetServices();
     services.AddMemoryCache();
 
@@ -159,7 +161,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(Policy<HttpResponseMessage>.Handle<HttpRequestException>().WaitAndRetryAsync(5, i => TimeSpan.FromSeconds(Math.Log(i * i) + 1)));
 
     services.AddCondition<EnsureHierarchyCondition>();
-    
+
     services.Configure<DiscordGatewayClientOptions>
     (
         options =>
@@ -183,5 +185,6 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     );
 
     services.AddInteractivity();
+    services.AddRespondersFromAssembly(Assembly.GetExecutingAssembly());
     services.AddInteractivityFromAssembly(Assembly.GetExecutingAssembly());
 }
