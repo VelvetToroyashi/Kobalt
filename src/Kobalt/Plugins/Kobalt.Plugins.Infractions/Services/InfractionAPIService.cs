@@ -22,7 +22,6 @@ namespace Kobalt.Plugins.Infractions.Services;
 
 public class InfractionAPIService : IConsumer<InfractionDTO>
 {
-    private readonly Uri _apiUrl;
     private readonly IUser _self;
     private readonly HttpClient _client;
     private readonly IDiscordRestUserAPI _users;
@@ -46,7 +45,6 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     )
     {
         _self = self;
-        _apiUrl = new Uri(config["Plugins:Infractions:WebsocketUrl"]!);
         _client = client.CreateClient("Infractions");
         _users = users;
         _guilds = guilds;
@@ -264,7 +262,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     {
         var payload = new InfractionCreatePayload(reason, userID.Value, moderatorID.Value, null, type, DateTimeOffset.UtcNow + duration);
 
-        var response = await _client.PutAsJsonAsync($"{_apiUrl}/guilds/{guildID}", payload, _serializerOptions);
+        var response = await _client.PutAsJsonAsync($"/infractions/guilds/{guildID}", payload, _serializerOptions);
 
         if (!response.IsSuccessStatusCode)
         {
