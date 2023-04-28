@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Kobalt.Infractions.API.Services;
 using Kobalt.Infractions.Data;
 using Kobalt.Infractions.Data.Mediator;
@@ -11,6 +13,8 @@ using Kobalt.Shared.Extensions;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Remora.Rest.Json;
+using Remora.Rest.Json.Policies;
 using Remora.Results;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +26,18 @@ builder.Services.AddSerilogLogging();
 builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
 AddInfractionServices(builder.Services);
+
+var configure = (JsonSerializerOptions options) =>
+{
+    options.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
+    options.PropertyNamingPolicy = new SnakeCaseNamingPolicy();
+    options.Converters.Insert(0, new SnowflakeConverter(1420070400000));
+    options.Converters.Insert(1, new ISO8601DateTimeOffsetConverter());
+};
+
+builder.Services
+       .Configure(configure)
+       .ConfigureHttpJsonOptions(opt => configure(opt.SerializerOptions));
 
 var app = builder.Build();
 app.MapControllers();
