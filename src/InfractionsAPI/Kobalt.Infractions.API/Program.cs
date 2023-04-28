@@ -48,7 +48,7 @@ app.MapPut("/infractions/guilds/{guildID}", async (ulong guildID, [FromBody] Inf
     // If the infraction is freshly created, return 201, otherwise 200.
     return infraction.CreatedAt < now
         ? Results.Ok(infraction)
-        : Results.CreatedAtRoute("/infractions/guilds/{guildID}/{id}", new { guildID, id = infraction.Id }, infraction);
+        : Results.Created($"/infractions/guilds/{guildID}/{infraction.Id}", infraction);
 });
 
 app.MapPost("/infractions/guilds/{guildID}/rules/evaluate/{userID}", async (IInfractionService infractions, ulong guildID, ulong userID) =>
