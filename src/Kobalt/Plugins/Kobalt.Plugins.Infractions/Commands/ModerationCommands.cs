@@ -163,18 +163,17 @@ public class ModerationCommands : CommandGroup
     }
 
     [Command("note")]
-    [Description("Warns a user on the guild.")]
+    [Description("Sets a note on the user's record.")]
     public async Task<Result> NoteAsync
     (
-        [Description("The user to be warned.")]
+        [Description("The user to add a note for.")]
         [EnsureHierarchy(HierarchyTarget.Self, HierarchyLevel.Higher)]
         [EnsureHierarchy(HierarchyTarget.Invoker, HierarchyLevel.Higher)]
         IUser target,
 
-        [Description("The reason for the warning.")]
+        [Description("The reason for the note.")]
         string reason = "Not Given.",
 
-        [Option("case_id")]
         [Description("The ID of the case to attach this note to.")]
         int? caseID = null
     )
