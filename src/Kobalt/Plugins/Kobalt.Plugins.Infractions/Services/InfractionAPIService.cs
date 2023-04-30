@@ -70,7 +70,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             return Result.FromError(infractionResult.Error);
         }
 
-        var kickResult = await _guilds.RemoveGuildMemberAsync(guildID, user.ID, reason.Truncate(100));
+        var kickResult = await _guilds.RemoveGuildMemberAsync(guildID, user.ID, reason.Truncate(500));
 
         if (!kickResult.IsSuccess)
         {
@@ -102,7 +102,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             return Result.FromError(infractionResult.Error);
         }
 
-        var banResult = await _guilds.CreateGuildBanAsync(guildID, user.ID, (Optional<int>)(int?)duration?.TotalSeconds, reason.Truncate(100));
+        var banResult = await _guilds.CreateGuildBanAsync(guildID, user.ID, (Optional<int>)(int?)duration?.TotalSeconds, reason.Truncate(500));
 
         if (!banResult.IsSuccess)
         {
@@ -144,7 +144,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             guildID,
             user.ID,
             communicationDisabledUntil: DateTimeOffset.UtcNow + duration,
-            reason: reason.Truncate(100)
+            reason: reason.Truncate(500)
         );
 
         var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);

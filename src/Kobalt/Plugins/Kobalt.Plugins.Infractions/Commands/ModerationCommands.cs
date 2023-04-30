@@ -12,6 +12,7 @@ using Remora.Results;
 namespace Kobalt.Plugins.Infractions.Commands;
 
 [Group("moderation")]
+[RequireContext(ChannelContext.Guild)]
 public class ModerationCommands : CommandGroup
 {
     private readonly IInteractionContext _context;
@@ -27,7 +28,7 @@ public class ModerationCommands : CommandGroup
 
     [Command("kick")]
     [Description("Kicks a user from the guild.")]
-    [RequireContext(ChannelContext.Guild)]
+    [RequireDiscordPermission(DiscordPermission.KickMembers)]
     public async Task<Result> KickAsync
     (
         [Description("The user to be kicked.")]
