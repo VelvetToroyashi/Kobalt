@@ -35,9 +35,9 @@ public class CorePlugin : PluginDescriptor, IMigratablePlugin
 
         var asm = typeof(CorePlugin).Assembly;
 
-        services.AddCommandGroupsFromAssembly(asm, typeFilter: t => !t.IsNested);
+        services.AddRespondersFromAssembly(asm);
         services.AddInteractivityFromAssembly(asm);
-
+        services.AddCommandGroupsFromAssembly(asm, typeFilter: t => !t.IsNested);
         return Result.FromSuccess();
     }
 
