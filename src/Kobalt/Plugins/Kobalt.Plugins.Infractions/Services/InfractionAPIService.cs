@@ -159,6 +159,14 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
         return Result.FromSuccess();
     }
 
+    /// <summary>
+    /// Strikes (or warns) a user in a guild.
+    /// </summary>
+    /// <param name="guildID">The ID of the guild the warning is being issued in.</param>
+    /// <param name="user">The user being warned.</param>
+    /// <param name="moderator">The moderator responsible for warning the user.</param>
+    /// <param name="reason">The reason the user is being warned.</param>
+    /// <returns></returns>
     public async Task<Result> WarnAsync(Snowflake guildID, IUser user, IUser moderator, string reason)
     {
         var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Warning);
