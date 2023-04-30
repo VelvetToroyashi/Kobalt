@@ -81,7 +81,6 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
 
         await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
 
-        await TryEscalateInfractionAsync(guildID, user);
         return Result.FromSuccess();
     }
 
@@ -113,8 +112,6 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
         var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
 
         await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
-
-        await TryEscalateInfractionAsync(guildID, user);
 
         return Result.FromSuccess();
     }
@@ -153,7 +150,6 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
         var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
 
         await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
-        await TryEscalateInfractionAsync(guildID, user);
 
         if (!muteRoleResult.IsSuccess)
         {
@@ -176,12 +172,20 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
 
         await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
 
-        await TryEscalateInfractionAsync(guildID, user);
-
         return Result.FromSuccess();
     }
 
-    private async Task<Result> TryEscalateInfractionAsync(Snowflake guildID, IUser user)
+    /// <summary>
+    /// Attempts to escalate an infraction for a user in a guild, using the Guild's configured rules.
+    /// </summary>
+    /// <param name="guildID">The ID of the guild to escalate. </param>
+    /// <param name="user">The user to escalate the infraction for.</param>
+    /// <remarks>
+    /// This method only *attmepts* to escalate an infraction, automatically handling invoking the correct method
+    /// if a rule matches (e.g. three mutes in an hour ➜ ban). If no rule matches, this method will return a successful
+    /// content, as the API returns 204 No Content if no rule matches.
+    /// </remarks>
+    public async Task<Result> TryEscalateInfractionAsync(Snowflake guildID, IUser user)
     {
         using var rulesResult = await _client.PostAsync($"/infractions/guilds/{guildID}/rules/evaluate/{user.ID}", null);
 
