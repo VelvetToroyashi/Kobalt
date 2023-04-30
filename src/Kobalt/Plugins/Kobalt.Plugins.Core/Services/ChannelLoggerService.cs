@@ -10,12 +10,12 @@ using Remora.Discord.API.Objects;
 using Remora.Rest.Core;
 using Remora.Results;
 
-namespace Kobalt.Core.Services.Discord;
+namespace Kobalt.Plugins.Core.Services;
 
 public class ChannelLoggerService : IChannelLoggerService
 {
     private const string WebhookName = "Kobalt";
-    
+
     private sealed record LogChannelContent(LogChannelDTO ChannelContext, Optional<string> Content, Optional<IReadOnlyList<Embed>> Embeds);
 
     private readonly IUser _self;
@@ -29,7 +29,7 @@ public class ChannelLoggerService : IChannelLoggerService
         IUser self,
         IMediator mediator,
         IHttpClientFactory factory,
-        IDiscordRestChannelAPI channels, 
+        IDiscordRestChannelAPI channels,
         IDiscordRestWebhookAPI webhooks
     )
     {
@@ -52,18 +52,18 @@ public class ChannelLoggerService : IChannelLoggerService
         {
             return new InvalidOperationError("Content or embeds must be provided.");
         }
-        
+
         if (content.OrDefault()?.Length > 2000)
         {
             return new InvalidOperationError("Content must be less than 2000 characters.");
         }
-        
+
         var channels = await _mediator.Send(new GetLoggingChannels.Request(guildID, type));
-        
+
         foreach (var channel in channels)
         {
             var channelContent = new LogChannelContent(channel, content, embeds);
-            
+
             await SendLogAsync(channelContent, CancellationToken.None);
         }
 
@@ -91,7 +91,7 @@ public class ChannelLoggerService : IChannelLoggerService
                 return;
             }
         }
-        
+
         var sendMessageResult = await _channels.CreateMessageAsync
         (
             content.ChannelContext.ChannelID,
@@ -106,7 +106,7 @@ public class ChannelLoggerService : IChannelLoggerService
             // TODO: Log
         }
     }
-    
+
     private async Task<Result<IWebhook>> GetWebhookAsync(LogChannelDTO channel, CancellationToken ct)
     {
         if (channel.WebhookID.HasValue)
@@ -119,7 +119,7 @@ public class ChannelLoggerService : IChannelLoggerService
 
             return existingWebhook;
         }
-        
+
         var avatarStream = await _httpClient.GetStreamAsync(CDN.GetUserAvatarUrl(_self).Entity, CancellationToken.None);
 
         var webhook = await _webhooks.CreateWebhookAsync
@@ -139,7 +139,7 @@ public class ChannelLoggerService : IChannelLoggerService
         var webhookToken = webhook.Entity.Token;
 
         var update = await _mediator.Send(new UpdateLoggingChannel.Request(channel.ChannelID, webhookID, webhookToken.Value), ct);
-        
+
         if (!update.IsSuccess)
         {
             return Result<IWebhook>.FromError(update);

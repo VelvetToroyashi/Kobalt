@@ -37,7 +37,7 @@ public class E621Command : CommandGroup
         _interactions = interactions;
         _context = context;
     }
-    
+
     [Command("e621")]
     //[RequireNSFW]
     [Description("Searches E621 for images.")]
@@ -45,7 +45,7 @@ public class E621Command : CommandGroup
     (
         [Description("The tags to search for.")]
         string tags,
-        
+
         [MinValue(1)]
         [MaxValue(5)]
         [Description("How many images to return.")]
@@ -58,7 +58,7 @@ public class E621Command : CommandGroup
              _context.Interaction.Token,
              "<:_:859424401723883560> Searching..."
         );
-        
+
         var searchResult = await _booru.SearchAsync(count, tags);
 
         if (!searchResult.IsSuccess)
@@ -75,7 +75,7 @@ public class E621Command : CommandGroup
 
         var embeds = GetEmbeds(tags, searchResult.Entity);
         var components = GetComponents(searchResult.Entity);
-        
+
         var res = (Result)await _interactions.EditOriginalInteractionResponseAsync
         (
             _context.Interaction.ApplicationID,
@@ -84,7 +84,7 @@ public class E621Command : CommandGroup
             embeds: new(embeds),
             components: new(components)
         );
-        
+
         return res;
     }
 
@@ -97,7 +97,7 @@ public class E621Command : CommandGroup
     {
         // N.B. If this is changed, update Interactivity/E621Responder.cs as well.
         var components = new IActionRowComponent[2];
-        
+
         components[0] = new ActionRowComponent
         (
             new[]
@@ -109,14 +109,14 @@ public class E621Command : CommandGroup
 
         var directLinks = new ButtonComponent[search.Posts.Count];
         var sourceLinks = new ButtonComponent[search.Posts.Count];
-        
+
         for (int i = 0; i < search.Posts.Count; i++)
         {
             var post = search.Posts[i];
             var sourceLink = post.Sources.FirstOrDefault()?.ToString() ?? "https://e621.net";
             sourceLinks[i] = new(ButtonComponentStyle.Link, $"Source {i + 1}​ ​ ​ ", URL: sourceLink, IsDisabled: !post.Sources.Any());
         }
-        
+
         components[1] = new ActionRowComponent(sourceLinks);
 
         return components;

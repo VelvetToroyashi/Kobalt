@@ -7,7 +7,7 @@ namespace Kobalt.Core.Handlers;
 public class PostExecutionHandler : IPostExecutionEvent
 {
     private readonly ILogger<PostExecutionHandler> _logger;
-    
+
     public PostExecutionHandler(ILogger<PostExecutionHandler> logger) => _logger = logger;
 
     public Task<Result> AfterExecutionAsync(ICommandContext context, IResult commandResult, CancellationToken ct)

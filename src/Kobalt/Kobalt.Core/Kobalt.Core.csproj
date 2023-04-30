@@ -10,26 +10,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="MediatR" Version="12.0.1" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-preview.2.23128.3" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0-preview.2.23128.3" />
       <PackageReference Include="Remora.Discord.Caching" Version="35.0.0" />
       <PackageReference Include="Remora.Discord.Commands" Version="26.2.3" />
-      <PackageReference Include="Remora.Discord.Extensions" Version="5.3.0" />
       <PackageReference Include="Remora.Discord.Gateway" Version="11.0.6" />
-      <PackageReference Include="Remora.Discord.Interactivity" Version="4.4.6" />
       <PackageReference Include="Serilog" Version="3.0.0-dev-01950" />
       <PackageReference Include="Serilog.Expressions" Version="3.4.2-dev-00119" />
       <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.1-dev-10338" />
       <PackageReference Include="Serilog.Sinks.Console" Version="4.1.1-dev-00910" />
-      <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
-      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta15" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0-preview.2.23128.3" />
         <PackageReference Include="VTP.Remora.Discord.HTTPInteractions" Version="1.0.2" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Kobalt.Data\Kobalt.Data.csproj" />
       <ProjectReference Include="..\Kobalt.Infrastructure\Kobalt.Infrastructure.csproj" />
       <ProjectReference Include="..\Kobalt.Shared\Kobalt.Shared.csproj" />
     </ItemGroup>

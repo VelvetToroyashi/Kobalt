@@ -44,6 +44,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Data", "src\Kobalt\K
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Plugins.Infractions", "src\Kobalt\Plugins\Kobalt.Plugins.Infractions\Kobalt.Plugins.Infractions.csproj", "{BC9440A1-E3A7-4FD1-B777-9BF23CD01A78}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Plugins.Core", "src\Kobalt\Plugins\Kobalt.Plugins.Core\Kobalt.Plugins.Core.csproj", "{BC2ECFAA-4BAA-4EB3-B91D-C5882E806CC1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,6 +72,7 @@ Global
 		{6EABD48E-336C-463F-B291-A1241E929B43} = {543CB4DB-5FF0-41E4-B059-CBE278DAE3E3}
 		{15AD6BB5-32DB-401B-9C7B-4CA8A49A0443} = {1730CE80-5D10-487B-96EB-6BDE64698E01}
 		{BC9440A1-E3A7-4FD1-B777-9BF23CD01A78} = {543CB4DB-5FF0-41E4-B059-CBE278DAE3E3}
+		{BC2ECFAA-4BAA-4EB3-B91D-C5882E806CC1} = {543CB4DB-5FF0-41E4-B059-CBE278DAE3E3}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{89718D44-70D2-4AC6-BF7D-DCC47613169B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -114,5 +117,9 @@ Global
 		{BC9440A1-E3A7-4FD1-B777-9BF23CD01A78}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC9440A1-E3A7-4FD1-B777-9BF23CD01A78}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC9440A1-E3A7-4FD1-B777-9BF23CD01A78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC2ECFAA-4BAA-4EB3-B91D-C5882E806CC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC2ECFAA-4BAA-4EB3-B91D-C5882E806CC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC2ECFAA-4BAA-4EB3-B91D-C5882E806CC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC2ECFAA-4BAA-4EB3-B91D-C5882E806CC1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

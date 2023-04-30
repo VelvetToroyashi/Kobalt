@@ -1,19 +1,13 @@
 ﻿using System.Reflection;
 using System.Text;
 using Kobalt.Core.Handlers;
-using Kobalt.Core.Services;
 using Kobalt.Core.Services.Discord;
-using Kobalt.Data;
 using Kobalt.Infrastructure;
-using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services;
-using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
 using Kobalt.ReminderService.API.Extensions;
 using Kobalt.Shared.Extensions;
-using Kobalt.Shared.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Polly;
@@ -25,7 +19,6 @@ using Remora.Discord.API.Gateway.Commands;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Commands.Responders;
-using Remora.Discord.Extensions.Extensions;
 using Remora.Discord.Gateway;
 using Remora.Discord.Gateway.Extensions;
 using Remora.Discord.Interactivity.Extensions;
@@ -51,7 +44,6 @@ if (!initResult.IsSuccess)
     return;
 }
 
-// TODO: replace either with runtimeProperties.json or a config
 builder.WebHost.ConfigureKestrel(c => c.ListenLocalhost(builder.Configuration.GetKobaltConfig().ApiPort));
 builder.Host.AddStartupTaskSupport();
 
@@ -64,8 +56,6 @@ if (!initResult.IsSuccess)
     Log.Fatal("Failed to initialize plugins: {Error}", initResult.Error);
     return;
 }
-
-await host.Services.GetRequiredService<IDbContextFactory<KobaltContext>>().CreateDbContext().Database.MigrateAsync();
 
 host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper handler, IOptions<KobaltConfig> config) =>
     {
@@ -91,7 +81,6 @@ host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper ha
         {
             ctx.Response.Headers.ContentType = "application/json";
             await ctx.Response.WriteAsync(content.Item1);
-            return;
         }
         else
         {
@@ -112,23 +101,15 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     var config = hostConfig.Get<KobaltConfig>()!;
     services.AddSingleton(Options.Create(config));
 
-    builder.Services.AddMediatR(s => s.RegisterServicesFromAssemblyContaining<KobaltContext>()
-                                      .RegisterServicesFromAssemblyContaining<Program>());
-
-    builder.Services.AddDbContextFactory<KobaltContext>("Kobalt");
-
     var token = config.Discord.Token;
 
-    services.AddDiscordGateway(_ => token);
-    services.AddHTTPInteractionAPIs();
+    services.AddInteractivity();
     services.AddDiscordCommands(true);
-    services.Configure<InteractionResponderOptions>(s => s.UseEphemeralResponses = true);
-    services.AddCommandGroupsFromAssembly(Assembly.GetExecutingAssembly(), typeFilter: t => !t.IsNested);
-    services.AddInteractivityFromAssembly(Assembly.GetExecutingAssembly());
-    services.AddHostedService<KobaltDiscordGatewayService>();
-    services.AddTransient<ImageOverlayService>();
-
+    services.AddHTTPInteractionAPIs();
+    services.AddDiscordGateway(_ => token);
     services.AddPostExecutionEvent<PostExecutionHandler>();
+    services.AddHostedService<KobaltDiscordGatewayService>();
+    services.Configure<InteractionResponderOptions>(s => s.UseEphemeralResponses = true);
 
     const string CacheKey = "<>k__SelfUserCacheKey_d270867";
     services.AddStartupTask
@@ -152,17 +133,9 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
     services.AddSingleton<IUser>(s => s.GetRequiredService<IMemoryCache>().Get<IUser>(CacheKey)!);
 
-    services.AddTransient<IChannelLoggerService, ChannelLoggerService>();
-
-    services.AddOffsetServices();
     services.AddMemoryCache();
-
-    services.AddHttpClient("booru");
-    services.AddTransient<BooruSearchService>();
-
-    services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(Policy<HttpResponseMessage>.Handle<HttpRequestException>().WaitAndRetryAsync(5, i => TimeSpan.FromSeconds(Math.Log(i * i) + 1)));
-
     services.AddCondition<EnsureHierarchyCondition>();
+    services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(Policy<HttpResponseMessage>.Handle<HttpRequestException>().WaitAndRetryAsync(5, i => TimeSpan.FromSeconds(Math.Log(i * i) + 1)));
 
     services.Configure<DiscordGatewayClientOptions>
     (
@@ -185,8 +158,4 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
             );
         }
     );
-
-    services.AddInteractivity();
-    services.AddRespondersFromAssembly(Assembly.GetExecutingAssembly());
-    services.AddInteractivityFromAssembly(Assembly.GetExecutingAssembly());
 }

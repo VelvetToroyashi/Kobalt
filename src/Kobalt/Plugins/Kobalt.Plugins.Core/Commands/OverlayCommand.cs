@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using Kobalt.Core.Services;
+using Kobalt.Plugins.Core.Services;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Abstractions.Objects;
@@ -7,14 +7,14 @@ using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.Commands.Attributes;
 using Remora.Discord.Commands.Contexts;
 
-namespace Kobalt.Core.Commands;
+namespace Kobalt.Plugins.Core.Commands;
 
 public class OverlayCommand : CommandGroup
 {
     private readonly ImageOverlayService _overlay;
     private readonly IDiscordRestInteractionAPI _interactions;
     private readonly IInteractionCommandContext _context;
-    
+
     public OverlayCommand(ImageOverlayService overlay, IDiscordRestInteractionAPI interactions, IInteractionCommandContext context)
     {
         _overlay = overlay;
@@ -29,15 +29,15 @@ public class OverlayCommand : CommandGroup
     (
         [Description("The image to apply the overlay to.")]
         IAttachment @base,
-        
+
         [Description("The image to overlay on top of the base image.")]
         IAttachment overlay,
-        
+
         [MinValue(50)]
         [MaxValue(100)]
         [Description("The intensity of the overlay.")]
         float intensity = 100f,
-        
+
         [MinValue(0)]
         [MaxValue(100)]
         [Description("The position of the overlay.")]
@@ -62,7 +62,7 @@ public class OverlayCommand : CommandGroup
             _context.Interaction.Token,
             $"There was an error processing your request. {result.Error.Message}"
         );
-            
+
         return (Result)result;
     }
 }

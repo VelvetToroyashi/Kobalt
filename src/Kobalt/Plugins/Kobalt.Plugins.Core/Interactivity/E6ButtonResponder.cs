@@ -11,13 +11,13 @@ public class E6ButtonResponder : InteractionGroup
 {
     private readonly IInteractionContext _context;
     private readonly IDiscordRestInteractionAPI _api;
-    
+
     public E6ButtonResponder(IInteractionContext context, IDiscordRestInteractionAPI api)
     {
         _context = context;
         _api = api;
     }
-    
+
     /// <summary>
     /// Converts the embeds to be seperate (mobile-friendly).
     /// </summary>
@@ -51,7 +51,7 @@ public class E6ButtonResponder : InteractionGroup
             )
         );
     }
-    
+
     /// <summary>
     /// Converts the embeds to be joined (desktop-friendly).
     /// </summary>
@@ -97,17 +97,17 @@ public class E6ButtonResponder : InteractionGroup
         for (int i = 0; i < realComponents.Length; i++)
         {
             var buildingComponents = new List<IMessageComponent>();
-            
+
             for (int j = 0; j < realComponents[i].Components.Count; j++)
             {
                 var button = (IButtonComponent)realComponents[i].Components[j];
-                
+
                 if (!button.CustomID.IsDefined(out var customID))
                 {
                     buildingComponents.Add(button);
                     continue;
                 }
-                
+
                 if (customID.EndsWith("e6-mobile-mode"))
                 {
                     buildingComponents.Add
@@ -136,10 +136,10 @@ public class E6ButtonResponder : InteractionGroup
                 }
 
             }
-            
+
             returnComponents[i] = new ActionRowComponent(buildingComponents);
         }
-        
+
         return returnComponents;
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
-using Kobalt.Core.Services;
 using Kobalt.Data.Mediator;
+using Kobalt.Plugins.Core.Services;
 using MediatR;
 using NodaTime;
 using Remora.Commands.Attributes;
@@ -24,7 +24,7 @@ public class UserSettingsCommand : CommandGroup
         private readonly IInteractionContext _context;
         private readonly IDateTimeZoneProvider _timezoneProvider;
         private readonly IDiscordRestInteractionAPI _interactions;
-        
+
         public Timezone(IMediator mediator, IInteractionContext context, IDateTimeZoneProvider timezoneProvider, IDiscordRestInteractionAPI interactions)
         {
             _mediator = mediator;
@@ -41,7 +41,7 @@ public class UserSettingsCommand : CommandGroup
             [Description("Your timezone.")]
             [AutocompleteProvider("TimezoneAutocomplete")]
             string timezone,
-            
+
             [Option("share_timezone")]
             [Description("Whether you want to share your timezone with other users.")]
             bool? displayTimezone = null
@@ -53,12 +53,12 @@ public class UserSettingsCommand : CommandGroup
             }
 
             var timezoneResult = TimeHelper.GetDateTimeZoneFromString(timezone, _timezoneProvider);
-            
+
             if (!timezoneResult.IsDefined(out var extractedTimezone))
             {
                 return (Result)timezoneResult;
             }
-            
+
             await _mediator.Send(new UpdateUser.Request(userId.Value, timezone, displayTimezone.AsOptional()));
 
             var now = Instant.FromDateTimeOffset(DateTimeOffset.UtcNow);

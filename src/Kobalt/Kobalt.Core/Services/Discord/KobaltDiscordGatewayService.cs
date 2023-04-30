@@ -21,7 +21,7 @@ public sealed class KobaltDiscordGatewayService : BackgroundService
     private readonly IOptions<KobaltConfig> _config;
     private readonly IHostApplicationLifetime _lifetime;
     private readonly ILogger<KobaltDiscordGatewayService> _logger;
-    
+
     public KobaltDiscordGatewayService
     (
         SlashService slashApi,
@@ -60,19 +60,19 @@ public sealed class KobaltDiscordGatewayService : BackgroundService
         {
             gatewayResult = e;
         }
-        
+
         if (!gatewayResult.IsSuccess)
         {
             _lifetime.StopApplication();
         }
     }
-    
+
     private async Task<Result> RegisterSlashCommandsAsync()
     {
         _logger.LogDebug("Attempting to register slash commands.");
-        
+
         var result = await _slashAPI.UpdateSlashCommandsAsync();
-        
+
         if (!result.IsSuccess)
         {
             _logger.LogError("Failed to register slash commands: {Error}", result.Error);
