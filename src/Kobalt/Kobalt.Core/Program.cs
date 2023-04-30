@@ -103,10 +103,10 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
     var token = config.Discord.Token;
 
-    services.AddInteractivity();
-    services.AddDiscordCommands(true);
-    services.AddHTTPInteractionAPIs();
     services.AddDiscordGateway(_ => token);
+    services.AddInteractivity();
+    services.AddHTTPInteractionAPIs();
+    services.AddDiscordCommands(true);
     services.AddPostExecutionEvent<PostExecutionHandler>();
     services.AddHostedService<KobaltDiscordGatewayService>();
     services.Configure<InteractionResponderOptions>(s => s.UseEphemeralResponses = true);
