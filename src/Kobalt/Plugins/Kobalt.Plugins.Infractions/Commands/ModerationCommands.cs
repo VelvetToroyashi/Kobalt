@@ -40,7 +40,7 @@ public class ModerationCommands : CommandGroup
         string reason = "Not Given."
     )
     {
-        var result = await _apiService.KickUserAsync(_context.Interaction.GuildID.Value, target, _context.Interaction.Member.Value.User.Value, reason);
+        var result = await _apiService.AddUserKickAsync(_context.Interaction.GuildID.Value, target, _context.Interaction.Member.Value.User.Value, reason);
 
         if (!result.IsSuccess)
         {

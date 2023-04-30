@@ -11,7 +11,7 @@ public class BanNotificationHandler : INotificationHandler<BanUserNotification>
 
     public async Task Handle(BanUserNotification notification, CancellationToken cancellationToken)
     {
-        await _infractions.BanUserAsync
+        await _infractions.AddUserBanAsync
         (
             notification.GuildID,
             notification.Target,

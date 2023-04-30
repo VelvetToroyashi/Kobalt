@@ -61,7 +61,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     /// <param name="moderator">The moderator responsible.</param>
     /// <param name="reason">The reason they're being kicked.</param>
     /// <returns>A result that may or not be successful.</returns>
-    public async Task<Result> KickUserAsync(Snowflake guildID, IUser user, IUser moderator, string reason)
+    public async Task<Result> AddUserKickAsync(Snowflake guildID, IUser user, IUser moderator, string reason)
     {
         var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Kick);
 
@@ -93,7 +93,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     /// <param name="reason">The reason they're being banned.</param>
     /// <param name="duration">Optionally, how long </param>
     /// <returns>A result that may or not be successful.</returns>
-    public async Task<Result> BanUserAsync(Snowflake guildID, IUser user, IUser moderator, string reason, TimeSpan? duration = null, TimeSpan? period = null)
+    public async Task<Result> AddUserBanAsync(Snowflake guildID, IUser user, IUser moderator, string reason, TimeSpan? duration = null, TimeSpan? period = null)
     {
         var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Ban, duration);
 
@@ -125,7 +125,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     /// <param name="reason">The reason they're being muted.</param>
     /// <param name="duration">How long to mute them for. </param>
     /// <returns></returns>
-    public async Task<Result> MuteUserAsync(Snowflake guildID, IUser user, IUser moderator, string reason, TimeSpan duration)
+    public async Task<Result> AddUserMuteAsync(Snowflake guildID, IUser user, IUser moderator, string reason, TimeSpan duration)
     {
         if (duration > MaxMuteDuration)
         {
@@ -167,7 +167,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     /// <param name="moderator">The moderator responsible for warning the user.</param>
     /// <param name="reason">The reason the user is being warned.</param>
     /// <returns></returns>
-    public async Task<Result> WarnAsync(Snowflake guildID, IUser user, IUser moderator, string reason)
+    public async Task<Result> AddUserStrikeAsync(Snowflake guildID, IUser user, IUser moderator, string reason)
     {
         var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Warning);
 
@@ -191,7 +191,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     /// <param name="moderator">The moderator responsible for noting the user.</param>
     /// <param name="reason">The reason of the note.</param>
     /// <param name="caseID">The ID of the case this note refers to.</param>
-    public async Task<Result> NoteAsync(Snowflake guildID, IUser user, IUser moderator, string reason, int? caseID = null)
+    public async Task<Result> AddUserNoteAsync(Snowflake guildID, IUser user, IUser moderator, string reason, int? caseID = null)
     {
         var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Note);
 
@@ -214,7 +214,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     /// <param name="user">The user being unbaned.</param>
     /// <param name="moderator">The moderator responsible for unbaning the user.</param>
     /// <param name="reason">The reason the user is being unbaned.</param>
-    public async Task<Result> Unban(Snowflake guildID, IUser user, IUser moderator, string reason)
+    public async Task<Result> AddUserUnbanAsync(Snowflake guildID, IUser user, IUser moderator, string reason)
     {
         var unbanResult = await _guilds.RemoveGuildBanAsync(guildID, user.ID, reason.Truncate(500));
 
@@ -321,9 +321,9 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
 
             var res = await (match!.Type switch
             {
-                InfractionType.Kick => KickUserAsync(guildID, user, _self, "Automatic case esclation."),
-                InfractionType.Ban  => BanUserAsync(guildID, user, _self, "Automatic case esclation.", match.Duration),
-                InfractionType.Mute => MuteUserAsync(guildID, user, _self, "Automatic case esclation.", match.Duration.Value),
+                InfractionType.Kick => AddUserKickAsync(guildID, user, _self, "Automatic case esclation."),
+                InfractionType.Ban  => AddUserBanAsync(guildID, user, _self, "Automatic case esclation.", match.Duration),
+                InfractionType.Mute => AddUserMuteAsync(guildID, user, _self, "Automatic case esclation.", match.Duration.Value),
                 _ => Task.FromResult(Result.FromError(new InvalidOperationError($"Unexpected infraction type: {match.Type}")))
             });
 
