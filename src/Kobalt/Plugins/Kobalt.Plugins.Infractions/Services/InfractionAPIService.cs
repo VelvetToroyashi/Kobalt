@@ -74,14 +74,14 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
 
         if (!kickResult.IsSuccess)
         {
-            return new InvalidOperationError("Failed to kick. Are they still in the server?");
+            kickResult = new InvalidOperationError("Failed to kick. Are they still in the server?");
         }
 
         var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
 
         await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
 
-        return Result.FromSuccess();
+        return kickResult;
     }
 
     /// <summary>
@@ -93,7 +93,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     /// <param name="reason">The reason they're being banned.</param>
     /// <param name="duration">Optionally, how long </param>
     /// <returns>A result that may or not be successful.</returns>
-    public async Task<Result> BanUserAsync(Snowflake guildID, IUser user, IUser moderator, string reason, TimeSpan? duration = null)
+    public async Task<Result> BanUserAsync(Snowflake guildID, IUser user, IUser moderator, string reason, TimeSpan? duration = null, TimeSpan? period = null)
     {
         var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Ban, duration);
 
@@ -102,18 +102,18 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             return Result.FromError(infractionResult.Error);
         }
 
-        var banResult = await _guilds.CreateGuildBanAsync(guildID, user.ID, (Optional<int>)(int?)duration?.TotalSeconds, reason.Truncate(500));
+        var banResult = await _guilds.CreateGuildBanAsync(guildID, user.ID, (Optional<int>)(int?)period?.TotalSeconds, reason.Truncate(500));
 
         if (!banResult.IsSuccess)
         {
-            return new InvalidOperationError("Failed to ban. Are they still in the server?");
+            banResult = new InvalidOperationError("Failed to ban. Are they still in the server?");
         }
 
         var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
 
         await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
 
-        return Result.FromSuccess();
+        return banResult;
     }
 
     /// <summary>
@@ -153,10 +153,10 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
 
         if (!muteRoleResult.IsSuccess)
         {
-            return new InvalidOperationError("I couldn't mute them; it's possible they've weaseled out. I'll mute them if and when they rejoin.");
+            muteRoleResult = new InvalidOperationError("I couldn't mute them; it's possible they've weaseled out. I'll mute them if and when they rejoin.");
         }
 
-        return Result.FromSuccess();
+        return muteRoleResult;
     }
 
     /// <summary>
@@ -201,7 +201,11 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
         {
             return Result.FromSuccess();
         }
-        else if (rulesResult.StatusCode is HttpStatusCode.OK)
+        else if (rulesResult.StatusCode is not HttpStatusCode.OK)
+        {
+            return Result.FromError(new InvalidOperationError("Failed to escalate infraction."));
+        }
+        else
         {
             var match = await rulesResult.Content.ReadFromJsonAsync<InfractionRuleMatch>();
 
@@ -209,15 +213,12 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             {
                 InfractionType.Kick => KickUserAsync(guildID, user, _self, "Automatic case esclation."),
                 InfractionType.Ban  => BanUserAsync(guildID, user, _self, "Automatic case esclation.", match.Duration),
-                InfractionType.Mute => MuteUserAsync
-                (guildID, user, _self, "Automatic case esclation.", match.Duration.Value),
+                InfractionType.Mute => MuteUserAsync(guildID, user, _self, "Automatic case esclation.", match.Duration.Value),
                 _ => Task.FromResult(Result.FromError(new InvalidOperationError($"Unexpected infraction type: {match.Type}")))
             });
 
             return res;
         }
-
-        return Result.FromSuccess();
     }
 
     private Embed GenerateEmbedForInfraction(InfractionDTO infraction, IUser user, IUser moderator)
