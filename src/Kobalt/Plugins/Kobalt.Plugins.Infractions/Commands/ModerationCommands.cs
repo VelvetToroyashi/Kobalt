@@ -162,7 +162,7 @@ public class ModerationCommands : CommandGroup
         );
     }
 
-    [Command("warn")]
+    [Command("note")]
     [Description("Warns a user on the guild.")]
     public async Task<Result> NoteAsync
     (
