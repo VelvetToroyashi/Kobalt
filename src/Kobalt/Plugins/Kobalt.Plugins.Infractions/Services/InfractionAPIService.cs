@@ -193,7 +193,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     /// <param name="caseID">The ID of the case this note refers to.</param>
     public async Task<Result> AddUserNoteAsync(Snowflake guildID, IUser user, IUser moderator, string reason, int? caseID = null)
     {
-        var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Note);
+        var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Note, null, caseID);
 
         if (!infractionResult.IsSuccess)
         {
@@ -279,7 +279,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     /// <param name="caseID">The ID of the case beign pardoned.</param>
     public async Task<Result> PardonAsync(Snowflake guildID, IUser user, IUser moderator, string reason, int caseID)
     {
-        var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Warning);
+        var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Pardon, null, caseID);
 
         if (!infractionResult.IsSuccess)
         {
@@ -380,10 +380,11 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
         Snowflake moderatorID,
         string reason,
         InfractionType type,
-        TimeSpan? duration = null
+        TimeSpan? duration = null,
+        int? referencedCaseID = null
     )
     {
-        var payload = new InfractionCreatePayload(reason, userID.Value, moderatorID.Value, null, type, DateTimeOffset.UtcNow + duration);
+        var payload = new InfractionCreatePayload(reason, userID.Value, moderatorID.Value, referencedCaseID, type, DateTimeOffset.UtcNow + duration);
 
         var response = await _client.PutAsJsonAsync($"/infractions/guilds/{guildID}", payload, _serializerOptions);
 
