@@ -1,4 +1,4 @@
-﻿using Mediator;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
@@ -10,15 +10,12 @@ public class RemoveGuildInfractionRuleRequestHandler : IRequestHandler<RemoveGui
 {
     private readonly IDbContextFactory<InfractionContext> _context;
 
-    public RemoveGuildInfractionRuleRequestHandler(IDbContextFactory<InfractionContext> context)
-    {
-        _context = context;
-    }
+    public RemoveGuildInfractionRuleRequestHandler(IDbContextFactory<InfractionContext> context) => _context = context;
 
-    public async ValueTask<Result> Handle(RemoveGuildInfractionRuleRequest request, CancellationToken ct = default)
+    public async Task<Result> Handle(RemoveGuildInfractionRuleRequest request, CancellationToken ct = default)
     {
         await using var context = await _context.CreateDbContextAsync(ct);
-        
+
         var rule = await context.InfractionRules.FindAsync(request.Id, ct);
 
         if (rule is null)

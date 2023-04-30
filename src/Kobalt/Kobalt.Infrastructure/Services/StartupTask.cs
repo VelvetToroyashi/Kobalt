@@ -118,10 +118,7 @@ file sealed class HostDecorator : IHost, IAsyncDisposable
 
     public IServiceProvider Services => _hostImplementation.Services;
 
-    public HostDecorator(IHost hostImplementation)
-    {
-        _hostImplementation = hostImplementation;
-    }
+    public HostDecorator(IHost hostImplementation) => _hostImplementation = hostImplementation;
 
     [SuppressMessage("ReSharper", "SuspiciousTypeConversion.Global")]
     public async Task StartAsync(CancellationToken cancellationToken = new())
@@ -143,11 +140,8 @@ file sealed class HostDecorator : IHost, IAsyncDisposable
         await _hostImplementation.StartAsync(cancellationToken);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken = new())
-    {
-        return _hostImplementation.StopAsync(cancellationToken);
-    }
-    
+    public Task StopAsync(CancellationToken cancellationToken = new()) => _hostImplementation.StopAsync(cancellationToken);
+
     public void Dispose()
     {
         _hostImplementation.Dispose();

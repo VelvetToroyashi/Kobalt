@@ -6,10 +6,7 @@ public sealed class ImageOverlayService
 {
     private readonly HttpClient _httpClient;
     
-    public ImageOverlayService(IHttpClientFactory httpClient)
-    {
-        _httpClient = httpClient.CreateClient();
-    }
+    public ImageOverlayService(IHttpClientFactory httpClient) => _httpClient = httpClient.CreateClient();
 
     public async Task<Result<Stream>> OverlayAsync(string sourceUrl, string overlayUrl, float intensity, float greyscale)
     {

@@ -2,7 +2,7 @@
 using Kobalt.Infractions.Data.Entities;
 using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Kobalt.Infractions.Shared;
-using Mediator;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kobalt.Infractions.Infrastructure.Mediator;
@@ -23,18 +23,15 @@ public class CreateInfractionHandler : IRequestHandler<CreateInfractionRequest, 
 {
     private readonly IDbContextFactory<InfractionContext> _context;
 
-    public CreateInfractionHandler(IDbContextFactory<InfractionContext> context)
-    {
-        _context = context;
-    }
+    public CreateInfractionHandler(IDbContextFactory<InfractionContext> context) => _context = context;
 
-    public async ValueTask<InfractionDTO> Handle(CreateInfractionRequest request, CancellationToken cancellationToken)
+    public async Task<InfractionDTO> Handle(CreateInfractionRequest request, CancellationToken cancellationToken)
     {
         await using var context = await _context.CreateDbContextAsync(cancellationToken);
-        
+
         if (request.Type is InfractionType.Mute or InfractionType.Ban)
         {
-            var recentInfraction = await 
+            var recentInfraction = await
             context
             .Infractions
             .FirstOrDefaultAsync
@@ -46,7 +43,7 @@ public class CreateInfractionHandler : IRequestHandler<CreateInfractionRequest, 
                 x.Type == request.Type,
                 cancellationToken
             );
-            
+
             if (recentInfraction is not null)
             {
                 recentInfraction.ExpiresAt = request.ExpiresAt;

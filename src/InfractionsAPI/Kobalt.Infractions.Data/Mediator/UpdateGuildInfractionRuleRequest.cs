@@ -2,7 +2,7 @@
 using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Kobalt.Infractions.Shared;
 using Kobalt.Infractions.Shared.Payloads;
-using Mediator;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
@@ -15,15 +15,12 @@ public class UpdateGuildInfractionRuleRequestHandler : IRequestHandler<UpdateGui
 {
     private readonly IDbContextFactory<InfractionContext> _context;
 
-    public UpdateGuildInfractionRuleRequestHandler(IDbContextFactory<InfractionContext> context)
-    {
-        _context = context;
-    }
+    public UpdateGuildInfractionRuleRequestHandler(IDbContextFactory<InfractionContext> context) => _context = context;
 
-    public async ValueTask<Result<InfractionRuleDTO>> Handle(UpdateGuildInfractionRuleRequest request, CancellationToken ct)
+    public async Task<Result<InfractionRuleDTO>> Handle(UpdateGuildInfractionRuleRequest request, CancellationToken ct)
     {
         await using var context = await _context.CreateDbContextAsync(ct);
-        
+
         var update = request.Update;
         var rule = await context.InfractionRules
                                  .FirstOrDefaultAsync(ir => ir.Id == request.Id && ir.GuildID == request.GuildID, ct);
@@ -39,7 +36,7 @@ public class UpdateGuildInfractionRuleRequestHandler : IRequestHandler<UpdateGui
             {
                 return new InvalidOperationError("The infraction action duration cannot be negative or less than one minute");
             }
-            
+
             rule.ActionDuration = actionDuration;
         }
 
@@ -52,37 +49,37 @@ public class UpdateGuildInfractionRuleRequestHandler : IRequestHandler<UpdateGui
 
             rule.MatchTimeSpan = matchTimespan;
         }
-        
+
         if (update.ActionType.IsDefined(out var actionType))
         {
             if (actionType is InfractionType.Unmute or InfractionType.Unban or InfractionType.Pardon)
             {
                 return new InvalidOperationError($"Invalid action type (expected kick, ban, mute, or warning, got {actionType})");
             }
-            
+
             rule.ActionType = actionType;
         }
-        
+
         if (update.MatchType.IsDefined(out var matchType))
         {
             if (matchType is InfractionType.Unmute or InfractionType.Unban or InfractionType.Pardon)
             {
                 return new InvalidOperationError($"Invalid match type (expected kick, ban, mute, or warning, got {matchType})");
             }
-            
+
             rule.MatchType = matchType;
         }
-        
+
         if (update.MatchValue.TryGet(out var matchValue))
         {
             if (matchValue < 2)
             {
                 return new InvalidOperationError("An infraction rule must match at least two infractions.");
             }
-            
+
             rule.MatchValue = matchValue;
         }
-        
+
         context.Update(rule);
         await context.SaveChangesAsync(ct);
 

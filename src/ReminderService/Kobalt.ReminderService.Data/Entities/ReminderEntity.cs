@@ -53,18 +53,15 @@ public class ReminderEntity
     /// </summary>
     /// <param name="self">The entity.</param>
     /// <returns>A DTO.</returns>
-    public static explicit operator ReminderDTO(ReminderEntity self)
-    {
-        return new
-        (
-            self.Id,
-            DiscordSnowflake.New(self.AuthorID),
-            DiscordSnowflake.New(self.ChannelID),
-            self.GuildID is null ? null : DiscordSnowflake.New(self.GuildID.Value),
-            self.ReminderContent, 
-            self.Creation,
-            self.Expiration,
-            self.ReplyMessageID is null ? null : DiscordSnowflake.New(self.ReplyMessageID.Value)
-        );
-    }
+    public static explicit operator ReminderDTO(ReminderEntity self) => new
+    (
+        self.Id,
+        DiscordSnowflake.New(self.AuthorID),
+        DiscordSnowflake.New(self.ChannelID),
+        self.GuildID is null ? null : DiscordSnowflake.New(self.GuildID.Value),
+        self.ReminderContent, 
+        self.Creation,
+        self.Expiration,
+        self.ReplyMessageID is null ? null : DiscordSnowflake.New(self.ReplyMessageID.Value)
+    );
 }

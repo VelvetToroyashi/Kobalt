@@ -7,7 +7,7 @@ using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Kobalt.Infractions.Infrastructure.Mediator.Mediator;
 using Kobalt.Infractions.Shared;
 using MassTransit;
-using Mediator;
+using MediatR;
 using Remora.Rest.Core;
 using Remora.Results;
 

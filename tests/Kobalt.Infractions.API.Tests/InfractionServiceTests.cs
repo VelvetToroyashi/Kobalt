@@ -6,7 +6,7 @@ using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Kobalt.Infractions.Shared;
 using MassTransit;
 using MassTransit.Testing;
-using Mediator;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Remora.Results;

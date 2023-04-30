@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using Kobalt.Bot.Services;
 using Kobalt.Data.Mediator;
-using Mediator;
+using MediatR;
 using NodaTime;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;

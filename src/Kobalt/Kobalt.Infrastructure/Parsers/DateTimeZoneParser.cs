@@ -11,10 +11,7 @@ public class DateTimeZoneParser : AbstractTypeParser<DateTimeZone>
 {
     private readonly IDateTimeZoneProvider _dateTimeZoneProvider;
 
-    public DateTimeZoneParser(IDateTimeZoneProvider dateTimeZoneProvider)
-    {
-        _dateTimeZoneProvider = dateTimeZoneProvider;
-    }
+    public DateTimeZoneParser(IDateTimeZoneProvider dateTimeZoneProvider) => _dateTimeZoneProvider = dateTimeZoneProvider;
 
     public override ValueTask<Result<DateTimeZone>> TryParseAsync(string token, CancellationToken ct = default)
     {

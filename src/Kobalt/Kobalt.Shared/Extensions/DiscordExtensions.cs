@@ -9,10 +9,7 @@ public static class DiscordExtensions
     /// </summary>
     /// <param name="user">The user to get the tag for.</param>
     /// <returns>A formated string representing the user's tag, e.g. Nelly#0001</returns>
-    public static string DiscordTag(this IUser user)
-    {
-        return $"{user.Username}#{user.Discriminator:0000}";
-    }
+    public static string DiscordTag(this IUser user) => $"{user.Username}#{user.Discriminator:0000}";
 
     /// <summary>
     /// Turns a <see cref="DateTimeOffset"/> into a formatted timestamp.
@@ -20,10 +17,7 @@ public static class DiscordExtensions
     /// <param name="time">The time to convert.</param>
     /// <param name="format">The format to use.</param>
     /// <returns>The formatted timestamp.</returns>
-    public static string ToTimestamp(this DateTimeOffset time, TimestampFormat format = TimestampFormat.RelativeTime)
-    {
-        return $"<t:{time.ToUniversalTime().ToUnixTimeSeconds()}:{(char)format}>";
-    }
+    public static string ToTimestamp(this DateTimeOffset time, TimestampFormat format = TimestampFormat.RelativeTime) => $"<t:{time.ToUniversalTime().ToUnixTimeSeconds()}:{(char)format}>";
 }
 
 /// <summary>

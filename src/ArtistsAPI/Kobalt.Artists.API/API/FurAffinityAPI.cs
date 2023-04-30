@@ -7,10 +7,7 @@ public class FurAffinityParser
 {
     private readonly HttpClient _client;
     
-    public FurAffinityParser(IHttpClientFactory client)
-    {
-        _client = client.CreateClient("FurAffinity");
-    }
+    public FurAffinityParser(IHttpClientFactory client) => _client = client.CreateClient("FurAffinity");
 
     public async Task<Result<string>> GetArtistBioAsync(string artist)
     {

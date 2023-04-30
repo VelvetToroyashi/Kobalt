@@ -10,7 +10,7 @@ using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Kobalt.Infractions.Infrastructure.Mediator.Mediator;
 using Kobalt.Infractions.Shared.Payloads;
 using Kobalt.Shared.Extensions;
-using Mediator;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Remora.Rest.Json;
@@ -175,6 +175,6 @@ void AddInfractionServices(IServiceCollection services)
     services.AddHostedService<InfractionService>();
     services.AddSingleton<IInfractionService>(x => x.GetRequiredService<InfractionService>());
 
-    services.AddMediator();
+    services.AddMediatR(s => s.RegisterServicesFromAssemblyContaining<InfractionContext>());
     services.AddDbContextFactory<InfractionContext>("Infractions");
 }

@@ -2,7 +2,7 @@
 using Kobalt.Data.Mediator;
 using Kobalt.Shared.Services;
 using Kobalt.Shared.Types;
-using Mediator;
+using MediatR;
 using Remora.Discord.API;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;

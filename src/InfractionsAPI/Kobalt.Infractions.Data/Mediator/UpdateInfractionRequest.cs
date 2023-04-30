@@ -1,6 +1,6 @@
 ﻿using Kobalt.Infractions.Data;
 using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
-using Mediator;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Remora.Rest.Core;
 using Remora.Results;
@@ -23,27 +23,24 @@ public class UpdateInfractionRequestHandler : IRequestHandler<UpdateInfractionRe
 {
     private readonly IDbContextFactory<InfractionContext> _context;
 
-    public UpdateInfractionRequestHandler(IDbContextFactory<InfractionContext> context)
-    {
-        _context = context;
-    }
+    public UpdateInfractionRequestHandler(IDbContextFactory<InfractionContext> context) => _context = context;
 
-    public async ValueTask<Result<InfractionDTO>> Handle(UpdateInfractionRequest request, CancellationToken ct = default)
+    public async Task<Result<InfractionDTO>> Handle(UpdateInfractionRequest request, CancellationToken ct = default)
     {
         await using var context = await _context.CreateDbContextAsync(ct);
-        
+
         var infraction = await context.Infractions.FindAsync(request.Id, ct);
-        
+
         if (infraction is null)
         {
             return new NotFoundError("Infraction not found");
         }
-        
+
         if (infraction.GuildID != request.GuildID)
         {
             return new NotFoundError("Infraction not found");
         }
-        
+
         if (!request.IsHidden.HasValue && !request.Reason.HasValue && !request.ExpiresAt.HasValue && !request.IsProcessable.HasValue)
         {
             return new InfractionDTO
@@ -58,7 +55,7 @@ public class UpdateInfractionRequestHandler : IRequestHandler<UpdateInfractionRe
                 infraction.Type,
                 infraction.CreatedAt,
                 infraction.ExpiresAt
-            ); 
+            );
         }
 
         if (request.IsHidden.IsDefined(out var isHidden))
@@ -95,6 +92,6 @@ public class UpdateInfractionRequestHandler : IRequestHandler<UpdateInfractionRe
             infraction.Type,
             infraction.CreatedAt,
             infraction.ExpiresAt
-        ); 
+        );
     }
 }

@@ -112,7 +112,9 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     var config = hostConfig.Get<KobaltConfig>()!;
     services.AddSingleton(Options.Create(config));
 
-    builder.Services.AddMediator();
+    builder.Services.AddMediatR(s => s.RegisterServicesFromAssemblyContaining<KobaltContext>()
+                                      .RegisterServicesFromAssemblyContaining<Program>());
+
     builder.Services.AddDbContextFactory<KobaltContext>("Kobalt");
 
     var token = config.Discord.Token;

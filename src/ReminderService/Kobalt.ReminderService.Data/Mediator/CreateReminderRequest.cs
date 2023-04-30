@@ -1,6 +1,6 @@
 ﻿using Kobalt.Infrastructure.DTOs.Reminders;
 using Kobalt.ReminderService.Data.Entities;
-using Mediator;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kobalt.ReminderService.Data.Mediator;
@@ -30,12 +30,9 @@ public static class CreateReminder
     {
         private readonly IDbContextFactory<ReminderContext> _context;
 
-        public Handler(IDbContextFactory<ReminderContext> context)
-        {
-            _context = context;
-        }
+        public Handler(IDbContextFactory<ReminderContext> context) => _context = context;
 
-        public async ValueTask<ReminderDTO> Handle(Request request, CancellationToken cancellationToken)
+        public async Task<ReminderDTO> Handle(Request request, CancellationToken cancellationToken)
         {
             var entity = new ReminderEntity
             {
@@ -49,11 +46,11 @@ public static class CreateReminder
             };
 
             await using var context = await _context.CreateDbContextAsync();
-        
+
             await context.Reminders.AddAsync(entity, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
 
             return (ReminderDTO)entity;
         }
-    } 
+    }
 }

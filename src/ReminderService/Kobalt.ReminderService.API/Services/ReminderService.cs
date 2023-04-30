@@ -1,7 +1,7 @@
 ﻿using Kobalt.Infrastructure.DTOs.Reminders;
 using Kobalt.ReminderService.Data.Mediator;
 using MassTransit;
-using Mediator;
+using MediatR;
 using Remora.Results;
 
 namespace Kobalt.ReminderService.API.Services;

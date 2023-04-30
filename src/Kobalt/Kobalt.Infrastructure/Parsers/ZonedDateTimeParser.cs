@@ -1,5 +1,5 @@
 ﻿using Kobalt.Shared.Mediator.Users;
-using Mediator;
+using MediatR;
 using Microsoft.Recognizers.Text;
 using NodaTime;
 using Recognizers.Text.DateTime.Wrapper;

@@ -1,6 +1,6 @@
 ﻿using Kobalt.Infractions.Data;
 using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
-using Mediator;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kobalt.Infractions.Infrastructure.Mediator.Mediator;
@@ -12,15 +12,12 @@ public class GetInfractionsForUserHandler : IRequestHandler<GetInfractionsForUse
 {
     private readonly IDbContextFactory<InfractionContext> _context;
 
-    public GetInfractionsForUserHandler(IDbContextFactory<InfractionContext> context)
-    {
-        _context = context;
-    }
+    public GetInfractionsForUserHandler(IDbContextFactory<InfractionContext> context) => _context = context;
 
-    public async ValueTask<IEnumerable<InfractionDTO>> Handle(GetInfractionsForUserRequest request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<InfractionDTO>> Handle(GetInfractionsForUserRequest request, CancellationToken cancellationToken)
     {
         await using var context = await _context.CreateDbContextAsync(cancellationToken);
-        
+
         var infractions = await context.Infractions
             .Where(x => x.GuildID == request.GuildID && x.UserID == request.UserID)
             .ToListAsync(cancellationToken);

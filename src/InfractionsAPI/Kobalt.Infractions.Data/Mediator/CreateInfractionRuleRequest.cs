@@ -3,7 +3,7 @@ using Kobalt.Infractions.Data.Entities;
 using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Kobalt.Infractions.Infrastructure.Mediator.Errors;
 using Kobalt.Infractions.Shared;
-using Mediator;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
@@ -24,12 +24,9 @@ public class CreateInfractionRuleRequestHandler : IRequestHandler<CreateInfracti
 {
     private readonly IDbContextFactory<InfractionContext> _context;
 
-    public CreateInfractionRuleRequestHandler(IDbContextFactory<InfractionContext> context)
-    {
-        _context = context;
-    }
+    public CreateInfractionRuleRequestHandler(IDbContextFactory<InfractionContext> context) => _context = context;
 
-    public async ValueTask<Result<InfractionRuleDTO>> Handle(CreateInfractionRuleRequest request, CancellationToken cancellationToken)
+    public async Task<Result<InfractionRuleDTO>> Handle(CreateInfractionRuleRequest request, CancellationToken cancellationToken)
     {
         await using var context = await _context.CreateDbContextAsync(cancellationToken);
         var matchingRule = await context
@@ -48,7 +45,7 @@ public class CreateInfractionRuleRequestHandler : IRequestHandler<CreateInfracti
         {
             return new RuleAlreadyExistsError(matchingRule.MatchValue, matchingRule.MatchType);
         }
-        
+
         var rule = new InfractionRule
         {
             GuildID        = request.GuildID,
@@ -58,7 +55,7 @@ public class CreateInfractionRuleRequestHandler : IRequestHandler<CreateInfracti
             MatchType      = request.MatchType,
             ActionDuration = request.ActionDuration
         };
-        
+
         context.Add(rule);
         await context.SaveChangesAsync(cancellationToken);
 

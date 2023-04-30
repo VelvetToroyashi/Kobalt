@@ -1,7 +1,7 @@
 ﻿using Kobalt.Data.DTOs;
 using Kobalt.Data.Entities;
 using Kobalt.Shared.Types;
-using Mediator;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Remora.Rest.Core;
 using Remora.Results;
@@ -20,20 +20,17 @@ public static class AddLoggingChannel
     /// <param name="ChannelID">The ID of the channel to log to.</param>
     /// <param name="Type">The type of logging the channel is used for.</param>
     public record Request(Snowflake GuildID, Snowflake ChannelID, LogChannelType Type) : IRequest<Result<LogChannelDTO>>;
-    
+
     internal class Handler : IRequestHandler<Request, Result<LogChannelDTO>>
     {
         private readonly IDbContextFactory<KobaltContext> _context;
 
-        public Handler(IDbContextFactory<KobaltContext> context)
-        {
-            _context = context;
-        }
+        public Handler(IDbContextFactory<KobaltContext> context) => _context = context;
 
-        public async ValueTask<Result<LogChannelDTO>> Handle(Request request, CancellationToken cancellationToken)
+        public async Task<Result<LogChannelDTO>> Handle(Request request, CancellationToken cancellationToken)
         {
             await using var context = await _context.CreateDbContextAsync(cancellationToken);
-            
+
             var channel = new LogChannel
             {
                 GuildID = request.GuildID,

@@ -5,7 +5,7 @@ using Kobalt.ReminderService.API.Services;
 using Kobalt.ReminderService.Data;
 using Kobalt.ReminderService.Data.Mediator;
 using Kobalt.Shared.Extensions;
-using Mediator;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Remora.Discord.API;
@@ -16,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddUserSecrets<Program>();
 
-builder.Services.AddMediator();
+builder.Services.AddMediatR(s => s.RegisterServicesFromAssemblyContaining<ReminderContext>());
 builder.Services.AddDbContextFactory<ReminderContext>("Reminders");
 
 builder.Services.AddRabbitMQ();

@@ -1,5 +1,5 @@
 ﻿using Kobalt.Shared.DTOs.Users;
-using Mediator;
+using MediatR;
 using Remora.Rest.Core;
 using Remora.Results;
 
