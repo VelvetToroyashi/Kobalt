@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Kobalt.Data;
+﻿using Kobalt.Data;
 using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Plugins.Core;
@@ -25,7 +24,7 @@ public class CorePlugin : PluginDescriptor, IMigratablePlugin
     {
         services.AddTransient<IChannelLoggerService, ChannelLoggerService>();
         services.AddTransient<ImageOverlayService>();
-        services.AddOffsetServices();
+
         services.AddHttpClient("booru");
         services.AddTransient<BooruSearchService>();
 
@@ -34,15 +33,17 @@ public class CorePlugin : PluginDescriptor, IMigratablePlugin
 
         services.AddDbContextFactory<KobaltContext>("Kobalt");
 
-        services.AddCommandGroupsFromAssembly(Assembly.GetExecutingAssembly(), typeFilter: t => !t.IsNested);
-        services.AddInteractivityFromAssembly(Assembly.GetExecutingAssembly());
+        var asm = typeof(CorePlugin).Assembly;
+
+        services.AddCommandGroupsFromAssembly(asm, typeFilter: t => !t.IsNested);
+        services.AddInteractivityFromAssembly(asm);
 
         return Result.FromSuccess();
     }
 
     public Task<Result> MigrateAsync(IServiceProvider serviceProvider, CancellationToken ct = default)
     {
-        var db = serviceProvider.GetRequiredService<KobaltContext>();
+        var db = serviceProvider.GetRequiredService<IDbContextFactory<KobaltContext>>().CreateDbContext();
 
         return ResultExtensions.TryCatchAsync(() => db.Database.MigrateAsync(ct));
     }

@@ -3,6 +3,7 @@ using System.Text;
 using Kobalt.Core.Handlers;
 using Kobalt.Core.Services.Discord;
 using Kobalt.Infrastructure;
+using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services;
 using Kobalt.Infrastructure.Types;
 using Kobalt.ReminderService.API.Extensions;
@@ -102,6 +103,8 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddSingleton(Options.Create(config));
 
     var token = config.Discord.Token;
+
+    services.AddOffsetServices();
 
     services.AddDiscordGateway(_ => token);
     services.AddInteractivity();
