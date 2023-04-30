@@ -274,7 +274,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
         return result;
     }
 
-    public async Task Consume(ConsumeContext<InfractionDTO> context)
+    async Task IConsumer<InfractionDTO>.Consume(ConsumeContext<InfractionDTO> context)
     {
         var message = context.Message;
 
