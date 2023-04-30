@@ -184,6 +184,116 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     }
 
     /// <summary>
+    /// Adds a note to a user, optionally attatching it to a case.
+    /// </summary>
+    /// <param name="guildID">The ID of the guild the note is being issued in.</param>
+    /// <param name="user">The user being noted.</param>
+    /// <param name="moderator">The moderator responsible for noting the user.</param>
+    /// <param name="reason">The reason of the note.</param>
+    /// <param name="caseID">The ID of the case this note refers to.</param>
+    public async Task<Result> NoteAsync(Snowflake guildID, IUser user, IUser moderator, string reason, int? caseID = null)
+    {
+        var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Note);
+
+        if (!infractionResult.IsSuccess)
+        {
+            return Result.FromError(infractionResult.Error);
+        }
+
+        var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
+
+        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
+
+        return Result.FromSuccess();
+    }
+
+    /// <summary>
+    /// Unbans a user in a guild.
+    /// </summary>
+    /// <param name="guildID">The ID of the guild the unbaning is being issued in.</param>
+    /// <param name="user">The user being unbaned.</param>
+    /// <param name="moderator">The moderator responsible for unbaning the user.</param>
+    /// <param name="reason">The reason the user is being unbaned.</param>
+    public async Task<Result> Unban(Snowflake guildID, IUser user, IUser moderator, string reason)
+    {
+        var unbanResult = await _guilds.RemoveGuildBanAsync(guildID, user.ID, reason.Truncate(500));
+
+        if (!unbanResult.IsSuccess)
+        {
+            return Result.FromError(new InvalidOperationError("That user isn't banned or doesn't exist."));
+        }
+
+        var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Unban);
+
+        if (!infractionResult.IsSuccess)
+        {
+            return Result.FromError(infractionResult.Error);
+        }
+
+        var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
+
+        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
+
+        return Result.FromSuccess();
+    }
+
+    /// <summary>
+    /// unmute a user in a guild.
+    /// </summary>
+    /// <param name="guildID">The ID of the guild the unmuteing is being issued in.</param>
+    /// <param name="user">The user being unmuteed.</param>
+    /// <param name="moderator">The moderator responsible for unmuteing the user.</param>
+    /// <param name="reason">The reason the user is being unmuteed.</param>
+    /// <returns></returns>
+    public async Task<Result> UnmuteAsync(Snowflake guildID, IUser user, IUser moderator, string reason)
+    {
+        var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Unmute);
+
+        if (!infractionResult.IsSuccess)
+        {
+            return Result.FromError(infractionResult.Error);
+        }
+
+        await _guilds.ModifyGuildMemberAsync
+        (
+            guildID,
+            user.ID,
+            communicationDisabledUntil: null,
+            reason: reason.Truncate(500)
+        );
+
+        var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
+
+        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
+
+        return Result.FromSuccess();
+    }
+
+    /// <summary>
+    /// Pardons a user in a guild.
+    /// </summary>
+    /// <param name="guildID">The ID of the guild the pardon is being issued in.</param>
+    /// <param name="user">The user being pardoned.</param>
+    /// <param name="moderator">The moderator responsible for pardoning the user.</param>
+    /// <param name="reason">The reason the user is being pardoned.</param>
+    /// <param name="caseID">The ID of the case beign pardoned.</param>
+    public async Task<Result> PardonAsync(Snowflake guildID, IUser user, IUser moderator, string reason, int caseID)
+    {
+        var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Warning);
+
+        if (!infractionResult.IsSuccess)
+        {
+            return Result.FromError(infractionResult.Error);
+        }
+
+        var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
+
+        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
+
+        return Result.FromSuccess();
+    }
+
+    /// <summary>
     /// Attempts to escalate an infraction for a user in a guild, using the Guild's configured rules.
     /// </summary>
     /// <param name="guildID">The ID of the guild to escalate. </param>
