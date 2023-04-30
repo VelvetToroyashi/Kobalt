@@ -12,13 +12,12 @@ using Remora.Results;
 
 namespace Kobalt.Plugins.Infractions;
 
-public class InfractionPlugin : IPluginDescriptor
+public class InfractionPlugin : PluginDescriptor
 {
-    public string Name => "Kobalt Infractions";
-    public string Description => "Adds infractions to Kobalt.";
-    public Version Version { get; } = new(0, 0, 1);
+    public override string Name => "Kobalt Infractions";
+    public override string Description => "Adds infractions to Kobalt.";
 
-    public Result ConfigureServices(IServiceCollection serviceCollection)
+    public override Result ConfigureServices(IServiceCollection serviceCollection)
     {
         serviceCollection.AddHttpClient
         (
@@ -38,6 +37,4 @@ public class InfractionPlugin : IPluginDescriptor
 
         return Result.FromSuccess();
     }
-
-    public async ValueTask<Result> InitializeAsync(IServiceProvider serviceProvider, CancellationToken ct = default) => default;
 }
