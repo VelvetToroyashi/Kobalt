@@ -11,13 +11,14 @@ using Remora.Results;
 
 namespace Kobalt.Plugins.Infractions.Commands;
 
-public class KickCommand : CommandGroup
+[Group("moderation")]
+public class ModerationCommands : CommandGroup
 {
     private readonly IInteractionContext _context;
     private readonly InfractionAPIService _apiService;
     private readonly IDiscordRestInteractionAPI _interactions;
 
-    public KickCommand(IInteractionContext context, InfractionAPIService apiService, IDiscordRestInteractionAPI interactions)
+    public ModerationCommands(IInteractionContext context, InfractionAPIService apiService, IDiscordRestInteractionAPI interactions)
     {
         _context = context;
         _apiService = apiService;

@@ -34,7 +34,7 @@ public class InfractionPlugin : IPluginDescriptor
 
         serviceCollection.AddSingleton<InfractionAPIService>();
 
-        serviceCollection.AddCommandTree().WithCommandGroup<KickCommand>();
+        serviceCollection.AddCommandTree().WithCommandGroup<ModerationCommands>();
 
         return Result.FromSuccess();
     }
