@@ -277,16 +277,33 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     /// <param name="moderator">The moderator responsible for pardoning the user.</param>
     /// <param name="reason">The reason the user is being pardoned.</param>
     /// <param name="caseID">The ID of the case beign pardoned.</param>
-    public async Task<Result> PardonAsync(Snowflake guildID, IUser user, IUser moderator, string reason, int caseID)
+    public async Task<Result> PardonAsync(Snowflake guildID, IUser moderator, string reason, int caseID)
     {
-        var infractionResult = await SendInfractionAsync(guildID, user.ID, moderator.ID, reason, InfractionType.Pardon, null, caseID);
+        var getInfractionResult = await ResultExtensions.TryCatchAsync
+        (
+            () => _client.GetFromJsonAsync<InfractionDTO>($"infractions/guilds/{guildID}/{caseID}", _serializerOptions)
+        );
+
+        if (!getInfractionResult.IsDefined(out var fetched))
+        {
+            return new NotFoundError("That case doesn't exist.");
+        }
+
+        var userResult = await _users.GetUserAsync(new Snowflake(fetched.UserID));
+
+        if (!userResult.IsSuccess)
+        {
+            return Result.FromError(userResult.Error);
+        }
+
+        var infractionResult = await SendInfractionAsync(guildID, userResult.Entity.ID, moderator.ID, reason, InfractionType.Pardon, null, caseID);
 
         if (!infractionResult.IsSuccess)
         {
             return Result.FromError(infractionResult.Error);
         }
 
-        var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
+        var embed = GenerateEmbedForInfraction(infractionResult.Entity, userResult.Entity, moderator);
 
         await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
 
