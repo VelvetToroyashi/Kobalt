@@ -15,7 +15,7 @@ namespace Kobalt.Plugins.Infractions.Commands;
 [Group("moderation")]
 [RequireContext(ChannelContext.Guild)]
 [RequireDiscordPermission(DiscordPermission.ManageRoles, DiscordPermission.KickMembers)]
-[RequireBotDiscordPermissions(DiscordPermission.BanMembers)]
+[RequireBotDiscordPermissions(DiscordPermission.BanMembers, DiscordPermission.ModerateMembers)]
 public class ModerationCommands : CommandGroup
 {
     private readonly IInteractionContext _context;
@@ -178,7 +178,7 @@ public class ModerationCommands : CommandGroup
         int? caseID = null
     )
     {
-        var result = await _apiService.AddUserStrikeAsync(_context.Interaction.GuildID.Value, target, _context.Interaction.Member.Value.User.Value, reason);
+        var result = await _apiService.AddUserNoteAsync(_context.Interaction.GuildID.Value, target, _context.Interaction.Member.Value.User.Value, reason);
 
         if (!result.IsSuccess)
         {
