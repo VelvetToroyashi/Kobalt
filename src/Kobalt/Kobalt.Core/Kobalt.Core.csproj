@@ -5,9 +5,8 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <AssemblyName>Kobalt.Bot</AssemblyName>
-        <RootNamespace>Kobalt.Bot</RootNamespace>
         <UserSecretsId>4d510d59-52c0-4034-b92e-b47cd01672cc</UserSecretsId>
+        <PackageId>Kobalt.Core</PackageId>
     </PropertyGroup>
 
     <ItemGroup>

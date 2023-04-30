@@ -12,7 +12,7 @@ using Remora.Discord.Interactivity;
 using Remora.Rest;
 using Color = System.Drawing.Color;
 
-namespace Kobalt.Bot.Commands.NSFW;
+namespace Kobalt.Core.Commands.NSFW;
 
 /// <summary>
 /// Command that queries results from E621.

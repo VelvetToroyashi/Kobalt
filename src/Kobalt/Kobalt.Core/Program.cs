@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 using System.Text;
-using Kobalt.Bot.Handlers;
-using Kobalt.Bot.Services;
-using Kobalt.Bot.Services.Discord;
+using Kobalt.Core.Handlers;
+using Kobalt.Core.Services;
+using Kobalt.Core.Services.Discord;
 using Kobalt.Data;
 using Kobalt.Infrastructure;
 using Kobalt.Infrastructure.Extensions;

@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using Kobalt.Bot.Services;
+using Kobalt.Core.Services;
 using Kobalt.Data.Mediator;
 using MediatR;
 using NodaTime;
@@ -11,7 +11,7 @@ using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Extensions;
 using Remora.Rest.Core;
 
-namespace Kobalt.Bot.Commands;
+namespace Kobalt.Core.Commands;
 
 [Group("user-settings")]
 [Description("Settings about you.")]

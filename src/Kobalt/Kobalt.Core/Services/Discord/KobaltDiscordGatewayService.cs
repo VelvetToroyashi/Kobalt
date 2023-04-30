@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using Remora.Discord.Commands.Services;
 using Remora.Discord.Gateway;
 
-namespace Kobalt.Bot.Services.Discord;
+namespace Kobalt.Core.Services.Discord;
 
 /// <summary>
 /// A service that handles starting the <see cref="DiscordGatewayClient"/>.

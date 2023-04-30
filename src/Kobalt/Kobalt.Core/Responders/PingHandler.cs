@@ -4,7 +4,7 @@ using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Gateway.Responders;
 
-namespace Kobalt.Bot.Responders;
+namespace Kobalt.Core.Responders;
 
 public class PingHandler : IResponder<IInteractionCreate>
 {

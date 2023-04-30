@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using Kobalt.Bot.Services;
+using Kobalt.Core.Services;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Abstractions.Objects;
@@ -7,7 +7,7 @@ using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.Commands.Attributes;
 using Remora.Discord.Commands.Contexts;
 
-namespace Kobalt.Bot.Commands;
+namespace Kobalt.Core.Commands;
 
 public class OverlayCommand : CommandGroup
 {

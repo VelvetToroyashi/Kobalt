@@ -5,7 +5,7 @@ using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Contexts;
 using Color = System.Drawing.Color;
 
-namespace Kobalt.Bot.Commands;
+namespace Kobalt.Core.Commands;
 
 [Group("artist")]
 public class ExampleArtistCommand : CommandGroup

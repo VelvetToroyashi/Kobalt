@@ -2,7 +2,7 @@
 using Remora.Discord.Commands.Services;
 using IResult = Remora.Results.IResult;
 
-namespace Kobalt.Bot.Handlers;
+namespace Kobalt.Core.Handlers;
 
 public class PostExecutionHandler : IPostExecutionEvent
 {

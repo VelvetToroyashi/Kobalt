@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using Remora.Rest.Core;
 
-[assembly: InternalsVisibleTo("Kobalt.Bot")]
+[assembly: InternalsVisibleTo("Kobalt.Core")]
 [assembly: InternalsVisibleTo("Kobalt.Data.Tests")]
 
 namespace Kobalt.Data;

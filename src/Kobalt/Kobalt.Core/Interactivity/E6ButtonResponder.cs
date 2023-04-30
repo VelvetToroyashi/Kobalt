@@ -5,7 +5,7 @@ using Remora.Discord.Commands.Attributes;
 using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Interactivity;
 
-namespace Kobalt.Bot.Interactivity;
+namespace Kobalt.Core.Interactivity;
 
 public class E6ButtonResponder : InteractionGroup
 {

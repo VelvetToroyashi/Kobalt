@@ -1,6 +1,6 @@
 ﻿using Remora.Results;
 
-namespace Kobalt.Bot.Services;
+namespace Kobalt.Core.Services;
 
 public sealed class ImageOverlayService
 {

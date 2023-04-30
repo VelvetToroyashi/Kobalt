@@ -10,7 +10,7 @@ using Remora.Discord.API.Objects;
 using Remora.Rest.Core;
 using Remora.Results;
 
-namespace Kobalt.Bot.Services.Discord;
+namespace Kobalt.Core.Services.Discord;
 
 public class ChannelLoggerService : IChannelLoggerService
 {
