@@ -15,6 +15,12 @@ public class NaturalTimeSpanParser : AbstractTypeParser<TimeSpan>
     private readonly IMediator _mediator;
     private readonly IOperationContext _context;
 
+    public NaturalTimeSpanParser(IMediator mediator, IOperationContext context)
+    {
+        _mediator = mediator;
+        _context = context;
+    }
+
     public override async ValueTask<Result<TimeSpan>> TryParseAsync(string token, CancellationToken ct = default)
     {
         if (!_context.TryGetUserID(out var userID))
