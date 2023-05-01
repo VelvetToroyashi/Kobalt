@@ -15,15 +15,15 @@ namespace Kobalt.Infrastructure.Parsers;
 
 public class ZonedDateTimeParser : AbstractTypeParser<ZonedDateTime>
 {
-    private static ISet<DateTimeV2Type> _supportedTypes = new HashSet<DateTimeV2Type>
+    private static readonly ISet<DateTimeV2Type> _supportedTypes = new HashSet<DateTimeV2Type>
     {
         DateTimeV2Type.Date,
         DateTimeV2Type.DateTime,
     };
-    
+
     private readonly IMediator _mediator;
     private readonly IOperationContext _context;
-    
+
     public ZonedDateTimeParser(IMediator mediator, IOperationContext context)
     {
         _mediator = mediator;
@@ -36,17 +36,17 @@ public class ZonedDateTimeParser : AbstractTypeParser<ZonedDateTime>
         {
             return new InvalidOperationError("Could not get user ID.");
         }
-        
+
         var userResult = await _mediator.Send(new GetUserRequest(userID.Value), ct);
 
         var offset = userResult.Entity?.Timezone ?? Offset.Zero;
         var extractionResult = ExtractDateTimeOffset(token, offset.ToTimeSpan());
-        
+
         if (extractionResult.IsSuccess)
         {
             return ZonedDateTime.FromDateTimeOffset(extractionResult.Entity.ToUniversalTime());
         }
-        
+
         return new ParsingError<ZonedDateTime>("Invalid date.");
     }
 
@@ -67,12 +67,12 @@ public class ZonedDateTimeParser : AbstractTypeParser<ZonedDateTime>
               (
                   v => v > refTime
               );
-        
+
         if (res is null)
         {
             return Result<DateTimeOffset>.FromError(new NotFoundError());
         }
-        
+
         return DateTimeOffset.UtcNow + (res.Value - refTime);
     }
 

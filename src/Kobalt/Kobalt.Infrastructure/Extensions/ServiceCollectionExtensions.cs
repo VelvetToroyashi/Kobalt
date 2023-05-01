@@ -28,11 +28,13 @@ public static class ServiceCollectionExtensions
                 .AddSingleton<IDateTimeZoneProvider, DateTimeZoneCache>();
 
         services.AddParser<DateTimeZoneParser>();
+        services.AddParser<MicroTimeSpanParser>();
         services.AddParser<ZonedDateTimeParser>();
+        services.AddParser<NaturalTimeSpanParser>();
 
         return services;
     }
-    
+
     /// <summary>
     /// Adds all interaction responders from the given assembly.
     /// </summary>
