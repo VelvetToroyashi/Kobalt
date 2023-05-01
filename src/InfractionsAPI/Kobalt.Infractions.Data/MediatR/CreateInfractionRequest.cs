@@ -4,6 +4,7 @@ using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
 using Kobalt.Infractions.Shared;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Remora.Results;
 
 namespace Kobalt.Infractions.Infrastructure.Mediator;
 
@@ -17,15 +18,15 @@ public record CreateInfractionRequest
     DateTimeOffset CreatedAt,
     DateTimeOffset? ExpiresAt,
     int? ReferencedId = null
-) : IRequest<InfractionDTO>;
+) : IRequest<Result<InfractionDTO>>;
 
-public class CreateInfractionHandler : IRequestHandler<CreateInfractionRequest, InfractionDTO>
+public class CreateInfractionHandler : IRequestHandler<CreateInfractionRequest, Result<InfractionDTO>>
 {
     private readonly IDbContextFactory<InfractionContext> _context;
 
     public CreateInfractionHandler(IDbContextFactory<InfractionContext> context) => _context = context;
 
-    public async Task<InfractionDTO> Handle(CreateInfractionRequest request, CancellationToken cancellationToken)
+    public async Task<Result<InfractionDTO>> Handle(CreateInfractionRequest request, CancellationToken cancellationToken)
     {
         await using var context = await _context.CreateDbContextAsync(cancellationToken);
 
@@ -61,6 +62,25 @@ public class CreateInfractionHandler : IRequestHandler<CreateInfractionRequest, 
                     recentInfraction.CreatedAt,
                     recentInfraction.ExpiresAt
                 );
+            }
+        }
+
+        if (request.Type is InfractionType.Unmute or InfractionType.Unban)
+        {
+            var lastMuteOrBan = await context
+                                     .Infractions
+                                     .Where
+                                      (
+                                          inf => inf.GuildID == request.GuildID &&
+                                              inf.IsProcessable &&
+                                              inf.Type == request.Type &&
+                                              inf.UserID == request.UserID
+                                      )
+                                     .FirstOrDefaultAsync(cancellationToken);
+
+            if (lastMuteOrBan is null)
+            {
+                return new InvalidOperationError($"The user is not {request.Type.ToString().ToLower().Replace("e", null)}ed.");
             }
         }
 

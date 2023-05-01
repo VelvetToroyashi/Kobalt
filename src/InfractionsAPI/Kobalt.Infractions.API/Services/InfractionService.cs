@@ -72,18 +72,23 @@ public class InfractionService : BackgroundService, IInfractionService
             return new InvalidOperationError("Only mutes and bans can have an expiration date.");
         }
 
-        var infraction = await _mediator.Send(new CreateInfractionRequest(reason, userID, guildID, moderatorID, type, DateTimeOffset.UtcNow, expiresAt));
+        var createInfraction = await _mediator.Send(new CreateInfractionRequest(reason, userID, guildID, moderatorID, type, DateTimeOffset.UtcNow, expiresAt));
+
+        if (!createInfraction.IsDefined(out var infraction))
+        {
+            return createInfraction;
+        }
 
         if (expiresAt is not null)
         {
             _infractions.AddOrUpdate(infraction.Id, infraction, (_, _) => infraction);
         }
-        else if (type is InfractionType.Ban or InfractionType.Mute)
+        else
         {
             _infractions.TryRemove(infraction.Id, out _);
         }
 
-        return infraction;
+        return createInfraction;
     }
 
     /// <inheritdoc/>

@@ -14,8 +14,8 @@ public class CreateInfractionTests
     private const ulong UserID = 456;
     private const ulong ModeratorID = 789;
     private const string InfractionReason = "Test infraction";
-    
-    
+
+
     private IDbContextFactory<InfractionContext> _db;
     // Ensure 'Expose daemon on tcp://localhost:2375 without TLS' is enabled if you're running under WSL2
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
@@ -32,7 +32,7 @@ public class CreateInfractionTests
     public async Task Setup()
     {
         await _container.StartAsync();
-        
+
         var db = new ServiceCollection().AddDbContextFactory<InfractionContext>(o => o.UseNpgsql(_container.GetConnectionString()).UseSnakeCaseNamingConvention()).BuildServiceProvider();
 
         _db = db.GetRequiredService<IDbContextFactory<InfractionContext>>();
@@ -66,12 +66,16 @@ public class CreateInfractionTests
         var handler = new CreateInfractionHandler(_db);
 
         var res = await handler.Handle(req, default);
-        
-        Assert.That(res.UserID, Is.EqualTo(UserID));
-        Assert.That(res.GuildID, Is.EqualTo(GuildID));
-        Assert.That(res.Type, Is.EqualTo(InfractionType.Ban));
+
+        Assert.That(res.IsSuccess, Is.True);
+
+        Assert.That(res.Entity.UserID, Is.EqualTo(UserID));
+        Assert.That(res.Entity.GuildID, Is.EqualTo(GuildID));
+        Assert.That(res.Entity.Type, Is.EqualTo(InfractionType.Ban));
         Assert.That(_db.CreateDbContext().Infractions.ToArray().Count, Is.EqualTo(1));
     }
+
+    // TODO: Test that creating a nonsensical returns a failed result
 
     [Test]
     public async Task CreateWithTemporaryInfractionIsProcessable()
@@ -81,7 +85,7 @@ public class CreateInfractionTests
         var handler = new CreateInfractionHandler(_db);
 
         var res = await handler.Handle(req, default);
-        
+
         Assert.That(_db.CreateDbContext().Infractions.First().IsProcessable);
     }
 }
