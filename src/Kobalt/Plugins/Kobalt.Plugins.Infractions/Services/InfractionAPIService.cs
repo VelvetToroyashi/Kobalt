@@ -107,7 +107,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             return Result.FromError(infractionResult.Error);
         }
 
-        var banResult = await _guilds.CreateGuildBanAsync(guildID, user.ID, (Optional<int>)(int?)period?.TotalSeconds, reason.Truncate(500));
+        var banResult = await _guilds.CreateGuildBanAsync(guildID, user.ID, (int)period?.TotalSeconds, reason.Truncate(500));
 
         if (!banResult.IsSuccess)
         {
