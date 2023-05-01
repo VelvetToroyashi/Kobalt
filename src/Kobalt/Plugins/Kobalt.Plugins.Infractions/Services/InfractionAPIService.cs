@@ -20,6 +20,10 @@ using Remora.Results;
 
 namespace Kobalt.Plugins.Infractions.Services;
 
+internal record InfractionResult(InfractionDTO Infraction, InfractionState State);
+
+internal enum InfractionState { Created, Updated }
+
 public class InfractionAPIService : IConsumer<InfractionDTO>
 {
     private readonly IUser _self;
@@ -30,7 +34,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     private readonly IDiscordRestChannelAPI _channels;
     private readonly JsonSerializerOptions _serializerOptions;
 
-    private readonly static TimeSpan MaxMuteDuration = TimeSpan.FromDays(28);
+    private static readonly TimeSpan MaxMuteDuration = TimeSpan.FromDays(28);
 
     public InfractionAPIService
     (
@@ -92,6 +96,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     /// <param name="moderator">The moderator responsible.</param>
     /// <param name="reason">The reason they're being banned.</param>
     /// <param name="duration">Optionally, how long </param>
+    /// <param name="period">Optionally, the period of messages to be deleted.</param>
     /// <returns>A result that may or not be successful.</returns>
     public async Task<Result> AddUserBanAsync(Snowflake guildID, IUser user, IUser moderator, string reason, TimeSpan? duration = null, TimeSpan? period = null)
     {
@@ -273,7 +278,6 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     /// Pardons a user in a guild.
     /// </summary>
     /// <param name="guildID">The ID of the guild the pardon is being issued in.</param>
-    /// <param name="user">The user being pardoned.</param>
     /// <param name="moderator">The moderator responsible for pardoning the user.</param>
     /// <param name="reason">The reason the user is being pardoned.</param>
     /// <param name="caseID">The ID of the case beign pardoned.</param>
@@ -348,16 +352,17 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
         }
     }
 
-    private Embed GenerateEmbedForInfraction(InfractionDTO infraction, IUser user, IUser moderator)
+    private Embed GenerateEmbedForInfraction(InfractionResult result, IUser user, IUser moderator)
     {
+        var (infraction, state) = result;
         var title = $"Case {infraction.Id} | {moderator.Username}#{moderator.Discriminator:0000} ➜ {user.Username}#{user.Discriminator:0000}";
 
         var fieldsList = new List<EmbedField>
         {
-            new EmbedField("Type", infraction.Type.Humanize(), true),
-            new EmbedField("Moderator", $"{moderator.DiscordTag()}\n`{moderator.ID}`", true),
-            new EmbedField("Target", $"{user.DiscordTag()}\n`{user.ID}`", true),
-            new EmbedField("Created", infraction.CreatedAt.ToTimestamp(), true),
+            new("Type", infraction.Type.Humanize(), true),
+            new("Moderator", $"{moderator.DiscordTag()}\n`{moderator.ID}`", true),
+            new("Target", $"{user.DiscordTag()}\n`{user.ID}`", true),
+            new("Created", infraction.CreatedAt.ToTimestamp(), true),
         };
 
         if (infraction.ExpiresAt.HasValue)
@@ -368,6 +373,11 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
         if (infraction.ReferencedId is {} referencedId)
         {
             fieldsList.Add(new EmbedField("Referenced Case", $"`#{referencedId}`", true));
+        }
+
+        if (state is InfractionState.Updated)
+        {
+            fieldsList.Add(new EmbedField("Updated", DateTimeOffset.UtcNow.ToTimestamp(), true));
         }
 
         var embed = new Embed
@@ -390,7 +400,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
         return embed;
     }
 
-    private async Task<Result<InfractionDTO>> SendInfractionAsync
+    private async Task<Result<InfractionResult>> SendInfractionAsync
     (
         Snowflake guildID,
         Snowflake userID,
@@ -412,7 +422,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
 
         var stream = await response.Content.ReadAsStreamAsync();
         var result = await JsonSerializer.DeserializeAsync<InfractionDTO>(stream, _serializerOptions);
-        return result;
+        return new InfractionResult(result!, response.StatusCode is HttpStatusCode.Created ? InfractionState.Created : InfractionState.Updated);
     }
 
     async Task IConsumer<InfractionDTO>.Consume(ConsumeContext<InfractionDTO> context)
@@ -427,7 +437,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             return;
         }
 
-        var embed = GenerateEmbedForInfraction(context.Message, getModeratorResult.Entity, getUserResult.Entity);
+        var embed = GenerateEmbedForInfraction(new InfractionResult(context.Message, InfractionState.Created), getModeratorResult.Entity, getUserResult.Entity);
 
         await _channelLogger.LogAsync(new Snowflake(message.GuildID), LogChannelType.CaseCreate, default, new[] { embed });
     }
