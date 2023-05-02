@@ -15,6 +15,14 @@ FROM build AS publish
 COPY ./ ./
 RUN dotnet publish "./Kobalt.Core/Kobalt.Core.csproj" -c Release -o /app/publish /p:UseAppHost=false --no-restore
 
+RUN for file in ./Plugins/*; do \
+    if [ -d "$file" ]; then \
+        echo "Building plugin $file"; \
+        dotnet publish "$file" -c Release -o /app/publish/plugin_cache/$(basename "$file") /p:UseAppHost=false ; \
+        cp -r /app/publish/plugin_cache/$(basename "$file")/ /app/publish/Plugins/ ; \
+    fi; \
+done
+
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
