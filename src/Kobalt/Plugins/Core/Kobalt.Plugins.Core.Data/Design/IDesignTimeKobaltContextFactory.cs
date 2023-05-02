@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kobalt.Data.Design;
+namespace Kobalt.Plugins.Core.Data.Design;
 
 public class IDesignTimeKobaltContextFactory : IDesignTimeDbContextFactory<KobaltContext>
 {

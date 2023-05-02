@@ -1,10 +1,10 @@
-﻿using Kobalt.Data.DTOs;
+﻿using Kobalt.Plugins.Core.Data.DTOs;
 using Kobalt.Shared.Types;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Remora.Rest.Core;
 
-namespace Kobalt.Data.Mediator;
+namespace Kobalt.Plugins.Core.Data.Mediator;
 
 /// <summary>
 /// Represents a request to get logging channels.

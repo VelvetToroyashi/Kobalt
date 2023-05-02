@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Remora.Rest.Core;
 using Remora.Results;
 
-namespace Kobalt.Data.Mediator;
+namespace Kobalt.Plugins.Core.Data.Mediator;
 
 public static class UpdateUser
 {

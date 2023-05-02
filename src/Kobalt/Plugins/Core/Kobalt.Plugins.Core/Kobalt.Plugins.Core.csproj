@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\Plugins.Common.tasks"/>
+    <Import Project="..\..\Plugins.Common.tasks" />
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
@@ -16,9 +16,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Kobalt.Data\Kobalt.Data.csproj" />
-      <ProjectReference Include="..\..\Kobalt.Infrastructure\Kobalt.Infrastructure.csproj" />
-      <ProjectReference Include="..\..\Kobalt.Shared\Kobalt.Shared.csproj" />
+      <ProjectReference Include="..\Kobalt.Plugins.Core.Data\Kobalt.Plugins.Core.Data.csproj" />
+      <ProjectReference Include="..\..\..\Kobalt.Infrastructure\Kobalt.Infrastructure.csproj" />
+      <ProjectReference Include="..\..\..\Kobalt.Shared\Kobalt.Shared.csproj" />
     </ItemGroup>
 
 </Project>

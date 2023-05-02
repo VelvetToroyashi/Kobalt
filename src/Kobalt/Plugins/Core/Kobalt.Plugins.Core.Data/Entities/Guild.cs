@@ -1,6 +1,6 @@
 ﻿using Remora.Rest.Core;
 
-namespace Kobalt.Data.Entities;
+namespace Kobalt.Plugins.Core.Data.Entities;
 
 public class Guild
 {

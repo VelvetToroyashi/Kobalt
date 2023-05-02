@@ -1,5 +1,5 @@
-﻿using Kobalt.Data.DTOs;
-using Kobalt.Data.Mediator;
+﻿using Kobalt.Plugins.Core.Data.DTOs;
+using Kobalt.Plugins.Core.Data.Mediator;
 using Kobalt.Shared.Services;
 using Kobalt.Shared.Types;
 using MediatR;

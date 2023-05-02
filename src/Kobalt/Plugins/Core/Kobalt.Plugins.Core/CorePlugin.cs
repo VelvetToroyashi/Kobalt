@@ -1,7 +1,7 @@
-﻿using Kobalt.Data;
-using Kobalt.Infrastructure.Extensions;
+﻿using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Plugins.Core;
+using Kobalt.Plugins.Core.Data;
 using Kobalt.Plugins.Core.Services;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Services;

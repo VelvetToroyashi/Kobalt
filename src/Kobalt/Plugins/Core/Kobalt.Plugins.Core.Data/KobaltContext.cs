@@ -1,14 +1,14 @@
 ﻿using System.Runtime.CompilerServices;
-using Kobalt.Data.Entities;
+using Kobalt.Plugins.Core.Data.Entities;
 using Kobalt.Shared.DatabaseConverters;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using Remora.Rest.Core;
 
 [assembly: InternalsVisibleTo("Kobalt.Core")]
-[assembly: InternalsVisibleTo("Kobalt.Data.Tests")]
+[assembly: InternalsVisibleTo("Kobalt.Plugins.Core.Data.Tests")]
 
-namespace Kobalt.Data;
+namespace Kobalt.Plugins.Core.Data;
 
 public class KobaltContext : DbContext
 {

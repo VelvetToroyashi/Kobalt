@@ -3,7 +3,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Kobalt.Data.Migrations
+namespace Kobalt.Plugins.Core.Data.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration

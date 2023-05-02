@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using Remora.Results;
 
-namespace Kobalt.Data.Mediator;
+namespace Kobalt.Plugins.Core.Data.Mediator;
 
 internal class GetUserHandler : IRequestHandler<GetUserRequest, Result<UserDTO>>
 {

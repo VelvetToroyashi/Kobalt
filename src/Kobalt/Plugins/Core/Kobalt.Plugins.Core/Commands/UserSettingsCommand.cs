@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using Kobalt.Data.Mediator;
+using Kobalt.Plugins.Core.Data.Mediator;
 using Kobalt.Plugins.Core.Services;
 using MediatR;
 using NodaTime;

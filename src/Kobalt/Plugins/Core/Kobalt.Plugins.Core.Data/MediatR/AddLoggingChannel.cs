@@ -1,12 +1,12 @@
-﻿using Kobalt.Data.DTOs;
-using Kobalt.Data.Entities;
+﻿using Kobalt.Plugins.Core.Data.DTOs;
+using Kobalt.Plugins.Core.Data.Entities;
 using Kobalt.Shared.Types;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Remora.Rest.Core;
 using Remora.Results;
 
-namespace Kobalt.Data.Mediator;
+namespace Kobalt.Plugins.Core.Data.Mediator;
 
 /// <summary>
 /// Represents a request to add a logging channel.
