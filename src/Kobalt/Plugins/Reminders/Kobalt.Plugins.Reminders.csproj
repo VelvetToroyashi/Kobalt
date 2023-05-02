@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\Plugins.Common.tasks"/>
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>

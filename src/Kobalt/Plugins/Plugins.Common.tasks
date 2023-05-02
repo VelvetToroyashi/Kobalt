@@ -1,0 +1,29 @@
+﻿<Project>
+    <PropertyGroup Condition="$(Configuration)=='Debug'">
+        <!-- Copy dependency dlls into build dir -->
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    </PropertyGroup>
+
+    <Target Name="BuildPlugins" AfterTargets="Build" Condition="$(Configuration)=='Debug'">
+        <ItemGroup>
+            <!-- Collect all needed .dll files for plugin -->
+            <PluginDlls Include="$(TargetDir)*.dll" />
+        </ItemGroup>
+
+        <PropertyGroup>
+            <!-- Update 'RootPath' if solution file is renamed -->
+            <RootPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Kobalt.sln))</RootPath>
+
+            <!-- Update if project 'Kobalt.Core' is renamed -->
+            <KobaltCoreProjectName>Kobalt.Core</KobaltCoreProjectName>
+
+            <!-- By default uses current project framework; update if 'Kobalt' project framework changes -->
+            <KobaltCoreProjectFramework>$(TargetFramework)</KobaltCoreProjectFramework>
+
+            <PluginOutputDir>$(RootPath)\.artifacts\bin\$(KobaltCoreProjectName)\$(Configuration)\plugins</PluginOutputDir>
+        </PropertyGroup>
+
+        <Copy SourceFiles="@(PluginDlls)" DestinationFolder="$(PluginOutputDir)" SkipUnchangedFiles="true" />
+        <Message Text="Copied Plugin DLL to $(PluginOutputDir)" Importance="High" />
+    </Target>
+</Project>
