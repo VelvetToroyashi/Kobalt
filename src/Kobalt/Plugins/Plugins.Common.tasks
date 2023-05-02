@@ -1,8 +1,30 @@
 ﻿<Project>
-    <PropertyGroup Condition="$(Configuration)=='Debug'">
+    <PropertyGroup>
         <!-- Copy dependency dlls into build dir -->
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
+
+    <ItemGroup Condition="$(Configuration)=='Release'">
+        <PackageReference Include="ILRepack.Lib.MSBuild" Version="2.1.18" />
+    </ItemGroup>
+
+    <Target Name="BuildPluginsAndRepack" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+        <ItemGroup>
+            <InputAssemblies Include="$(TargetPath)" />
+            <InputAssemblies Include="@(TargetDir)" Exclude="$(TargetPath)"/>
+        </ItemGroup>
+
+        <ILRepack
+                Parallel="true"
+                Verbose="true"
+                InputAssemblies="@(InputAssemblies)"
+                TargetKind="Dll"
+                OutputFile="$(TargetDir)\$(AssemblyName).dll"
+                Internalize="true"
+                LibraryPath="$(OutputPath)"
+                RenameInternalized="true"
+        />
+    </Target>
 
     <Target Name="BuildPlugins" AfterTargets="Build" Condition="$(Configuration)=='Debug'">
         <ItemGroup>
