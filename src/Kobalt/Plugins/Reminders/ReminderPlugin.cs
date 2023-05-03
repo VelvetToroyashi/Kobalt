@@ -13,13 +13,12 @@ using Remora.Results;
 
 namespace Kobalt.Plugins.Reminders;
 
-public sealed class ReminderPlugin : IPluginDescriptor
+public sealed class ReminderPlugin : PluginDescriptor
 {
-    public string Name => "Kobalt Reminders";
-    public string Description => "Adds reminders to Kobalt";
-    public Version Version { get; } = new(0, 0, 1);
+    public override string Name => "Kobalt Reminders";
+    public override string Description => "Adds reminders to Kobalt";
 
-    public Result ConfigureServices(IServiceCollection serviceCollection)
+    public override Result ConfigureServices(IServiceCollection serviceCollection)
     {
         serviceCollection.AddHttpClient
         (
@@ -40,8 +39,4 @@ public sealed class ReminderPlugin : IPluginDescriptor
 
         return Result.FromSuccess();
     }
-
-    public async ValueTask<Result> InitializeAsync(IServiceProvider serviceProvider, CancellationToken ct = default) => default;
-
-
 }

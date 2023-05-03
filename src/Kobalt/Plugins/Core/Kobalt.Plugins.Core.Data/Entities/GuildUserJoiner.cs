@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Remora.Rest.Core;
 
@@ -9,9 +10,12 @@ public class GuildUserJoiner
     public int Id { get; set; }
     public Snowflake UserId { get; set; }
     public Snowflake GuildId { get; set; }
-    
-    public User User { get; set; }
-    public Guild Guild { get; set; }
+
+    [NotNull]
+    public User? User { get; set; }
+
+    [NotNull]
+    public Guild? Guild { get; set; }
 }
 
 public class GuildUserJoinerConfiguration : IEntityTypeConfiguration<GuildUserJoiner>

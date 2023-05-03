@@ -343,8 +343,8 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             var res = await (match!.Type switch
             {
                 InfractionType.Kick => AddUserKickAsync(guildID, user, _self, "Automatic case esclation."),
-                InfractionType.Ban  => AddUserBanAsync(guildID, user, _self, "Automatic case esclation.", match.Duration),
-                InfractionType.Mute => AddUserMuteAsync(guildID, user, _self, "Automatic case esclation.", match.Duration.Value),
+                InfractionType.Ban  => AddUserBanAsync(guildID, user, _self, "Automatic case esclation.", match.Duration!),
+                InfractionType.Mute => AddUserMuteAsync(guildID, user, _self, "Automatic case esclation.", match.Duration!.Value),
                 _ => Task.FromResult(Result.FromError(new InvalidOperationError($"Unexpected infraction type: {match.Type}")))
             });
 
