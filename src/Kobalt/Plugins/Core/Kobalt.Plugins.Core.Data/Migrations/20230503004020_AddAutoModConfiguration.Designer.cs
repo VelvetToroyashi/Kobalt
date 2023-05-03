@@ -3,6 +3,7 @@ using System;
 using Kobalt.Plugins.Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kobalt.Plugins.Core.Data.Migrations
 {
     [DbContext(typeof(KobaltContext))]
-    partial class KobaltContextModelSnapshot : ModelSnapshot
+    [Migration("20230503004020_AddAutoModConfiguration")]
+    partial class AddAutoModConfiguration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
