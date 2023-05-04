@@ -18,7 +18,7 @@
         <PackageReference Include="MassTransit" Version="8.0.15" />
         <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.15" />
         
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.3" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
     </ItemGroup>
 
     <ItemGroup>
