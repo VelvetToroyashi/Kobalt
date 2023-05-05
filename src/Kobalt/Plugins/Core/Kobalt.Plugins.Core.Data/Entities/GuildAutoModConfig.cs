@@ -19,9 +19,6 @@ public class GuildAutoModConfig
     /// </summary>
     public int? PushToTalkThreshold { get; set; }
 
-
-
-
     [NotNull]
     public Guild? Guild { get; set; }
 }

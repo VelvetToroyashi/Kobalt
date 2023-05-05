@@ -18,6 +18,7 @@ using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Gateway.Commands;
 using Remora.Discord.API.Objects;
+using Remora.Discord.Caching.Extensions;
 using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Commands.Responders;
 using Remora.Discord.Gateway;
@@ -137,6 +138,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddSingleton<IUser>(s => s.GetRequiredService<IMemoryCache>().Get<IUser>(CacheKey)!);
 
     services.AddMemoryCache();
+    services.AddDiscordCaching();
     services.AddCondition<EnsureHierarchyCondition>();
     services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(Policy<HttpResponseMessage>.Handle<HttpRequestException>().WaitAndRetryAsync(5, i => TimeSpan.FromSeconds(Math.Log(i * i) + 1)));
 
@@ -144,7 +146,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     (
         options =>
         {
-            options.Intents |= GatewayIntents.MessageContents;
+            options.Intents |= GatewayIntents.MessageContents | GatewayIntents.GuildVoiceStates;
             options.Presence = new UpdatePresence
             (
                 Status: UserStatus.DND,

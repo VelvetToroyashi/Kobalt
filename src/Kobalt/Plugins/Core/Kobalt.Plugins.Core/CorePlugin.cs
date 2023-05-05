@@ -38,6 +38,9 @@ public class CorePlugin : PluginDescriptor, IMigratablePlugin
         services.AddRespondersFromAssembly(asm);
         services.AddInteractivityFromAssembly(asm);
         services.AddCommandGroupsFromAssembly(asm, typeFilter: t => !t.IsNested);
+
+        services.AddSingleton<ChannelWatcherService>();
+
         return Result.FromSuccess();
     }
 
