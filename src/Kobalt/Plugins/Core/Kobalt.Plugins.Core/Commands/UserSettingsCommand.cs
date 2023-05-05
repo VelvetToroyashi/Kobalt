@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using Kobalt.Plugins.Core.Data.Mediator;
-using Kobalt.Plugins.Core.Services;
+using Kobalt.Shared.Services;
 using MediatR;
 using NodaTime;
 using Remora.Commands.Attributes;

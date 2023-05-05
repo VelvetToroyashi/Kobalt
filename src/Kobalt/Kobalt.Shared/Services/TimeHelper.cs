@@ -4,7 +4,7 @@ using NodaTime.TimeZones;
 using Remora.Commands.Results;
 using Remora.Results;
 
-namespace Kobalt.Plugins.Core.Services;
+namespace Kobalt.Shared.Services;
 
 /// <summary>
 /// A helper class for time-related operations.
