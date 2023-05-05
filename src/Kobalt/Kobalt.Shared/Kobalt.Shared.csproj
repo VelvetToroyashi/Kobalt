@@ -14,6 +14,7 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
       <PackageReference Include="NodaTime" Version="3.1.9" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
+      <PackageReference Include="Recognizers.Text.DateTime.Wrapper" Version="1.0.5" />
       <PackageReference Include="Remora.Discord.API" Version="73.0.0" />
       <PackageReference Include="Remora.Discord.Pagination" Version="3.0.16" />
       <PackageReference Include="Remora.Rest.Core" Version="2.2.0" />

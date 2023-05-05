@@ -54,13 +54,13 @@ You can acquire your bot token and public key from the [Discord Developer Dashbo
     - [ ] Configuration
     - [ ] Entertainment (TBD)
         - [ ] RPG/MUD? (Plays well in Discord)
-    - [ ] Moderation (See `Infraction API`)
+    - [x] Moderation (See `Infraction API`)* (Cases need a frontend)
     - [ ] Utility
         - [ ] ID Search/Info
         - [x] Reminders
         - [ ] Role Menus
-        - [ ] Timezone/Timestamp helper
-        - [ ] Push-to-Talk (PTT) Threshold
+        - [x] Timezone/Timestamp helper
+        - [x] Push-to-Talk (PTT) Threshold
 
 - [x] Infraction API  
     - [x] Infractions
