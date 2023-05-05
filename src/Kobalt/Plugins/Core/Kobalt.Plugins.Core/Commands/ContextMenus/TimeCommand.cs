@@ -68,9 +68,9 @@ public class TimeCommand : CommandGroup
             var text = message.Content[time.Position];
             var timeString = time.Time.Match
             (
-                dto => (dto.ToUniversalTime() + localTimezone).ToTimestamp(TimestampFormat.ShortTime),
-                dtoRange => $"{(dtoRange.Start.ToUniversalTime() + localTimezone).ToTimestamp(TimestampFormat.ShortDateTime)} - " +
-                            $"{(dtoRange.End.ToUniversalTime() + localTimezone).ToTimestamp(TimestampFormat.ShortDateTime)}"
+                dto => (dto + localTimezone).ToTimestamp(TimestampFormat.ShortTime),
+                dtoRange => $"{(dtoRange.Start + localTimezone).ToTimestamp(TimestampFormat.ShortDateTime)} - " +
+                            $"{(dtoRange.End + localTimezone).ToTimestamp(TimestampFormat.ShortDateTime)}"
             );
 
             timeMessage.AppendLine($"`{text}` ➜ {timeString}");
