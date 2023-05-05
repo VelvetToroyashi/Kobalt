@@ -1,8 +1,6 @@
-# Kobalt - The bot for everyone
+# Kobalt — A privacy-first Discord bot.
 
-Kobalt is, or at least *attempts* to be a bot for everyone.
-
-From moderation, to fun, to utility, Kobalt has it all.
+First and foremost, we **respect your privacy**. All data collection is opt-*in*.
 
 This project is built on the foundational work of [Silk!](https://silkbot.cc/src)
 
