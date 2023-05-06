@@ -11,9 +11,9 @@ namespace Kobalt.Infrastructure.Types;
 public class TimezoneAutoCompleteProvider : IAutocompleteProvider
 {
     private readonly IMemoryCache _cache;
- 
+
     public string Identity => "TimezoneAutocomplete";
-    
+
     public TimezoneAutoCompleteProvider(IMemoryCache cache, IDateTimeZoneProvider provider)
     {
         _cache = cache;
@@ -28,7 +28,7 @@ public class TimezoneAutoCompleteProvider : IAutocompleteProvider
                           .Where(kvp => (string?)kvp.Item2 is not null)
                           .DistinctBy(tuple => tuple.Item2)
                           .ToDictionary(kvp => kvp.id, kvp => kvp.Item2);
-        
+
         _cache.Set("tz_cache", tzCache);
     }
 

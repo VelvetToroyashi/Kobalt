@@ -315,6 +315,50 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     }
 
     /// <summary>
+    /// Retrieves a singular infraction from a guild.
+    /// </summary>
+    /// <param name="guildID">The ID of the guild the infraction belongs to.</param>
+    /// <param name="caseID">The ID of the case to retrieve.</param>
+    /// <returns>The infraction, if it exists.</returns>
+    public async Task<Result<InfractionDTO>> GetUserCaseAsync(Snowflake guildID, int caseID)
+    {
+        var getInfractionResult = await ResultExtensions.TryCatchAsync
+        (
+            () => _client.GetFromJsonAsync<InfractionDTO>($"infractions/guilds/{guildID}/{caseID}", _serializerOptions)
+        );
+
+        if (!getInfractionResult.IsDefined(out var fetched))
+        {
+            return new NotFoundError("That case doesn't exist.");
+        }
+
+        return fetched;
+    }
+
+    /// <summary>
+    /// Retrieves all infractions for a user in a guild.
+    /// </summary>
+    /// <param name="guildID">The ID of the guild to request infractions for.</param>
+    /// <param name="userID">The ID fo the user to request infractions for.</param>
+    /// <returns>The user's infractions, if any.</returns>
+    public async Task<Result<IReadOnlyList<InfractionDTO>>> GetUserCasesAsync(Snowflake guildID, Snowflake userID)
+    {
+        var getInfractionsResult = await ResultExtensions.TryCatchAsync
+        (
+            () => _client.GetFromJsonAsync<IEnumerable<InfractionDTO>>($"infractions/guilds/{guildID}/users/{userID}", _serializerOptions)
+        );
+
+        if (!getInfractionsResult.IsDefined(out var fetched) || !fetched.Any())
+        {
+            return new NotFoundError("That user doesn't have any cases.");
+        }
+
+        fetched = fetched.Where(f => f.Type is not InfractionType.Unmute);
+
+        return fetched.ToArray();
+    }
+
+    /// <summary>
     /// Attempts to escalate an infraction for a user in a guild, using the Guild's configured rules.
     /// </summary>
     /// <param name="guildID">The ID of the guild to escalate. </param>
