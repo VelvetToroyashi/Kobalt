@@ -10,7 +10,6 @@ using Remora.Results;
 
 namespace Kobalt.Plugins.Core.Services;
 
-
 public class ChannelWatcherService
 {
     // Mapping of Guild ID ➜ (User ID ➜ List of Voice States)
@@ -34,6 +33,20 @@ public class ChannelWatcherService
 
     public async Task<Result> InitializeGuildAsync(Snowflake guildID, IReadOnlyList<IPartialVoiceState> states, CancellationToken ct = default)
     {
+        var automodConfigResult = await _mediator.Send(new GetGuild.AutoModConfigRequest(guildID), ct);
+
+        if (!automodConfigResult.IsSuccess)
+        {
+            return Result.FromSuccess();
+        }
+
+        var channelThreshold = automodConfigResult.Entity.PushToTalkThreshold;
+
+        if (channelThreshold.GetValueOrDefault() is 0)
+        {
+            return Result.FromSuccess();
+        }
+
         var channels = states.GroupBy(state => state.ChannelID);
 
         foreach (var channel in channels)
@@ -45,7 +58,7 @@ public class ChannelWatcherService
 
             _guildStates[guildID] = channel.ToDictionary(state => state.UserID.Value, state => state);
 
-            await HandleThresholdTransitionAsync(guildID, channelID.Value, channel.Count(), ct);
+            await HandleThresholdTransitionAsync(guildID, channelID.Value, channel.Count(), channelThreshold.Value, ct);
         }
 
         return Result.FromSuccess();
@@ -59,11 +72,23 @@ public class ChannelWatcherService
     /// <returns></returns>
     public async Task<Result> HandleStateUpdateAsync(IVoiceState newState, CancellationToken ct)
     {
-        // TODO: Check threshold here, and avoid allocating a list if we don't need to.
-
         if (!newState.GuildID.IsDefined(out var guildID))
         {
             return new InvalidOperationError("Voice state update did not contain a guild ID.");
+        }
+
+        var automodConfigResult = await _mediator.Send(new GetGuild.AutoModConfigRequest(guildID), ct);
+
+        if (!automodConfigResult.IsSuccess)
+        {
+            return Result.FromSuccess();
+        }
+
+        var channelThreshold = automodConfigResult.Entity.PushToTalkThreshold;
+
+        if (channelThreshold.GetValueOrDefault() is 0)
+        {
+            return Result.FromSuccess();
         }
 
         if (!_guildStates.TryGetValue(guildID, out var userStates))
@@ -87,13 +112,13 @@ public class ChannelWatcherService
             userStates[newState.UserID] = newState;
 
             var newChannelCount = userStates.Count(state => state.Value.ChannelID == newState.ChannelID);
-            await HandleThresholdTransitionAsync(guildID, newState.ChannelID.Value, newChannelCount, ct);
+            await HandleThresholdTransitionAsync(guildID, newState.ChannelID.Value, newChannelCount, channelThreshold.Value, ct);
         }
 
         if (oldState is not null)
         {
             var oldChannelCount = userStates.Count(state => state.Value.ChannelID == oldState.ChannelID);
-            await HandleThresholdTransitionAsync(guildID, oldState.ChannelID.Value.Value, oldChannelCount, ct);
+            await HandleThresholdTransitionAsync(guildID, oldState.ChannelID.Value.Value, oldChannelCount, channelThreshold.Value, ct);
         }
 
         return Result.FromSuccess();
@@ -105,17 +130,11 @@ public class ChannelWatcherService
     /// <param name="guildID">The ID of the guild to handle.</param>
     /// <param name="channelID">The ID of the channel to transition.</param>
     /// <param name="count">The current count of users in the channel.</param>
+    /// <param name="channelThreshold">The threshold for push to talk to be toggled.</param>
     /// <param name="ct">A cancellation token.</param>
-    private async Task HandleThresholdTransitionAsync(Snowflake guildID, Snowflake channelID, int count, CancellationToken ct)
+    private async Task HandleThresholdTransitionAsync(Snowflake guildID, Snowflake channelID, int count, int channelThreshold, CancellationToken ct)
     {
-        var automodConfigResult = await _mediator.Send(new GetGuild.AutoModConfigRequest(guildID), ct);
 
-        if (!automodConfigResult.IsSuccess)
-        {
-            return;
-        }
-
-        var channelThreshold = automodConfigResult.Entity.PushToTalkThreshold;
         var channelResult = await _channels.GetChannelAsync(channelID, ct);
 
         if (!channelResult.IsSuccess)
