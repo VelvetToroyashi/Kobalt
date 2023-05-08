@@ -6,7 +6,7 @@ using Remora.Results;
 
 namespace Kobalt.Plugins.Core.Data.Mediator;
 
-public static class GetGuild
+public static partial class GetGuild
 {
     /// <summary>
     /// Requests the auto-mod configuration for a guild.
