@@ -58,7 +58,7 @@ public class ChannelWatcherService
 
             _guildStates[guildID] = channel.ToDictionary(state => state.UserID.Value, state => state);
 
-            await HandleThresholdTransitionAsync(guildID, channelID.Value, channel.Count(), channelThreshold.Value, ct);
+            await HandleThresholdTransitionAsync(guildID, channelID.Value, channel.Count(), channelThreshold!.Value, ct);
         }
 
         return Result.FromSuccess();
@@ -112,13 +112,13 @@ public class ChannelWatcherService
             userStates[newState.UserID] = newState;
 
             var newChannelCount = userStates.Count(state => state.Value.ChannelID == newState.ChannelID);
-            await HandleThresholdTransitionAsync(guildID, newState.ChannelID.Value, newChannelCount, channelThreshold.Value, ct);
+            await HandleThresholdTransitionAsync(guildID, newState.ChannelID.Value, newChannelCount, channelThreshold!.Value, ct);
         }
 
         if (oldState is not null)
         {
             var oldChannelCount = userStates.Count(state => state.Value.ChannelID == oldState.ChannelID);
-            await HandleThresholdTransitionAsync(guildID, oldState.ChannelID.Value.Value, oldChannelCount, channelThreshold.Value, ct);
+            await HandleThresholdTransitionAsync(guildID, oldState.ChannelID.Value!.Value, oldChannelCount, channelThreshold!.Value, ct);
         }
 
         return Result.FromSuccess();
