@@ -52,7 +52,7 @@ You can acquire your bot token and public key from the [Discord Developer Dashbo
     - [ ] Configuration
     - [ ] Entertainment (TBD)
         - [ ] RPG/MUD? (Plays well in Discord)
-    - [x] Moderation (See `Infraction API`)* (Cases need a frontend)
+    - [x] Moderation (See `Infraction API`)* (Cases need an update command, but this is otherwise complete)
     - [ ] Utility
         - [ ] ID Search/Info
         - [x] Reminders

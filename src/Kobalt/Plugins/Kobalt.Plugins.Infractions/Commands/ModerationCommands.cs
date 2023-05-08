@@ -415,4 +415,6 @@ public class ModerationCommands : CommandGroup
             return strVal.PadLeft(biggest.Length);
         }
     }
+
+    // TODO: case-update
 }
