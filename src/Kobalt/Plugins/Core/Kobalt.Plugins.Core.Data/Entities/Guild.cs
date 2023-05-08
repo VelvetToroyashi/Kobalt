@@ -1,7 +1,10 @@
-﻿using Remora.Rest.Core;
+﻿using JetBrains.Annotations;
+using Remora.Rest.Core;
 
 namespace Kobalt.Plugins.Core.Data.Entities;
 
+
+[PublicAPI]
 public class Guild
 {
     /// <summary>
@@ -9,7 +12,9 @@ public class Guild
     /// </summary>
     public Snowflake ID { get; set; }
 
-    public GuildAutoModConfig AutoModConfig { get; set; } = new();
+    public GuildAutoModConfig AutoModConfig { get; set; }
+
+    public GuildAntiRaidConfig AntiRaidConfig { get; set; }
 
     /// <summary>
     /// Users on the guild.
