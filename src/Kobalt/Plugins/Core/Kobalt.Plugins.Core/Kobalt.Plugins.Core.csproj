@@ -5,6 +5,7 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <LangVersion>preview</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,6 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\Kobalt.Plugins.Infractions\Kobalt.Plugins.Infractions.csproj" />
       <ProjectReference Include="..\Kobalt.Plugins.Core.Data\Kobalt.Plugins.Core.Data.csproj" />
       <ProjectReference Include="..\..\..\Kobalt.Infrastructure\Kobalt.Infrastructure.csproj" />
       <ProjectReference Include="..\..\..\Kobalt.Shared\Kobalt.Shared.csproj" />
