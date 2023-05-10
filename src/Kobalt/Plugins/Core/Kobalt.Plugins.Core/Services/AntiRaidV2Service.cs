@@ -57,7 +57,16 @@ public class AntiRaidV2Service
         var users = state.GetSuspiciousUsers(config).ToArray();
 
         foreach (var user in users)
-            await _infractions.AddUserBanAsync(guildID, user, _self, $"Raid detected ({users.Length} accounts).");
+        {
+            var result = await _infractions.AddUserBanAsync(guildID, user, _self, $"Raid detected ({users.Length} accounts).");
+
+            if (!result.IsSuccess)
+            {
+                // TODO: Log
+            }
+        }
+
+        state.MarkUsersHandled(users.Select(user => user.ID));
 
         return Result.FromSuccess();
     }
@@ -65,7 +74,7 @@ public class AntiRaidV2Service
 
 internal class RaidState
 {
-    private readonly List<(IUser User, DateTimeOffset JoinDate, int ThreatScore, bool Handled)> _users = new();
+    internal readonly List<(IUser User, DateTimeOffset JoinDate, int ThreatScore, bool Handled)> _users = new();
 
     /// <summary>
     /// Adds a user to the tracking state.
@@ -87,6 +96,11 @@ internal class RaidState
         if (accountAge < config.MinimumAccountAge)
         {
             threatScore += config.MinimumAgeScore;
+        }
+
+        if (user.Avatar is null)
+        {
+            threatScore += config.NoAvatarScore;
         }
 
         if (accountAge > config.MiniumAccountAgeBypass)
