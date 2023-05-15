@@ -1,4 +1,5 @@
-﻿using Kobalt.Infrastructure.Extensions;
+﻿using System.Runtime.CompilerServices;
+using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Plugins.Core;
 using Kobalt.Plugins.Core.Data;
@@ -12,6 +13,7 @@ using Remora.Plugins.Abstractions;
 using Remora.Plugins.Abstractions.Attributes;
 
 [assembly: RemoraPlugin(typeof(CorePlugin))]
+[assembly: InternalsVisibleTo("Kobalt.Plugins.Core.Tests")]
 
 namespace Kobalt.Plugins.Core;
 
@@ -41,7 +43,6 @@ public class CorePlugin : PluginDescriptor, IMigratablePlugin
 
         services.AddSingleton<AntiRaidV2Service>();
         services.AddSingleton<ChannelWatcherService>();
-
 
         return Result.FromSuccess();
     }
