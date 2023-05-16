@@ -32,12 +32,7 @@ public class AntiRaidV2Service
         var state = _raidStates.GetOrAdd(member.GuildID, (_) => new RaidState());
         var configResult = await _mediator.Send(new GetGuild.AntiRaidConfigRequest(member.GuildID));
 
-        if (!configResult.IsDefined(out var config))
-        {
-            return Result.FromSuccess();
-        }
-
-        if (!config.IsEnabled)
+        if (!configResult.IsDefined(out var config) || !config.IsEnabled)
         {
             return Result.FromSuccess();
         }
@@ -72,6 +67,9 @@ public class AntiRaidV2Service
     }
 }
 
+/// <summary>
+/// Represents the current state of a raid.
+/// </summary>
 internal class RaidState
 {
     internal readonly List<(IUser User, DateTimeOffset JoinDate, int ThreatScore, bool Handled)> _users = new();
@@ -119,10 +117,6 @@ internal class RaidState
         _users.Add((user, joinTimestamp, threatScore, false));
     }
 
-    /// <summary>
-    /// Determines if the current tracked state resembles a raid.
-    /// </summary>
-    /// <param name="config">A configuration to determine if the current state is a raid.</param>
     /// <returns>Whether or not the current configuration would consider the current state to be a raid.</returns>
     public bool IsRaid(GuildAntiRaidConfigDTO config)
     {
