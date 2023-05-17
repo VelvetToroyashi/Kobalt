@@ -7,6 +7,7 @@ using Kobalt.Plugins.Core.Services;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Discord.Extensions.Extensions;
 using Remora.Plugins.Abstractions;
@@ -52,5 +53,22 @@ public class CorePlugin : PluginDescriptor, IMigratablePlugin
         var db = serviceProvider.GetRequiredService<IDbContextFactory<KobaltContext>>().CreateDbContext();
 
         return ResultExtensions.TryCatchAsync(() => db.Database.MigrateAsync(ct));
+    }
+
+    private void AddInfractionServices(IServiceCollection services)
+    {
+        services.AddHttpClient
+        (
+            "Infractions",
+            (s, c) =>
+            {
+                var address = s.GetService<IConfiguration>()!["Plugins:Core:PhishingApiUrl"] ??
+                              throw new KeyNotFoundException("The Phishing API url was not configured.");
+
+                c.BaseAddress = new Uri(address);
+            }
+        );
+
+        services.AddSingleton<InfractionAPIService>();
     }
 }

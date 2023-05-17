@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Humanizer;
@@ -17,8 +16,9 @@ using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
 using Remora.Rest.Core;
 using Remora.Results;
+using Color = System.Drawing.Color;
 
-namespace Kobalt.Plugins.Infractions.Services;
+namespace Kobalt.Plugins.Core.Services;
 
 internal record InfractionResult(InfractionDTO Infraction, InfractionState State);
 

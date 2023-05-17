@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
-using System.Drawing;
 using Humanizer;
-using Kobalt.Plugins.Infractions.Services;
+using Kobalt.Plugins.Core.Services;
 using Kobalt.Shared.Conditions;
 using Kobalt.Shared.Extensions;
 using Remora.Commands.Attributes;
@@ -15,9 +14,9 @@ using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Discord.Pagination.Extensions;
 using Remora.Rest.Core;
-using Remora.Results;
+using Color = System.Drawing.Color;
 
-namespace Kobalt.Plugins.Infractions.Commands;
+namespace Kobalt.Plugins.Core.Commands;
 
 [Group("moderation")]
 [RequireContext(ChannelContext.Guild)]

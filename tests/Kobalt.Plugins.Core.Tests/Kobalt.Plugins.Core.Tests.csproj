@@ -21,7 +21,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\Kobalt\Plugins\Core\Kobalt.Plugins.Core\Kobalt.Plugins.Core.csproj" />
-      <ProjectReference Include="..\..\src\Kobalt\Plugins\Kobalt.Plugins.Infractions\Kobalt.Plugins.Infractions.csproj" />
     </ItemGroup>
 
 </Project>
