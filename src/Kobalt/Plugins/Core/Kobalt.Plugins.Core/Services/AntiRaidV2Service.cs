@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using Kobalt.Plugins.Core.Data.DTOs;
 using Kobalt.Plugins.Core.Data.Mediator;
-using Kobalt.Plugins.Infractions.Services;
 using MediatR;
 using Remora.Discord.API.Abstractions.Gateway.Events;
 using Remora.Discord.API.Abstractions.Objects;
