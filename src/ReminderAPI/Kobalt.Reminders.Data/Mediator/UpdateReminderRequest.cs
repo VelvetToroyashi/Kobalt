@@ -1,4 +1,4 @@
-﻿namespace Kobalt.ReminderService.Data.Mediator;
+﻿namespace Kobalt.Reminders.Data.Mediator;
 
 // TODO? It would be a nice feature.
 public class UpdateReminderRequest {}

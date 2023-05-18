@@ -6,7 +6,7 @@ using Kobalt.Infrastructure;
 using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services;
 using Kobalt.Infrastructure.Types;
-using Kobalt.ReminderService.API.Extensions;
+using Kobalt.Reminders.API.Extensions;
 using Kobalt.Shared.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;

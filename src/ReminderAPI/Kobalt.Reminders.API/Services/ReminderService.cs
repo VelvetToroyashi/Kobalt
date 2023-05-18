@@ -1,19 +1,19 @@
 ﻿using Kobalt.Infrastructure.DTOs.Reminders;
-using Kobalt.ReminderService.Data.Mediator;
+using Kobalt.Reminders.Data.Mediator;
 using MassTransit;
 using MediatR;
 using Remora.Results;
 
-namespace Kobalt.ReminderService.API.Services;
+namespace Kobalt.Reminders.API.Services;
 
 /// <summary>
 /// A service that dispatches reminders;
 /// </summary>
-public class ReminderService : IHostedService
+public class Reminders : IHostedService
 {
     private readonly IBus _messageBus;
     private readonly IMediator _mediator;
-    private readonly ILogger<ReminderService> _logger;
+    private readonly ILogger<Reminders> _logger;
 
     private readonly List<ReminderDTO> _reminders = new();
     private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(1));
@@ -21,7 +21,7 @@ public class ReminderService : IHostedService
     private readonly Task _dispatchTask;
     private readonly CancellationTokenSource _cts = new();
 
-    public ReminderService(IBus bus, IMediator mediator, ILogger<ReminderService> logger)
+    public Reminders(IBus bus, IMediator mediator, ILogger<Reminders> logger)
     {
         _messageBus = bus;
         _mediator = mediator;

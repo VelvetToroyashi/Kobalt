@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Kobalt.Infrastructure.DTOs.Reminders;
-using Kobalt.ReminderService.API.Services;
-using Kobalt.ReminderService.Data;
-using Kobalt.ReminderService.Data.Mediator;
+using Kobalt.Reminders.API.Services;
+using Kobalt.Reminders.Data;
+using Kobalt.Reminders.Data.Mediator;
 using Kobalt.Shared.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -21,8 +21,8 @@ builder.Services.AddMediatR(s => s.RegisterServicesFromAssemblyContaining<Remind
 builder.Services.AddDbContextFactory<ReminderContext>("Reminders");
 
 builder.Services.AddRabbitMQ();
-builder.Services.AddSingleton<ReminderService>();
-builder.Services.AddHostedService(s => s.GetRequiredService<ReminderService>());
+builder.Services.AddSingleton<Reminders>();
+builder.Services.AddHostedService(s => s.GetRequiredService<Reminders>());
 
 //TODO: Extension method?
 var configure = (JsonSerializerOptions options) =>
@@ -48,7 +48,7 @@ app.MapGet("/api/reminders/{userID}", async (ulong userID, IMediator mediator) =
 });
 
 // Create a reminder
-app.MapPost("/api/reminders/{userID}", async (ulong userID, [FromBody] ReminderCreatePayload reminder, ReminderService reminders) =>
+app.MapPost("/api/reminders/{userID}", async (ulong userID, [FromBody] ReminderCreatePayload reminder, Reminders reminders) =>
             await reminders.CreateReminderAsync
             (
                 userID,
@@ -60,7 +60,7 @@ app.MapPost("/api/reminders/{userID}", async (ulong userID, [FromBody] ReminderC
             ));
 
 // Delete one or more reminders
-app.MapDelete("/api/reminders/{userID}", async ([FromBody] int[] reminderIDs, ulong userID, ReminderService reminders) =>
+app.MapDelete("/api/reminders/{userID}", async ([FromBody] int[] reminderIDs, ulong userID, Reminders reminders) =>
 {
     var result = new ReminderDeletionPayload(new(), new());
 

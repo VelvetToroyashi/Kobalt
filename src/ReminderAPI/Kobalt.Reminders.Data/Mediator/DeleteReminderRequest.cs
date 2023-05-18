@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
-namespace Kobalt.ReminderService.Data.Mediator;
+namespace Kobalt.Reminders.Data.Mediator;
 
 public class DeleteReminder
 {

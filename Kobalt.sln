@@ -18,11 +18,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ArtistsAPI", "ArtistsAPI", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Artists.Data", "src\ArtistsAPI\Kobalt.Artists.Data\Kobalt.Artists.Data.csproj", "{3CC8E90A-060B-4606-9005-2DD164451D16}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReminderService", "ReminderService", "{0891AAA9-9F46-4A88-BF0E-08ABBC3E2A07}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReminderAPI", "ReminderAPI", "{0891AAA9-9F46-4A88-BF0E-08ABBC3E2A07}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.ReminderService.API", "src\ReminderService\Kobalt.ReminderService.API\Kobalt.ReminderService.API.csproj", "{D6FA2154-0034-4EA0-9A99-5C987C6BB6F0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Reminders.API", "src\ReminderAPI\Kobalt.Reminders.API\Kobalt.Reminders.API.csproj", "{D6FA2154-0034-4EA0-9A99-5C987C6BB6F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.ReminderService.Data", "src\ReminderService\Kobalt.ReminderService.Data\Kobalt.ReminderService.Data.csproj", "{D3C60A45-1C24-41AC-8B84-E04B665EB11D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Reminders.Data", "src\ReminderAPI\Kobalt.Reminders.Data\Kobalt.Reminders.Data.csproj", "{D3C60A45-1C24-41AC-8B84-E04B665EB11D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{72288C49-3078-486C-9933-6E276A1C7837}"
 EndProject

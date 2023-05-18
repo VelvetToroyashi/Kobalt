@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Kobalt.ReminderService.Data.Migrations
+namespace Kobalt.Reminders.Data.Migrations
 {
     /// <inheritdoc />
     public partial class InitialMigration : Migration

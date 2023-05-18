@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kobalt.ReminderService.Data.Design;
+namespace Kobalt.Reminders.Data.Design;
 
 /// <summary>
 /// Instantiates a <see cref="ReminderContext"/> for design-time purposes.

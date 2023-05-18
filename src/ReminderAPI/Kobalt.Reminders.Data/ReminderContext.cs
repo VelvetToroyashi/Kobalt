@@ -1,9 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
-using Kobalt.ReminderService.Data.Entities;
+using Kobalt.Reminders.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
-[assembly: InternalsVisibleTo("Kobalt.ReminderService.API")]
-namespace Kobalt.ReminderService.Data;
+[assembly: InternalsVisibleTo("Kobalt.Reminders.API")]
+namespace Kobalt.Reminders.Data;
 
 /// <summary>
 /// Represents a database context for the reminder service.

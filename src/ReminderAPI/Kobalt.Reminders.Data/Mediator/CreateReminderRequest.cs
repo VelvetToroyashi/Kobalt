@@ -1,9 +1,9 @@
 ﻿using Kobalt.Infrastructure.DTOs.Reminders;
-using Kobalt.ReminderService.Data.Entities;
+using Kobalt.Reminders.Data.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kobalt.ReminderService.Data.Mediator;
+namespace Kobalt.Reminders.Data.Mediator;
 
 public static class CreateReminder
 {
