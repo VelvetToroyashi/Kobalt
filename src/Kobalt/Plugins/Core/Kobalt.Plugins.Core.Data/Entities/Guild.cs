@@ -12,9 +12,11 @@ public class Guild
     /// </summary>
     public Snowflake ID { get; set; }
 
-    public GuildAutoModConfig AutoModConfig { get; set; }
+    [NotNull]
+    public GuildAutoModConfig? AutoModConfig { get; set; }
 
-    public GuildAntiRaidConfig AntiRaidConfig { get; set; }
+    [NotNull]
+    public GuildAntiRaidConfig? AntiRaidConfig { get; set; }
 
     /// <summary>
     /// Users on the guild.
