@@ -8,6 +8,12 @@ namespace Kobalt.Phishing.Data.MediatR;
 
 public static class CreateSuspiciousUsername
 {
+    /// <summary>
+    /// Represents a request to create a new username filter.
+    /// </summary>
+    /// <param name="GuildID">The ID of the guild to add this filter to.</param>
+    /// <param name="UsernamePattern">The pattern of the username.</param>
+    /// <param name="ParseType">The format for the username.</param>
     public record Request(ulong GuildID, string UsernamePattern, UsernameParseType ParseType) : IRequest<Result<SuspiciousUsername>>;
 
     internal class Handler : IRequestHandler<Request, Result<SuspiciousUsername>>
