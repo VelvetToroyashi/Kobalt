@@ -25,7 +25,9 @@ builder.Services
 
 var app = builder.Build();
 
-app.MapPost("/phishing/check/{guildID}/user", (ulong guildID, [FromQuery] string username, [FromQuery] ulong? id, [FromQuery] string? hash) => new { });
+app.MapPost("/phishing/check/{guildID}/user", (ulong guildID, [FromBody] CheckUserRequest user) => new { });
+app.MapPost("/phishing/check/{guildID}/domains", (ulong guildID, [FromBody] IReadOnlyList<string> domains) => { });
 app.MapPut("/phishing/{guildID}/username", (ulong guildID, [FromBody] SubmitUsernameRequest request) => new { });
+app.MapPut("/phishing/{guildID}/avatar", (ulong guildID, [FromBody] SubmitAvatarRequest request) => new { });
 
 app.Run();
