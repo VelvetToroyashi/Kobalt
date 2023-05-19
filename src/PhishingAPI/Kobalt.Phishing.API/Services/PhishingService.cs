@@ -98,6 +98,21 @@ public class PhishingService : BackgroundService
         return new UserPhishingDetectionResult(null, false, false, null);
     }
 
+    public async Task<Result<byte[]>> HashImageAsync(string url)
+    {
+        var bytes = await ResultExtensions.TryCatchAsync(() => _client.GetByteArrayAsync(url));
+
+        if (!bytes.IsDefined(out var result))
+        {
+            return Result<byte[]>.FromError(bytes.Error!);
+        }
+
+        var hasher = new PerceptualHash();
+        var hashResult = ResultExtensions.TryCatch(() => BitConverter.GetBytes(hasher.Hash(Image.LoadPixelData<Rgba32>(result, 256, 256))));
+
+        return hashResult;
+    }
+
     private async Task<Result<(SuspiciousAvatar Avatar, int Score)>> CheckAvatarAsync(ulong guildID, Snowflake userID, string? userAvatarHash)
     {
         if (userAvatarHash is null)
