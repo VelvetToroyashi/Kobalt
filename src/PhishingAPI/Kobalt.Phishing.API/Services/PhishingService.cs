@@ -80,7 +80,7 @@ public class PhishingService : BackgroundService
     /// <returns>A result for whether or not any of the domains matched.</returns>
     public UserPhishingDetectionResult CheckLinksAsync(IReadOnlyList<string> domains)
     {
-        var domainList = _cache.Get<HashSet<string>>("phishing-domains");
+        var domainList = _cache.Get<HashSet<byte[]>>("phishing-domains");
 
         if (domainList is null)
         {
@@ -88,7 +88,7 @@ public class PhishingService : BackgroundService
             return new UserPhishingDetectionResult(null, false, false, null);
         }
 
-        var matches = domains.Where(x => domainList.Contains(x));
+        var matches = domains.Where(x => domainList.Contains(SHA256.HashData(Encoding.UTF8.GetBytes(x))));
 
         if (matches.FirstOrDefault() is {} match)
         {
