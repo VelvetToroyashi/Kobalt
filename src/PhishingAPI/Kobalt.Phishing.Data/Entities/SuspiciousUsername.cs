@@ -10,7 +10,7 @@ public class SuspiciousUsername
     /// <summary>
     /// The ID of the guild this username is for, if any.
     /// </summary>
-    public ulong? GuildId { get; set; }
+    public ulong? GuildID { get; set; }
 
     /// <summary>
     /// The pattern for the username, or a username literal.
