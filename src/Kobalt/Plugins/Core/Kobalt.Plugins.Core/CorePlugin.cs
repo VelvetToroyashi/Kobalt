@@ -45,6 +45,7 @@ public class CorePlugin : PluginDescriptor, IMigratablePlugin
         services.AddSingleton<AntiRaidV2Service>();
         services.AddSingleton<ChannelWatcherService>();
 
+        AddPhishingServices(services);
         AddInfractionServices(services);
 
         return Result.FromSuccess();
@@ -72,5 +73,22 @@ public class CorePlugin : PluginDescriptor, IMigratablePlugin
         );
 
         services.AddSingleton<InfractionAPIService>();
+    }
+
+    private void AddPhishingServices(IServiceCollection services)
+    {
+        services.AddHttpClient
+        (
+            "Phishing",
+            (s, c) =>
+            {
+                var address = s.GetService<IConfiguration>()!["Plugins:Core:PhishingApiUrl"] ??
+                              throw new KeyNotFoundException("The Phishing API url was not configured.");
+
+                c.BaseAddress = new Uri(address);
+            }
+        );
+
+        services.AddTransient<PhishingAPIService>();
     }
 }

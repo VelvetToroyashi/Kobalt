@@ -19,6 +19,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\..\InfractionsAPI\Kobalt.Infractions.Shared\Kobalt.Infractions.Shared.csproj" />
+      <ProjectReference Include="..\..\..\..\PhishingAPI\Kobalt.Phishing.Shared\Kobalt.Phishing.Shared.csproj" />
       <ProjectReference Include="..\Kobalt.Plugins.Core.Data\Kobalt.Plugins.Core.Data.csproj" />
       <ProjectReference Include="..\..\..\Kobalt.Infrastructure\Kobalt.Infrastructure.csproj" />
       <ProjectReference Include="..\..\..\Kobalt.Shared\Kobalt.Shared.csproj" />
