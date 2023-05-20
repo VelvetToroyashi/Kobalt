@@ -21,7 +21,7 @@ public static class ResultExtensions
             return e;
         }
     }
-    
+
     /// <summary>
     /// Attempts to execute the given lambda, transforming any exceptions into a <see cref="Result"/> with the exception as the error.
     /// </summary>
@@ -38,7 +38,25 @@ public static class ResultExtensions
             return e;
         }
     }
-    
+
+    /// <summary>
+    /// Attempts to execute the given lambda, transforming any exceptions into a <see cref="Result"/> with the exception as the error.
+    /// </summary>
+    /// <param name="lambda">The delegate to execute.</param>
+    /// <param name="state">A state object passed to the delegate.</param>
+    /// <returns>A result that may or not have succeeded, with a result in the former case.</returns>
+    public static Result<T> TryCatch<TState, T>(Func<TState, T> lambda, TState state)
+    {
+        try
+        {
+            return lambda(state);
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
+
     /// <summary>
     /// Attempts to execute the given lambda, transforming any exceptions into a <see cref="Result"/> with the exception as the error.
     /// </summary>
@@ -56,7 +74,7 @@ public static class ResultExtensions
             return e;
         }
     }
-    
+
     /// <summary>
     /// Attempts to execute the given lambda, transforming any exceptions into a <see cref="Result"/> with the exception as the error.
     /// </summary>

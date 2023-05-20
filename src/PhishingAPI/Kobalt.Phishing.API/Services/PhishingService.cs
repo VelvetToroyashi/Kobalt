@@ -13,6 +13,7 @@ using Remora.Rest.Core;
 using Remora.Results;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace Kobalt.Phishing.API.Services;
 
@@ -107,8 +108,11 @@ public class PhishingService : BackgroundService
             return Result<byte[]>.FromError(bytes.Error!);
         }
 
+        using var image = Image.Load<Rgba32>(result);
+        image.Mutate(img => img.Resize(new Size(256, 256)));
+
         var hasher = new PerceptualHash();
-        var hashResult = ResultExtensions.TryCatch(() => BitConverter.GetBytes(hasher.Hash(Image.LoadPixelData<Rgba32>(result, 256, 256))));
+        var hashResult = ResultExtensions.TryCatch((img) => BitConverter.GetBytes(hasher.Hash(img)), image);
 
         return hashResult;
     }
@@ -157,7 +161,15 @@ public class PhishingService : BackgroundService
             return new UsernameDetectionResult(true, literalMatch.UsernamePattern, literalMatch.GuildID is null);
         }
 
-        var regexMatch = regexes.FirstOrDefault(x => ResultExtensions.TryCatch(() => Regex.IsMatch(requestUsername, x.UsernamePattern)).IsDefined(out var res) && res);
+        var regexMatch = regexes.FirstOrDefault
+        (
+            x => ResultExtensions.TryCatch
+            (
+                static ((string username, string pattern) state) => Regex.IsMatch(state.pattern, state.username),
+                (x.UsernamePattern, requestUsername)
+            )
+            .IsDefined(out var res) && res
+        );
 
         if (regexMatch is not null)
         {
