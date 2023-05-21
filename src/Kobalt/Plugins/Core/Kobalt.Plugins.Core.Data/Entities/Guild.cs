@@ -1,5 +1,6 @@
 ﻿using JetBrains.Annotations;
 using Remora.Rest.Core;
+using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
 namespace Kobalt.Plugins.Core.Data.Entities;
 
@@ -11,13 +12,13 @@ public class Guild
     /// </summary>
     public Snowflake ID { get; set; }
 
-    [System.Diagnostics.CodeAnalysis.NotNull]
+    [NotNull]
     public GuildAutoModConfig? AutoModConfig { get; set; }
 
-    [System.Diagnostics.CodeAnalysis.NotNull]
+    [NotNull]
     public GuildAntiRaidConfig? AntiRaidConfig { get; set; }
 
-    [System.Diagnostics.CodeAnalysis.NotNull]
+    [NotNull]
     public GuildPhishingConfig? PhishingConfig { get; set; }
 
     /// <summary>
