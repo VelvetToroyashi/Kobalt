@@ -3,7 +3,6 @@ using Remora.Rest.Core;
 
 namespace Kobalt.Plugins.Core.Data.Entities;
 
-
 [PublicAPI]
 public class Guild
 {
@@ -12,10 +11,10 @@ public class Guild
     /// </summary>
     public Snowflake ID { get; set; }
 
-    [NotNull]
+    [System.Diagnostics.CodeAnalysis.NotNull]
     public GuildAutoModConfig? AutoModConfig { get; set; }
 
-    [NotNull]
+    [System.Diagnostics.CodeAnalysis.NotNull]
     public GuildAntiRaidConfig? AntiRaidConfig { get; set; }
 
     /// <summary>
