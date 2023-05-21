@@ -17,6 +17,9 @@ public class Guild
     [System.Diagnostics.CodeAnalysis.NotNull]
     public GuildAntiRaidConfig? AntiRaidConfig { get; set; }
 
+    [System.Diagnostics.CodeAnalysis.NotNull]
+    public GuildPhishingConfig? PhishingConfig { get; set; }
+
     /// <summary>
     /// Users on the guild.
     /// </summary>
