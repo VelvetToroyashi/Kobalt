@@ -59,7 +59,7 @@ public class PhishingDetectionService
     /// <returns>A result that may or not have succeeded.</returns>
     public async Task<Result> HandleAsync(IMessage message, Optional<Snowflake> guildID, CancellationToken ct = default)
     {
-        if (message.Author.IsBot.OrDefault(true) || !guildID.IsDefined(out var gid) || string.IsNullOrWhiteSpace(message.Content))
+        if (message.Author.IsBot.OrDefault(false) || !guildID.IsDefined(out var gid) || string.IsNullOrWhiteSpace(message.Content))
         {
             return Result.FromSuccess();
         }
