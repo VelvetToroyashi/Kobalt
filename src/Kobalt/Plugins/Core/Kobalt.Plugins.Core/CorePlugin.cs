@@ -65,7 +65,7 @@ public class CorePlugin : PluginDescriptor, IMigratablePlugin
             "Infractions",
             (s, c) =>
             {
-                var address = s.GetService<IConfiguration>()!["Plugins:Core:PhishingApiUrl"] ??
+                var address = s.GetService<IConfiguration>()!["Plugins:Core:InfractionsApiUrl"] ??
                               throw new KeyNotFoundException("The Phishing API url was not configured.");
 
                 c.BaseAddress = new Uri(address);
