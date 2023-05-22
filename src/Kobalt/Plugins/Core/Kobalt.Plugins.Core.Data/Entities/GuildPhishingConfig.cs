@@ -12,7 +12,7 @@ public class GuildPhishingConfig
     public ulong GuildId { get; set; }
 
     public bool ScanLinks { get; set; }
-    public bool ScanAvatars { get; set; }
+    public bool ScanUsers { get; set; }
     public InfractionType DetectionAction { get; set; }
 
     [NotNull]
