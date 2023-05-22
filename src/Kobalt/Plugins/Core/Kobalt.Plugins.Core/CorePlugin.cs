@@ -89,6 +89,7 @@ public class CorePlugin : PluginDescriptor, IMigratablePlugin
             }
         );
 
-        services.AddTransient<PhishingAPIService>();
+        services.AddScoped<PhishingAPIService>();
+        services.AddScoped<PhishingDetectionService>();
     }
 }
