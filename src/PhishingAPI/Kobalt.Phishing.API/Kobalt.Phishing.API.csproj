@@ -8,6 +8,7 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <LangVersion>preview</LangVersion>
+        <UserSecretsId>3e7782ac-43cc-493f-a0c4-6b6b2f873497</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>

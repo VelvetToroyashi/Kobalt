@@ -33,9 +33,9 @@ public class PhishingService : BackgroundService
     private readonly IMediator _mediator;
     private readonly IMemoryCache _cache;
 
-    public PhishingService(HttpClient client, IMediator mediator, IMemoryCache cache)
+    public PhishingService(IHttpClientFactory client, IMediator mediator, IMemoryCache cache)
     {
-        _client = client;
+        _client = client.CreateClient("Phishing");
         _mediator = mediator;
         _cache = cache;
     }

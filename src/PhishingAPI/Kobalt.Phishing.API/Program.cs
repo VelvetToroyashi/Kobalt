@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Kobalt.Phishing.API.Services;
+using Kobalt.Phishing.Data;
 using Kobalt.Phishing.Data.MediatR;
 using Kobalt.Phishing.Shared.Models;
 using Kobalt.Shared.Extensions;
@@ -27,9 +28,27 @@ builder.Services
        .Configure(configure)
        .ConfigureHttpJsonOptions(opt => configure(opt.SerializerOptions));
 
+builder.Services.AddHttpClient
+(
+    "Phishing", client => client
+                         .DefaultRequestHeaders
+                         .TryAddWithoutValidation("User-Agent", "Kobalt Anti-Phish by Velvet Toroyashi")
+);
+
 builder.Services
+       .AddMediatR
+        (
+            config =>
+            {
+                config.RegisterServicesFromAssemblyContaining<Program>();
+                config.Lifetime = ServiceLifetime.Singleton;
+            }
+        )
+       .AddMemoryCache()
        .AddSingleton<PhishingService>()
        .AddHostedService(s => s.GetRequiredService<PhishingService>());
+
+builder.Services.AddDbContextFactory<PhishingContext>("Phishing");
 
 var app = builder.Build();
 
