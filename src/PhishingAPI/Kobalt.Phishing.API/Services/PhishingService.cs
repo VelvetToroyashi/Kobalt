@@ -220,7 +220,12 @@ public class PhishingService : BackgroundService
 
         var domains = new HashSet<byte[]>(discordResult.Entity!.Count + fishFishResult.Entity!.Count);
 
-        foreach (var domain in discordResult.Entity!)
+        foreach(var domain in discordResult.Entity)
+        {
+            domains.Add(Convert.FromHexString(domain));
+        }
+
+        foreach (var domain in fishFishResult.Entity!)
         {
             var hash = SHA256.HashData(Encoding.UTF8.GetBytes(domain));
 
