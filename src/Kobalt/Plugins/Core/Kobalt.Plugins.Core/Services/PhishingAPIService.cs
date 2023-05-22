@@ -56,7 +56,7 @@ public partial class PhishingAPIService
     {
         var domains = DomainRegex().Matches(content).ToArray();
 
-        if (domains.Any())
+        if (!domains.Any())
         {
             return new InvalidOperationError("No domains were found in the content.");
         }
