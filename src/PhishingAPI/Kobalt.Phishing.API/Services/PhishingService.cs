@@ -89,6 +89,8 @@ public class PhishingService : BackgroundService
             return new UserPhishingDetectionResult(null, false, false, null);
         }
 
+        domains = domains.Select(d => d.Replace("https://", "").Replace("http://", "")).ToArray();
+
         var matches = domains.Where(x => domainList.Contains(SHA256.HashData(Encoding.UTF8.GetBytes(x))));
 
         if (matches.FirstOrDefault() is {} match)
@@ -178,8 +180,6 @@ public class PhishingService : BackgroundService
 
         return new UsernameDetectionResult(false, null, false);
     }
-
-
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
