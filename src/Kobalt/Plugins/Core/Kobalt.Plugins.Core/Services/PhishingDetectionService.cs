@@ -78,7 +78,7 @@ public class PhishingDetectionService
             return Result.FromSuccess();
         }
 
-        return await HandlePhishingAsync(config, message.Author, gid, $"Detected phishing link in message (`{detectionResult}`)");
+        return await HandlePhishingAsync(config, message.Author, gid, $"{detectionResult}");
     }
 
 
@@ -86,8 +86,8 @@ public class PhishingDetectionService
     {
         var actionTask = config.DetectionAction switch
         {
-            InfractionType.Kick => _infractions.AddUserKickAsync(guildID, _self, user, reason),
-            InfractionType.Ban  => _infractions.AddUserBanAsync(guildID, _self, user, reason),
+            InfractionType.Kick => _infractions.AddUserKickAsync(guildID, user, _self, reason),
+            InfractionType.Ban  => _infractions.AddUserBanAsync(guildID, user, _self, reason),
             _                   => Task.FromResult(Result.FromSuccess())
         };
 
