@@ -218,13 +218,13 @@ public class PhishingService : BackgroundService
             return (Result)fishFishResult;
         }
 
-        var domains = new HashSet<string>(discordResult.Entity!.Count + fishFishResult.Entity!.Count);
+        var domains = new HashSet<byte[]>(discordResult.Entity!.Count + fishFishResult.Entity!.Count);
 
         foreach (var domain in discordResult.Entity!)
         {
             var hash = SHA256.HashData(Encoding.UTF8.GetBytes(domain));
 
-            domains.Add(Encoding.UTF8.GetString(hash));
+            domains.Add(hash);
         }
 
         _cache.Set("phishing-domains", domains, TimeSpan.FromDays(1));
