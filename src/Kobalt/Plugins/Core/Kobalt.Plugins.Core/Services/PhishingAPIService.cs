@@ -35,7 +35,7 @@ public partial class PhishingAPIService
     /// <param name="username">The username of the user to check.</param>
     /// <param name="avatarHash">The hash of the user's avatar to check.</param>
     /// <returns>A result containing</returns>
-    public async Task<UserPhishingDetectionResult> DetectUserPhishingAsync(Snowflake guildID, Snowflake userID, string username, string avatarHash)
+    public async Task<UserPhishingDetectionResult> DetectUserPhishingAsync(Snowflake guildID, Snowflake userID, string username, string? avatarHash)
     {
         using var response = await _client.PostAsJsonAsync($"/phishing/{guildID}/user", new CheckUserRequest(userID, username, avatarHash), _jsonOptions);
         var match = await response.Content.ReadFromJsonAsync<UserPhishingDetectionResult>();
@@ -88,7 +88,7 @@ public partial class PhishingAPIService
     /// <param name="guildID">The ID of the guild to create a filter in.</param>
     /// <param name="usernamePattern">The pattern to match usernames against.</param>
     /// <param name="parseType">How to parse the username, either as regex or a string literal.</param>
-    /// <returns></returns>
+    /// <returns>A result that may or not have succeded</returns>
     public async Task<Result> CreateSuspiciousGuildUsernameAsync(Snowflake guildID, string usernamePattern, UsernameParseType parseType)
     {
         if (parseType is UsernameParseType.Regex)
