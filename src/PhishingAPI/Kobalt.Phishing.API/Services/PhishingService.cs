@@ -94,7 +94,7 @@ public class PhishingService : BackgroundService
         var matches = domains.Select((d, i) => (SHA256.HashData(Encoding.UTF8.GetBytes(d)), i))
                              .Where(check => domainList.Any(domain => domain.SequenceEqual(check.Item1)));
 
-        if (matches.FirstOrDefault() is {} match)
+        if (matches.Any() && matches.FirstOrDefault() is {} match)
         {
             return new UserPhishingDetectionResult(null, true, true, $"ANTI-PHISHING: Link matched `{domains[match.i]}`.");
         }
