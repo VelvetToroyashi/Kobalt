@@ -57,14 +57,14 @@ public class PhishingDetectionService
     /// <param name="guildID">The ID of the guild the message originates from.</param>
     /// <param name="ct">A cancellation token.</param>
     /// <returns>A result that may or not have succeeded.</returns>
-    public async Task<Result> HandleAsync(IMessage message, Snowflake guildID, CancellationToken ct = default)
+    public async Task<Result> HandleAsync(IMessage message, Optional<Snowflake> guildID, CancellationToken ct = default)
     {
-        if (message.Author.IsBot.OrDefault(true) || string.IsNullOrWhiteSpace(message.Content))
+        if (message.Author.IsBot.OrDefault(true) || !guildID.IsDefined(out var gid) || string.IsNullOrWhiteSpace(message.Content))
         {
             return Result.FromSuccess();
         }
 
-        var configResult = await _mediator.Send(new GetGuild.PhishingConfigRequest(guildID));
+        var configResult = await _mediator.Send(new GetGuild.PhishingConfigRequest(gid));
 
         if (!configResult.IsDefined(out var config) || !config.ScanLinks)
         {
@@ -78,7 +78,7 @@ public class PhishingDetectionService
             return Result.FromSuccess();
         }
 
-        return await HandlePhishingAsync(config, message.Author, guildID, $"Detected phishing link in message (`{detectionResult}`)");
+        return await HandlePhishingAsync(config, message.Author, gid, $"Detected phishing link in message (`{detectionResult}`)");
     }
 
 
