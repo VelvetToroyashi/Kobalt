@@ -91,12 +91,12 @@ public class PhishingService : BackgroundService
 
         domains = domains.Select(d => d.Replace("https://", "").Replace("http://", "").Replace("/", "")).ToArray();
 
-        var matches = domains.Select(d => SHA256.HashData(Encoding.UTF8.GetBytes(d)))
-                             .Where(check => domainList.Any(domain => domain.SequenceEqual(check)));
+        var matches = domains.Select((d, i) => (SHA256.HashData(Encoding.UTF8.GetBytes(d)), i))
+                             .Where(check => domainList.Any(domain => domain.SequenceEqual(check.Item1)));
 
         if (matches.FirstOrDefault() is {} match)
         {
-            return new UserPhishingDetectionResult(null, true, true, $"ANTI-PHISHING: Link matched `{match}`.");
+            return new UserPhishingDetectionResult(null, true, true, $"ANTI-PHISHING: Link matched `{domains[match.i]}`.");
         }
 
         return new UserPhishingDetectionResult(null, false, false, null);
