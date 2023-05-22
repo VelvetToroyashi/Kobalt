@@ -42,7 +42,7 @@ builder.Services
 var app = builder.Build();
 app.MapControllers();
 
-app.MapPut("/infractions/guilds/{guildID}", async (ulong guildID, [FromBody] InfractionDTO infraction, IInfractionService infractions) =>
+app.MapPut("/infractions/guilds/{guildID}", async (ulong guildID, [FromBody] InfractionCreatePayload infraction, IInfractionService infractions) =>
 {
     var now = DateTimeOffset.UtcNow;
     var result = await infractions.CreateInfractionAsync
@@ -53,18 +53,18 @@ app.MapPut("/infractions/guilds/{guildID}", async (ulong guildID, [FromBody] Inf
         infraction.Type,
         infraction.Reason,
         infraction.ExpiresAt,
-        infraction.ReferencedId
+        infraction.ReferencedID
     );
 
-    if (!result.IsDefined(out infraction!))
+    if (!result.IsDefined(out var created))
     {
         return Results.BadRequest(result.Error!.Message);
     }
 
     // If the infraction is freshly created, return 201, otherwise 200.
-    return infraction.CreatedAt < now
+    return created.CreatedAt < now
         ? Results.Ok(infraction)
-        : Results.Created($"/infractions/guilds/{guildID}/{infraction.Id}", infraction);
+        : Results.Created($"/infractions/guilds/{guildID}/{created.Id}", infraction);
 });
 
 app.MapPost("/infractions/guilds/{guildID}/rules/evaluate/{userID}", async (IInfractionService infractions, ulong guildID, ulong userID) =>
