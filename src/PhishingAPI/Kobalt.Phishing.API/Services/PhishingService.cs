@@ -89,9 +89,10 @@ public class PhishingService : BackgroundService
             return new UserPhishingDetectionResult(null, false, false, null);
         }
 
-        domains = domains.Select(d => d.Replace("https://", "").Replace("http://", "")).ToArray();
+        domains = domains.Select(d => d.Replace("https://", "").Replace("http://", "").Replace("/", "")).ToArray();
 
-        var matches = domains.Where(x => domainList.Contains(SHA256.HashData(Encoding.UTF8.GetBytes(x))));
+        var matches = domains.Select(d => SHA256.HashData(Encoding.UTF8.GetBytes(d)))
+                             .Where(check => domainList.Any(domain => domain.SequenceEqual(check)));
 
         if (matches.FirstOrDefault() is {} match)
         {
