@@ -38,7 +38,7 @@ public partial class PhishingAPIService
     public async Task<UserPhishingDetectionResult> DetectUserPhishingAsync(Snowflake guildID, Snowflake userID, string username, string? avatarHash)
     {
         using var response = await _client.PostAsJsonAsync($"/phishing/{guildID}/user", new CheckUserRequest(userID, username, avatarHash), _jsonOptions);
-        var match = await response.Content.ReadFromJsonAsync<UserPhishingDetectionResult>();
+        var match = await response.Content.ReadFromJsonAsync<UserPhishingDetectionResult>(_jsonOptions);
 
         return match!;
     }
@@ -61,8 +61,8 @@ public partial class PhishingAPIService
             return new InvalidOperationError("No domains were found in the content.");
         }
 
-        using var response = await _client.PostAsJsonAsync("/phishing/check/domains", domains.Select(d => d.Value).ToArray(),  _jsonOptions);
-        var match = await response.Content.ReadFromJsonAsync<UserPhishingDetectionResult>();
+        using var response = await _client.PostAsJsonAsync("/phishing/check/domains", domains.Select(d => d.Groups["link"].Value).ToArray(),  _jsonOptions);
+        var match = await response.Content.ReadFromJsonAsync<UserPhishingDetectionResult>(_jsonOptions);
 
         return match!.Match ? Result<string>.FromSuccess(match!.DetectionReason!) : new NotFoundError("No matches were found.");
 
