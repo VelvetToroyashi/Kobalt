@@ -52,8 +52,8 @@ builder.Services.AddDbContextFactory<PhishingContext>("Phishing");
 
 var app = builder.Build();
 
-app.MapPost("/phishing/check/{guildID}/user", async (ulong guildID, [FromBody] CheckUserRequest user, PhishingService phishing) => await phishing.CheckUserAsync(guildID, user));
-app.MapPost("/phishing/check/domains", ([FromBody] IReadOnlyList<string> domains, PhishingService phishing) => phishing.CheckLinksAsync(domains));
+app.MapPost("/phishing/check/{guildID}/user", async (ulong guildID, [FromBody] CheckUserRequest user, PhishingService phishing) => Results.Json(await phishing.CheckUserAsync(guildID, user)));
+app.MapPost("/phishing/check/domains", ([FromBody] IReadOnlyList<string> domains, PhishingService phishing) => Results.Json(phishing.CheckLinksAsync(domains)));
 app.MapPut
 (
     "/phishing/{guildID}/username",
