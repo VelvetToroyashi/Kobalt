@@ -9,12 +9,13 @@ services:
     volumes:
       - ./rabbitmq/data:/var/lib/rabbitmq
       - ./rabbitmq/log:/var/log/rabbitmq
+
     environment:
       - RABBITMQ_DEFAULT_USER=kobalt
       - RABBITMQ_DEFAULT_PASS=kobalt
     # Fixes an issue with the Erlang VM complaining about the cookie file permissions
     # (Why is this not fixed in the docker image?)
-    command: ["bash", "-c", "chmod 400 /var/lib/rabbitmq/.erlang.cookie; rabbitmq-server"]
+    command: ["bash", "-c", "chmod 600 /var/lib/rabbitmq/.erlang.cookie; rabbitmq-server"]
 
   postgres:
     image: postgres:15-alpine
