@@ -30,9 +30,10 @@ builder.Services
 
 builder.Services.AddHttpClient
 (
-    "Phishing", client => client
-                         .DefaultRequestHeaders
-                         .TryAddWithoutValidation("User-Agent", "Kobalt Anti-Phish by Velvet Toroyashi")
+    "Phishing",
+    client => client
+             .DefaultRequestHeaders
+             .TryAddWithoutValidation("User-Agent", "Kobalt AntiPhish V1 (GH VelvetToroyashi/Kobalt)")
 );
 
 builder.Services
