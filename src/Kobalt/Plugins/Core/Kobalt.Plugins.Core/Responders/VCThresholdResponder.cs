@@ -10,13 +10,8 @@ namespace Kobalt.Core.Responders;
 public class VCThresholdResponder : IResponder<IGuildCreate>, IResponder<IVoiceStateUpdate>
 {
     private readonly ChannelWatcherService _channels;
-    private readonly ILogger<VCThresholdResponder> _logger;
 
-    public VCThresholdResponder(ChannelWatcherService channels, ILogger<VCThresholdResponder> logger)
-    {
-        _channels = channels;
-        _logger = logger;
-    }
+    public VCThresholdResponder(ChannelWatcherService channels) => _channels = channels;
 
     public async Task<Result> RespondAsync(IGuildCreate gatewayEvent, CancellationToken ct = default)
     {
