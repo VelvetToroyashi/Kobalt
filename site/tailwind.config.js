@@ -6,6 +6,7 @@ module.exports = {
       "league": ['League\\ Spartan', 'sans-serif'],
       "helvetica": ['Helvetica', 'Arial', 'sans-serif']
     },
+
     extend: {
       backgroundImage: {
         'hero-pattern': "url('/img/hero.svg')"

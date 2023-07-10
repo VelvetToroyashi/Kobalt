@@ -32,18 +32,18 @@
       </li>
       <li class="ml-auto mr-6 md:text-2xl">
         <button class="flex bg-fuchsia-900 rounded items-center p-1">
-          <a class="px-1 text-gray-200 text-center font-league">Add To Server</a>
+          <a href="https://discord.com/api/oauth2/authorize?client_id=1055294262184509460&permissions=1100484045846&scope=bot%20applications.commands" class="px-1 text-gray-200 text-center font-league">Add To Server</a>
         </button>
       </li>
     </ul>
   </div>
 </nav>
 
-<body class="font-league text-white justify-center flex flex-col bg-hero-pattern text-lg">
+<body class="font-league text-white justify-center flex flex-col bg-slate-800 text-lg">
 <script src="js/discord.js" async></script>
 <script src="js/highlight.min.js"></script>
 <script>hljs.highlightAll();</script>
-<div class="flex flex-col items-center text-xl h-max pt-20 min-h-0 mb-20">
+<div class="flex flex-col items-center text-xl h-max pt-20 pb-20 min-h-0 mb-20 bg-hero-pattern">
   <p class="text-center font-extrabold text-4xl md:text-7xl mb-4 w-full">
     <span class="text-slate-300 text-6xl md:text-8xl">Kobalt.</span>
     <br/>
@@ -85,7 +85,7 @@
   </dl>
 </div>
 
-<div id="features" class="md:mt-20 flex justify-center items-center text-center">
+<div id="features" class="md:mt-5 flex justify-center items-center text-center">
   <div class="items-center  justify-center">
     <span class="text-5xl font-extrabold font-">Why Kobalt?</span>
 
@@ -214,8 +214,8 @@
             Need something niche and specific to your server? Just make a plugin! <br>
             Just a few lines of code, and you're off to the races.
           </p>
-        <pre class="text-start w-full">
-          <code class="language-js overflow-x-auto">
+          <pre class="text-start w-full">
+            <code class="language-js overflow-x-auto">
 exports.commands = [
   {
     name: "my_plugin_command",
