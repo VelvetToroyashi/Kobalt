@@ -1,17 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <UserSecretsId>16ca5110-9d55-4350-b74d-4418e3cbeb93</UserSecretsId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="EFCore.NamingConventions" Version="7.0.2" />
         <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.15" />
         <PackageReference Include="MediatR" Version="12.0.1" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
         <PackageReference Include="Remora.Rest" Version="3.1.3" />
@@ -22,6 +24,12 @@
       <ProjectReference Include="..\..\Kobalt\Kobalt.Shared\Kobalt.Shared.csproj" />
       <ProjectReference Include="..\Kobalt.Infractions.Data\Kobalt.Infractions.Data.csproj" />
       <ProjectReference Include="..\Kobalt.Infractions.Shared\Kobalt.Infractions.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\..\..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
 </Project>
