@@ -87,22 +87,22 @@
   </dl>
 </div>
 
-<div id="features" class="mt-5 flex flex-col font-roboto">
+<div id="features" class="mt-5 flex flex-col font-roboto md:w-3/5 mx-2 md:mx-10">
   <div class="flex flex-col justify-center ml-auto mr-auto">
-    <span class="text-3xl font-extrabold  w-4/5">Why Kobalt?</span>
+    <span class="text-3xl font-extrabold">Why Kobalt?</span>
 
-    <p class="w-4/5">
+    <p>
       Kobalt is not just any run-of-the-mill multipurpose bot. From convenient and industry-standard
       features to niche and alluring features you didn't know you need, Kobalt has something for everyone.
     </p>
 
-    <div class="flex mt-8 mb-5">
-      <dl class="flex-col text-start mt-8 md:mt-10 gap-y-20">
-        <div>
-          <dt class="font-bold leading-7 text-2xl w-4/5">
+    <div class="mt-8 mb-5">
+      <dl class="text-start mt-8 md:mt-10 gap-y-20 grid grid-cols-1">
+        <div class="h-fit">
+          <dt class="font-bold leading-7 text-2xl">
             Localize Times
           </dt>
-          <p class="w-4/5">
+          <p>
             It's common to speak with people on the other side of the globe, <br>
             which means dealing with timezones, and having to ask "what time is it for you?"
             <br><br>
@@ -123,11 +123,11 @@
           </discord-messages>
         </div>
 
-        <div class="flex flex-col">
-          <dt class="font-bold leading-7 text-2xl w-4/5">
+        <div class="flex flex-col w-fit">
+          <dt class="font-bold leading-7 text-2xl">
             Artist Verification
           </dt>
-          <p class="w-4/5">
+          <p>
             Verifying artists used to be a tedious process of looking up someone's twitter, <br>
             looking through their posts, reverse-searching, and making a judgement call.
             <br><br>
@@ -136,7 +136,7 @@
             artists automatically verify themselves.
           </p>
 
-          <discord-messages class="rounded-xl text-start w-4/5 max-w-fit items-start mb-14">
+          <discord-messages class="rounded-xl text-start max-w-fit items-start">
             <discord-message ephemeral profile="kobalt">
               <discord-command slot="reply" command="/artist lookup" profile="velvet"></discord-command>
                 <discord-embed slot="embeds" color="#4eaf56" thumbnail="img/boykisser.png" embed-title="Artist Lookup Result">
@@ -154,18 +154,18 @@
           </discord-messages>
         </div>
 
-        <div class="flex flex-col">
-          <dt class="font-bold leading-7 text-2xl w-4/5">
+        <div class="flex flex-col w-fit">
+          <dt class="font-bold leading-7 text-2xl">
             Anti-Raid that <u>works.</u>
           </dt>
-          <p class="w-4/5">
+          <p>
             Kobalt is not a dedicated anti-raid bot; that'd be <a class="text-yellow-300 underline font-bold" href="https://beemo.gg">Beemo</a>. <br><br>
-            Kobalt offers a set-it-and-forget-it anti-raid that's trivial to set up.<br>
+            Kobalt offers a set-it-and-forget-it anti-raid that's trivial to set up.<br><br>
             Unlike other bots that use a floodgate technique to stop raids, Kobalt uses an algorithm that checks
             multiple factors of each user to determine bad actors, without hindering genuine users.
           </p>
 
-          <discord-messages class="rounded-xl text-start w-4/5 max-w-fit mb-14 my-3">
+          <discord-messages class="rounded-xl text-start max-w-fit mb-14">
             <discord-system-message type="join"><i>Raider 1</i> just showed up!</discord-system-message>
             <discord-system-message type="join"><i>Raider 2</i> appeared.</discord-system-message>
             <discord-system-message type="join"><i>Genuine User</i> just landed.</discord-system-message>
@@ -175,14 +175,14 @@
 
           In your log channel you'll see the following:
 
-          <discord-messages class="break-all rounded-xl text-start w-4/5 max-w-fit mb-14 my-3">
+          <discord-messages class="break-all rounded-xl text-start max-w-fit">
             <discord-message profile="kobalt">
               <discord-embed slot="embeds" color="#B33636" embed-title="Case 256 | Kobalt#3822 ➜ ra1d3r_0ne">
                 <discord-embed-description slot="description">ANTI-RAID: User suspected to be part of raid (Threat score of 13).</discord-embed-description>
                 <discord-embed-fields slot="fields">
                   <discord-embed-field field-title="Type" inline inline-index="1">Ban</discord-embed-field>
-                  <discord-embed-field field-title="Moderator" inline inline-index="2">Kobalt#3822<br> <code>1055294262184509460</code></discord-embed-field>
-                  <discord-embed-field field-title="Target" inline inline-index="3">ra1d3r_0ne<br><code>6876516845249947492</code></discord-embed-field>
+                  <discord-embed-field field-title="Moderator" inline inline-index="2">Kobalt#3822</discord-embed-field>
+                  <discord-embed-field field-title="Target" inline inline-index="3">ra1d3r_0ne</discord-embed-field>
                   <discord-embed-field field-title="Created"><discord-time>8 seconds ago</discord-time></discord-embed-field>
                 </discord-embed-fields>
               </discord-embed>
@@ -190,8 +190,8 @@
                 <discord-embed-description slot="description">ANTI-RAID: User suspected to be part of raid (Threat score of 16).</discord-embed-description>
                 <discord-embed-fields slot="fields">
                   <discord-embed-field field-title="Type" inline inline-index="1">Ban</discord-embed-field>
-                  <discord-embed-field field-title="Moderator" inline inline-index="2">Kobalt#3822<br> <code>1055294262184509460</code></discord-embed-field>
-                  <discord-embed-field field-title="Target" inline inline-index="3">totallylegit_bro<br><code>9874655489453214155</code></discord-embed-field>
+                  <discord-embed-field field-title="Moderator" inline inline-index="2">Kobalt#3822</discord-embed-field>
+                  <discord-embed-field field-title="Target" inline inline-index="3">totallylegit_bro</discord-embed-field>
                   <discord-embed-field field-title="Created"><discord-time>7 seconds ago</discord-time></discord-embed-field>
                 </discord-embed-fields>
               </discord-embed>
@@ -208,17 +208,17 @@
           </discord-messages>
         </div>
 
-        <div class="flex flex-col">
-          <dt class="font-bold leading-7 text-2xl w-4/5">
+        <div>
+          <dt class="font-bold leading-7 text-2xl">
             Extensible plugin system.
           </dt>
-          <p class="w-4/5">
+          <p>
             Kobalt offers a lot of features aside from what's listed here.<br>
             Need something niche and specific to your server? Just make a plugin! <br><br>
             Just a few lines of code, and you're off to the races.
           </p>
-          <pre class="text-start w-4/5 max-w-fit">
-            <code class="language-js overflow-x-auto font-roboto-mono">
+          <pre class="overflow-x-hidden md:max-w-fit">
+            <code>
 exports.commands = [
     {
         name: "my_plugin_command",
@@ -234,8 +234,9 @@ exports.commands = [
 async function my_plugin_command(state, args) {
   await args.user.send_message("Hi from plugin!!");
 }
-          </code>
-        </pre>
+            </code>
+          </pre>
+
         </div>
       </dl>
     </div>

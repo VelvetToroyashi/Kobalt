@@ -583,6 +583,21 @@ video {
   margin-bottom: 0.75rem;
 }
 
+.mx-3 {
+  margin-left: 0.75rem;
+  margin-right: 0.75rem;
+}
+
+.mx-1 {
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+}
+
+.mx-2 {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
 .mb-14 {
   margin-bottom: 3.5rem;
 }
@@ -635,6 +650,10 @@ video {
   display: table;
 }
 
+.grid {
+  display: grid;
+}
+
 .hidden {
   display: none;
 }
@@ -652,6 +671,15 @@ video {
   height: max-content;
 }
 
+.h-fit {
+  height: -moz-fit-content;
+  height: fit-content;
+}
+
+.min-h-0 {
+  min-height: 0px;
+}
+
 .w-10 {
   width: 2.5rem;
 }
@@ -660,12 +688,29 @@ video {
   width: 80%;
 }
 
+.w-fit {
+  width: -moz-fit-content;
+  width: fit-content;
+}
+
 .w-full {
   width: 100%;
 }
 
-.min-w-0 {
-  min-width: 0px;
+.w-5\/6 {
+  width: 83.333333%;
+}
+
+.w-2\/3 {
+  width: 66.666667%;
+}
+
+.w-11\/12 {
+  width: 91.666667%;
+}
+
+.w-3\/5 {
+  width: 60%;
 }
 
 .max-w-fit {
@@ -685,6 +730,26 @@ video {
   resize: both;
 }
 
+.grid-flow-row {
+  grid-auto-flow: row;
+}
+
+.grid-flow-col-dense {
+  grid-auto-flow: column dense;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.grid-rows-4 {
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+}
+
 .flex-row {
   flex-direction: row;
 }
@@ -701,8 +766,20 @@ video {
   align-items: center;
 }
 
+.justify-start {
+  justify-content: flex-start;
+}
+
 .justify-center {
   justify-content: center;
+}
+
+.justify-stretch {
+  justify-content: stretch;
+}
+
+.justify-items-stretch {
+  justify-items: stretch;
 }
 
 .gap-y-14 {
@@ -715,6 +792,14 @@ video {
 
 .overflow-x-auto {
   overflow-x: auto;
+}
+
+.overflow-x-hidden {
+  overflow-x: hidden;
+}
+
+.overflow-y-hidden {
+  overflow-y: hidden;
 }
 
 .scroll-smooth {
@@ -788,6 +873,11 @@ video {
   padding-bottom: 0.75rem;
 }
 
+.px-3 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
 .pb-32 {
   padding-bottom: 8rem;
 }
@@ -826,10 +916,6 @@ video {
 
 .font-roboto {
   font-family: Roboto, sans-serif;
-}
-
-.font-roboto-mono {
-  font-family: Roboto, Source\ Code\ Pro, monospace;
 }
 
 .text-2xl {
@@ -902,15 +988,12 @@ video {
   outline-style: solid;
 }
 
-.outline-2 {
-  outline-width: 2px;
-}
-
-.outline-red-600 {
-  outline-color: #dc2626;
-}
-
 @media (min-width: 768px) {
+  .md\:mx-10 {
+    margin-left: 2.5rem;
+    margin-right: 2.5rem;
+  }
+
   .md\:ml-auto {
     margin-left: auto;
   }
@@ -931,6 +1014,10 @@ video {
     margin-top: 5rem;
   }
 
+  .md\:flex {
+    display: flex;
+  }
+
   .md\:h-14 {
     height: 3.5rem;
   }
@@ -947,12 +1034,17 @@ video {
     width: 60%;
   }
 
-  .md\:w-4\/5 {
-    width: 80%;
+  .md\:max-w-fit {
+    max-width: -moz-fit-content;
+    max-width: fit-content;
   }
 
   .md\:flex-row {
     flex-direction: row;
+  }
+
+  .md\:flex-col {
+    flex-direction: column;
   }
 
   .md\:justify-around {
