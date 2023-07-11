@@ -583,6 +583,10 @@ video {
   margin-bottom: 0.75rem;
 }
 
+.mb-14 {
+  margin-bottom: 3.5rem;
+}
+
 .mb-4 {
   margin-bottom: 1rem;
 }
@@ -619,10 +623,6 @@ video {
   display: block;
 }
 
-.inline-block {
-  display: inline-block;
-}
-
 .inline {
   display: inline;
 }
@@ -633,10 +633,6 @@ video {
 
 .table {
   display: table;
-}
-
-.grid {
-  display: grid;
 }
 
 .hidden {
@@ -664,17 +660,17 @@ video {
   width: 80%;
 }
 
-.w-fit {
-  width: -moz-fit-content;
-  width: fit-content;
-}
-
 .w-full {
   width: 100%;
 }
 
-.max-w-3xl {
-  max-width: 48rem;
+.min-w-0 {
+  min-width: 0px;
+}
+
+.max-w-fit {
+  max-width: -moz-fit-content;
+  max-width: fit-content;
 }
 
 .flex-grow {
@@ -687,10 +683,6 @@ video {
 
 .resize {
   resize: both;
-}
-
-.grid-cols-1 {
-  grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 
 .flex-row {
@@ -713,18 +705,12 @@ video {
   justify-content: center;
 }
 
-.gap-x-10 {
-  -moz-column-gap: 2.5rem;
-       column-gap: 2.5rem;
+.gap-y-14 {
+  row-gap: 3.5rem;
 }
 
-.gap-x-24 {
-  -moz-column-gap: 6rem;
-       column-gap: 6rem;
-}
-
-.gap-y-10 {
-  row-gap: 2.5rem;
+.gap-y-20 {
+  row-gap: 5rem;
 }
 
 .overflow-x-auto {
@@ -797,11 +783,6 @@ video {
   padding-right: 2.5rem;
 }
 
-.px-5 {
-  padding-left: 1.25rem;
-  padding-right: 1.25rem;
-}
-
 .py-3 {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
@@ -843,19 +824,27 @@ video {
   font-family: League\ Spartan, sans-serif;
 }
 
+.font-roboto {
+  font-family: Roboto, sans-serif;
+}
+
+.font-roboto-mono {
+  font-family: Roboto, Source\ Code\ Pro, monospace;
+}
+
 .text-2xl {
   font-size: 1.5rem;
   line-height: 2rem;
 }
 
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
 .text-4xl {
   font-size: 2.25rem;
   line-height: 2.5rem;
-}
-
-.text-5xl {
-  font-size: 3rem;
-  line-height: 1;
 }
 
 .text-6xl {
@@ -913,6 +902,14 @@ video {
   outline-style: solid;
 }
 
+.outline-2 {
+  outline-width: 2px;
+}
+
+.outline-red-600 {
+  outline-color: #dc2626;
+}
+
 @media (min-width: 768px) {
   .md\:ml-auto {
     margin-left: auto;
@@ -938,12 +935,12 @@ video {
     height: 3.5rem;
   }
 
-  .md\:w-14 {
-    width: 3.5rem;
+  .md\:w-1\/5 {
+    width: 20%;
   }
 
-  .md\:w-2\/5 {
-    width: 40%;
+  .md\:w-14 {
+    width: 3.5rem;
   }
 
   .md\:w-3\/5 {
@@ -954,8 +951,12 @@ video {
     width: 80%;
   }
 
-  .md\:grid-cols-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .md\:flex-row {
+    flex-direction: row;
+  }
+
+  .md\:justify-around {
+    justify-content: space-around;
   }
 
   .md\:pl-8 {

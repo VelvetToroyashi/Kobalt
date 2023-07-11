@@ -4,7 +4,9 @@ module.exports = {
   theme: {
     fontFamily: {
       "league": ['League\\ Spartan', 'sans-serif'],
-      "helvetica": ['Helvetica', 'Arial', 'sans-serif']
+      "helvetica": ['Helvetica', 'Arial', 'sans-serif'],
+      "roboto": ['Roboto', 'sans-serif'],
+      "roboto-mono": ['Roboto', 'Source\\ Code\\ Pro', 'monospace']
     },
 
     extend: {

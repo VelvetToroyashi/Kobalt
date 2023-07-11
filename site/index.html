@@ -10,6 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Source+Code+Pro&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/tokyo-night-dark.min.css">
 
   <script
@@ -39,11 +41,11 @@
   </div>
 </nav>
 
-<body class="font-league text-white justify-center flex flex-col bg-slate-800 text-lg">
+<body class="text-white justify-center flex flex-col bg-slate-800 text-lg">
 <script src="js/discord.js" async></script>
 <script src="js/highlight.min.js"></script>
 <script>hljs.highlightAll();</script>
-<div class="flex flex-col items-center text-xl h-max pt-20 pb-32 bg-hero-pattern">
+<div class="font-league flex flex-col items-center text-xl h-max pt-20 pb-32 bg-hero-pattern w-full">
   <p class="text-center font-extrabold text-4xl md:text-7xl mb-4 w-full">
     <span class="text-slate-300 text-6xl md:text-8xl">Kobalt.</span>
     <br/>
@@ -54,8 +56,8 @@
     Kobalt is a privacy-first Discord bot with robust tools to empower moderators and end users alike.
   </p>
 
-  <dl class="grid grid-cols-1 md:grid-cols-2 mt-8 md:mt-20 max-w-3xl gap-x-24 gap-y-10 px-10">
-    <div class="relative pl-16">
+  <dl class="flex flex-col md:flex-row mt-8 md:mt-20 px-10 gap-y-14 md:justify-around">
+    <div class="relative pl-16 md:w-1/5">
       <dt class="font-bold leading-7 text-2xl">
         <div class="absolute top-0 left-0 flex h-10 w-10 p-2 items-center justify-center rounded-lg bg-fuchsia-900">
           <svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 -960 960 960" width="48"><path d="m436-347 228-228-42-41-183 183-101-101-44 44 142 143Zm44 266q-140-35-230-162.5T160-523v-238l320-120 320 120v238q0 152-90 279.5T480-81Zm0-62q115-38 187.5-143.5T740-523v-196l-260-98-260 98v196q0 131 72.5 236.5T480-143Zm0-337Z" fill="#ffffff"/></svg>
@@ -64,7 +66,7 @@
       </dt>
       Kobalt means privacy first. All stored data is opt-in, period.
     </div>
-    <div class="relative pl-16">
+    <div class="relative pl-16 md:w-1/5">
       <dt class="font-bold leading-7 text-2xl">
         <div class="absolute top-0 left-0 flex h-10 w-10 p-2 items-center justify-center rounded-lg bg-fuchsia-900">
           <svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 -960 960 960" width="48"><path d="M320-242 80-482l242-242 43 43-199 199 197 197-43 43Zm318 2-43-43 199-199-197-197 43-43 240 240-242 242Z" fill="#ffffff"/></svg>
@@ -73,7 +75,7 @@
       </dt>
       Kobalt is an open-source project! You're welcome to audit the source, open PRs, or even host your own instance of Kobalt.
     </div>
-    <div class="relative pl-16">
+    <div class="relative pl-16 md:w-1/5">
       <dt class="font-bold leading-7 text-2xl">
         <div class="absolute top-0 left-0 flex h-10 w-10 p-2 items-center justify-center rounded-lg bg-fuchsia-900">
           <svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 -960 960 960" width="48"><path d="M427-120v-225h60v83h353v60H487v82h-60Zm-307-82v-60h247v60H120Zm187-166v-82H120v-60h187v-84h60v226h-60Zm120-82v-60h413v60H427Zm166-165v-225h60v82h187v60H653v83h-60Zm-473-83v-60h413v60H120Z" fill="#ffffff"/></svg>
@@ -85,29 +87,29 @@
   </dl>
 </div>
 
-<div id="features" class="mt-5 flex justify-center items-center text-center">
-  <div class="items-center  justify-center">
-    <span class="text-5xl font-extrabold">Why Kobalt?</span>
+<div id="features" class="mt-5 flex flex-col font-roboto">
+  <div class="flex flex-col justify-center ml-auto mr-auto">
+    <span class="text-3xl font-extrabold  w-4/5">Why Kobalt?</span>
 
-    <p class="w-4/5 md:w-2/5 ml-auto mr-auto">
+    <p class="w-4/5">
       Kobalt is not just any run-of-the-mill multipurpose bot. From convenient and industry-standard
       features to niche and alluring features you didn't know you need, Kobalt has something for everyone.
     </p>
 
-    <div class="flex justify-center mt-8 mb-5">
-      <dl class="grid grid-cols-1 w-full md:grid-cols-2 mt-8 md:mt-10 gap-x-10 gap-y-10 px-5">
-        <div class="items-center justify-center">
-          <dt class="font-bold leading-7 text-2xl">
+    <div class="flex mt-8 mb-5">
+      <dl class="flex-col text-start mt-8 md:mt-10 gap-y-20">
+        <div>
+          <dt class="font-bold leading-7 text-2xl w-4/5">
             Localize Times
           </dt>
-          <p class="inline-block md:w-3/5">
-            It's common to speak with people on the other side of the globe,
+          <p class="w-4/5">
+            It's common to speak with people on the other side of the globe, <br>
             which means dealing with timezones, and having to ask "what time is it for you?"
             <br><br>
             Kobalt saves you from asking this question with a simple right click.
           </p>
 
-          <discord-messages class="rounded-xl text-start font-helvetica md:w-2/5 ml-auto mr-auto">
+          <discord-messages class="rounded-xl max-w-fit mb-14">
             <discord-message profile="jax">
               I'm available between 4PM and 10PM!
             </discord-message>
@@ -121,19 +123,20 @@
           </discord-messages>
         </div>
 
-        <div class="items-center justify-center">
-          <dt class="font-bold leading-7 text-2xl">
+        <div class="flex flex-col">
+          <dt class="font-bold leading-7 text-2xl w-4/5">
             Artist Verification
           </dt>
-          <p class="inline-block md:w-4/5">
+          <p class="w-4/5">
             Verifying artists used to be a tedious process of looking up someone's twitter, <br>
             looking through their posts, reverse-searching, and making a judgement call.
             <br><br>
-            Kobalt improves on this vastly by not only keeping a database of known good/bad artists,
-            but introduces innovating tooling to let artists automatically verify themselves.
+            Kobalt improves on this vastly by not only keeping a database of <br>
+            known good/bad artists, but introduces innovating tooling to let <br>
+            artists automatically verify themselves.
           </p>
 
-          <discord-messages class="rounded-xl text-start items-start font-helvetica md:max-w-4/5 w-fit md:ml-auto md:mr-auto">
+          <discord-messages class="rounded-xl text-start w-4/5 max-w-fit items-start mb-14">
             <discord-message ephemeral profile="kobalt">
               <discord-command slot="reply" command="/artist lookup" profile="velvet"></discord-command>
                 <discord-embed slot="embeds" color="#4eaf56" thumbnail="img/boykisser.png" embed-title="Artist Lookup Result">
@@ -151,28 +154,28 @@
           </discord-messages>
         </div>
 
-        <div class="items-center justify-center">
-          <dt class="font-bold leading-7 text-2xl">
+        <div class="flex flex-col">
+          <dt class="font-bold leading-7 text-2xl w-4/5">
             Anti-Raid that <u>works.</u>
           </dt>
-          <p class="inline-block md:w-4/5">
+          <p class="w-4/5">
             Kobalt is not a dedicated anti-raid bot; that'd be <a class="text-yellow-300 underline font-bold" href="https://beemo.gg">Beemo</a>. <br><br>
             Kobalt offers a set-it-and-forget-it anti-raid that's trivial to set up.<br>
             Unlike other bots that use a floodgate technique to stop raids, Kobalt uses an algorithm that checks
             multiple factors of each user to determine bad actors, without hindering genuine users.
           </p>
 
-          <discord-messages class="rounded-xl text-start font-helvetica md:w-2/5 ml-auto mr-auto my-3">
-            <discord-system-message type="join"><i><b>Raider 1</b></i> just showed up!</discord-system-message>
-            <discord-system-message type="join"><i><b>Raider 2</b></i> appeared.</discord-system-message>
-            <discord-system-message type="join"><i><b>Genuine User</b></i> just landed.</discord-system-message>
-            <discord-system-message type="join"><i><b>Raider 3</b></i> just slid into the server.</discord-system-message>
-            <discord-system-message type="join">Welcome <i><b>Another Genuine User</b></i>. Say hi!</discord-system-message>
+          <discord-messages class="rounded-xl text-start w-4/5 max-w-fit mb-14 my-3">
+            <discord-system-message type="join"><i>Raider 1</i> just showed up!</discord-system-message>
+            <discord-system-message type="join"><i>Raider 2</i> appeared.</discord-system-message>
+            <discord-system-message type="join"><i>Genuine User</i> just landed.</discord-system-message>
+            <discord-system-message type="join"><i>Raider 3</i> just slid into the server.</discord-system-message>
+            <discord-system-message type="join">Welcome <i>Another Genuine User</i>. Say hi!</discord-system-message>
           </discord-messages>
 
           In your log channel you'll see the following:
 
-          <discord-messages class="break-all rounded-xl text-start font-helvetica md:w-3/5 md:ml-auto md:mr-auto my-3">
+          <discord-messages class="break-all rounded-xl text-start w-4/5 max-w-fit mb-14 my-3">
             <discord-message profile="kobalt">
               <discord-embed slot="embeds" color="#B33636" embed-title="Case 256 | Kobalt#3822 ➜ ra1d3r_0ne">
                 <discord-embed-description slot="description">ANTI-RAID: User suspected to be part of raid (Threat score of 13).</discord-embed-description>
@@ -205,28 +208,27 @@
           </discord-messages>
         </div>
 
-        <div class="flex flex-col items-center justify-center">
-          <dt class="font-bold leading-7 text-2xl">
+        <div class="flex flex-col">
+          <dt class="font-bold leading-7 text-2xl w-4/5">
             Extensible plugin system.
           </dt>
-          <p class="inline-block md:w-4/5">
-            Kobalt offers a lot of features aside from what's listed here.
-            Need something niche and specific to your server? Just make a plugin! <br>
+          <p class="w-4/5">
+            Kobalt offers a lot of features aside from what's listed here.<br>
+            Need something niche and specific to your server? Just make a plugin! <br><br>
             Just a few lines of code, and you're off to the races.
           </p>
-          <pre class="text-start w-full">
-            <code class="language-js overflow-x-auto">
+          <pre class="text-start w-4/5 max-w-fit">
+            <code class="language-js overflow-x-auto font-roboto-mono">
 exports.commands = [
-  {
-    name: "my_plugin_command",
-    description: "A pretty cool command from a plugin!",
-    parameters: {
-      string: CommandHelper.string(min: 10),
-      user: CommandHelper.user(),
-      delay: CommandHelper.delay(),
-
+    {
+        name: "my_plugin_command",
+        description: "A pretty cool command from a plugin!",
+        parameters: {
+            string: CommandHelper.string(min: 10),
+            user: CommandHelper.user(),
+            delay: CommandHelper.delay(),
+        }
     }
-  }
 ]
 
 async function my_plugin_command(state, args) {
@@ -234,7 +236,6 @@ async function my_plugin_command(state, args) {
 }
           </code>
         </pre>
-
         </div>
       </dl>
     </div>
