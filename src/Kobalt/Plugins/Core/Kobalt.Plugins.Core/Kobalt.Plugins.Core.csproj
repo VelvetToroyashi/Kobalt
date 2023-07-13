@@ -16,6 +16,7 @@
       <PackageReference Include="Remora.Discord.Extensions" Version="5.3.0" />
       <PackageReference Include="Remora.Plugins.Abstractions" Version="4.0.6" />
       <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
+      <PackageReference Include="StackExchange.Redis" Version="2.6.122" />
     </ItemGroup>
 
     <ItemGroup>

@@ -44,6 +44,7 @@ public class CorePlugin : PluginDescriptor, IMigratablePlugin
 
         services.AddSingleton<AntiRaidV2Service>();
         services.AddSingleton<ChannelWatcherService>();
+        services.AddSingleton<MessagePurgeService>();
 
         AddPhishingServices(services);
         AddInfractionServices(services);
