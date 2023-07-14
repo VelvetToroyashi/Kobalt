@@ -19,6 +19,7 @@ using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Gateway.Commands;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Caching.Extensions;
+using Remora.Discord.Caching.Redis.Extensions;
 using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Commands.Responders;
 using Remora.Discord.Gateway;
@@ -115,6 +116,8 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddHostedService<KobaltDiscordGatewayService>();
     services.Configure<InteractionResponderOptions>(s => s.UseEphemeralResponses = true);
 
+    services.AddDiscordRedisCaching(s => s.Configuration = hostConfig.GetConnectionString("Redis"));
+    
     const string CacheKey = "<>k__SelfUserCacheKey_d270867";
     services.AddStartupTask
     (
@@ -149,7 +152,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
             options.Intents |= GatewayIntents.MessageContents | GatewayIntents.GuildVoiceStates;
             options.Presence = new UpdatePresence
             (
-                Status: UserStatus.DND,
+                Status: UserStatus.Idle,
                 IsAFK: false,
                 Since: null,
                 Activities: new IActivity[]
