@@ -28,6 +28,7 @@ using Remora.Discord.Interactivity.Extensions;
 using RemoraHTTPInteractions.Extensions;
 using RemoraHTTPInteractions.Services;
 using Serilog;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -99,6 +100,15 @@ host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper ha
 
 await host.RunAsync();
 
+void ConfigureRedis(IConfiguration config, IServiceCollection services)
+{
+    var connString = config.GetConnectionString("Redis");
+    services.AddDiscordRedisCaching(s => s.Configuration = connString);
+    
+    var multiplexer = ConnectionMultiplexer.Connect(connString);
+    services.AddSingleton<IConnectionMultiplexer>(multiplexer);
+}
+
 void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection services)
 {
     var config = hostConfig.Get<KobaltConfig>()!;
@@ -107,7 +117,6 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     var token = config.Discord.Token;
 
     services.AddOffsetServices();
-
     services.AddDiscordGateway(_ => token);
     services.AddInteractivity();
     services.AddHTTPInteractionAPIs();
@@ -116,7 +125,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddHostedService<KobaltDiscordGatewayService>();
     services.Configure<InteractionResponderOptions>(s => s.UseEphemeralResponses = true);
 
-    services.AddDiscordRedisCaching(s => s.Configuration = hostConfig.GetConnectionString("Redis"));
+    ConfigureRedis(hostConfig, services);
     
     const string CacheKey = "<>k__SelfUserCacheKey_d270867";
     services.AddStartupTask
