@@ -110,11 +110,11 @@ public class MessagePurgeService(IConnectionMultiplexer redis, IDiscordRestChann
     public async Task<Result<int>> PurgeByRegexAsync(Snowflake channelID, int amount, string regex, string reason = "")
     {
         // Validate the regex, first and foremost.
-        var filter = new Regex(regex);
+        Regex filter;
 
         try
         {
-            _ = filter.Match("");
+            filter = new Regex(regex);
         }
         catch (RegexParseException rpe)
         {
