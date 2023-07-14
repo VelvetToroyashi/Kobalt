@@ -43,6 +43,7 @@ public class MessagePurgeService(IConnectionMultiplexer redis, IDiscordRestChann
         var twoWeeksAgo = DateTimeOffset.Now + TwoWeeksAgo;
 
         var bulkDeletions = pairs
+                            .Reverse()
                             .Take(amount)
                             .GroupBy(p => p.Value)
                             .Where
@@ -53,7 +54,7 @@ public class MessagePurgeService(IConnectionMultiplexer redis, IDiscordRestChann
                             )
                             .ToArray();
 
-        var cyclicDeletions = pairs.Except(bulkDeletions.SelectMany(kvp => kvp));
+        var cyclicDeletions = pairs.Except(bulkDeletions.SelectMany(kvp => kvp)).Reverse();
 
 
         foreach (var bulkDeletion in bulkDeletions)
