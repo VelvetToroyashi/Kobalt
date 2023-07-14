@@ -8,7 +8,7 @@ using Remora.Discord.Gateway.Responders;
 using Remora.Results;
 using StackExchange.Redis;
 
-namespace Kobalt.Core.Responders;
+namespace Kobalt.Plugins.Core.Responders;
 
 [Responder(ResponderGroup.Early)]
 public class MessageHashCacherResponder(IConnectionMultiplexer redis, CacheService cache) : IResponder<IMessageCreate>, IResponder<IMessageDelete>
@@ -20,6 +20,8 @@ public class MessageHashCacherResponder(IConnectionMultiplexer redis, CacheServi
             return Result.FromSuccess();
         }
         
+        var channelID = gatewayEvent.Thread.Map(t => t.ID).OrDefault(gatewayEvent.ChannelID);
+        
         var db = redis.GetDatabase();
         var key = MessagePurgeService.HashKeyFormat.FormatWith(guildID, gatewayEvent.Author.ID);
         await db.HashSetAsync
@@ -27,7 +29,7 @@ public class MessageHashCacherResponder(IConnectionMultiplexer redis, CacheServi
             new RedisKey(key),
             new[]
             {
-                new HashEntry(gatewayEvent.ID.ToString(), gatewayEvent.ChannelID.ToString())
+                new HashEntry(gatewayEvent.ID.ToString(), channelID.ToString())
             }
         );
 
