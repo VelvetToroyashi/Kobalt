@@ -23,7 +23,7 @@ public class MessagePurgeService(IConnectionMultiplexer redis, IDiscordRestChann
     public const string HashKeyFormat = "guilds-{0}-members-{1}-messages";
 
     // Two weeks, minus a minute to account for any tomfoolery on Discord's side, as well as processing delays
-    private static readonly TimeSpan TwoWeeksAgo = TimeSpan.FromMinutes(14 * 24 * 60 - 1);
+    private static readonly TimeSpan TwoWeeksAgo = TimeSpan.FromMinutes(-14 * 24 * 60 - 1);
 
     /// <summary>
     /// Purges a given user's messages in a given guild, across all channels. 
@@ -80,8 +80,8 @@ public class MessagePurgeService(IConnectionMultiplexer redis, IDiscordRestChann
         {
             var result = await channels.DeleteMessageAsync
             (
-              DiscordSnowflake.New((ulong)deletion.Name),
-              DiscordSnowflake.New((ulong)deletion.Value)
+              DiscordSnowflake.New((ulong)deletion.Value),
+              DiscordSnowflake.New((ulong)deletion.Name)
             );
 
             if (result.IsSuccess)
