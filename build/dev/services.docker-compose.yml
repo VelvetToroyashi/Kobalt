@@ -2,26 +2,24 @@
 
 services:
   rabbit-mq:
-    image: rabbitmq:3.11-management-alpine
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - ./rabbitmq/data:/var/lib/rabbitmq
-      - ./rabbitmq/log:/var/log/rabbitmq
-
+    container_name: "rabbitmq"
+    image: rabbitmq:3.12.1-management-alpine
     environment:
       - RABBITMQ_DEFAULT_USER=kobalt
       - RABBITMQ_DEFAULT_PASS=kobalt
-    # Fixes an issue with the Erlang VM complaining about the cookie file permissions
-    # (Why is this not fixed in the docker image?)
-    command: ["bash", "-c", "chmod 600 /var/lib/rabbitmq/.erlang.cookie; rabbitmq-server"]
-
+    ports:
+      # AMQP protocol port
+      - '5672:5672'
+      # HTTP management UI
+      - '15672:15672'
+    volumes:
+      - ./rabbitmq/data/:/var/lib/rabbitmq/mnesia
+        
   postgres:
     image: postgres:15-alpine
     ports:
       - "5432:5432"
-    #volumes:
+      #volumes:
       #- ./postgres/data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=kobalt
