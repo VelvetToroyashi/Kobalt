@@ -14,6 +14,8 @@ public static class AddGuild
     {
         private readonly IDbContextFactory<KobaltContext> _context;
 
+        public Handler(IDbContextFactory<KobaltContext> context) => _context = context;
+
         public async Task<Result> Handle(Request request, CancellationToken cancellationToken)
         {
             await using var db = await _context.CreateDbContextAsync(cancellationToken);
