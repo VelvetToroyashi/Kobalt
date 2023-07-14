@@ -61,7 +61,7 @@ public class MessagePurgeService(IConnectionMultiplexer redis, IDiscordRestChann
             var result = await channels.BulkDeleteMessagesAsync
             (
               DiscordSnowflake.New((ulong)bulkDeletion.Key),
-              bulkDeletion.Select(hv => DiscordSnowflake.New((ulong)hv.Value)).ToArray(),
+              bulkDeletion.Select(hv => DiscordSnowflake.New((ulong)hv.Name)).ToArray(),
               reason
             );
 
