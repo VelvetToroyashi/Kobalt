@@ -37,7 +37,8 @@ public class MessagePurgeService(IConnectionMultiplexer redis, IDiscordRestChann
     public async Task<Result<int>> PurgeByUserAsync(Snowflake guildID, Snowflake userID, int amount, string reason = "")
     {
         var db = redis.GetDatabase();
-        var pairs = await db.HashGetAllAsync(HashKeyFormat.FormatWith(guildID.ToString(), userID.ToString()));
+        var key = HashKeyFormat.FormatWith(guildID.ToString(), userID.ToString());
+        var pairs = await db.HashGetAllAsync(key);
 
         var deleted = 0;
         var twoWeeksAgo = DateTimeOffset.Now + TwoWeeksAgo;
@@ -53,9 +54,10 @@ public class MessagePurgeService(IConnectionMultiplexer redis, IDiscordRestChann
                                   kvp.All(hash => DiscordSnowflake.New((ulong)hash.Name).Timestamp > twoWeeksAgo)
                             )
                             .ToArray();
+        
+        var cyclicDeletions = pairs.Except(bulkDeletions.SelectMany(kvp => kvp)).Reverse().ToArray();
 
-        var cyclicDeletions = pairs.Except(bulkDeletions.SelectMany(kvp => kvp)).Reverse();
-
+        await db.HashDeleteAsync(key, bulkDeletions.SelectMany(bd => bd).Concat(cyclicDeletions).Select(c => c.Name).Take(amount).ToArray());
 
         foreach (var bulkDeletion in bulkDeletions)
         {
@@ -118,7 +120,7 @@ public class MessagePurgeService(IConnectionMultiplexer redis, IDiscordRestChann
         }
         catch (RegexParseException rpe)
         {
-            return new InvalidOperationError($"Your regex is invalid! \n{rpe.Message.Replace('\'', '`')}");
+            return new InvalidOperationError($"Your regex is invalid. \n{rpe.Message.Replace('\'', '`')}");
         }
 
         var getMessages = await channels.GetChannelMessagesAsync(channelID);
