@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+      <PackageReference Include="Remora.Plugins.Abstractions" Version="4.0.6" />
+      <PackageReference Include="Remora.Rest.Core" Version="2.2.0" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <ProjectReference Include="..\Core\Kobalt.Plugins.Core.Data\Kobalt.Plugins.Core.Data.csproj" />
+    </ItemGroup>
+
+
+
+
+
+</Project>

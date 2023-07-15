@@ -56,6 +56,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Phishing.Shared", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Phishing.Data", "src\PhishingAPI\Kobalt.Phishing.Data\Kobalt.Phishing.Data.csproj", "{C43F6E88-17EA-403C-8B57-55EF6FB33969}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kobalt.Plugins.RoleMenus", "src\Kobalt\Plugins\Kobalt.Plugins.RoleMenus\Kobalt.Plugins.RoleMenus.csproj", "{3F11F66E-DB4D-45CD-A58F-B58692C993AC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,6 +90,7 @@ Global
 		{A47FB272-AD7C-4641-98FF-23F052CE0ED6} = {E5114B53-19F8-4BEB-92B9-A5746FFE7BD4}
 		{7B4685DE-80BE-4017-A375-7740F8A16814} = {E5114B53-19F8-4BEB-92B9-A5746FFE7BD4}
 		{C43F6E88-17EA-403C-8B57-55EF6FB33969} = {E5114B53-19F8-4BEB-92B9-A5746FFE7BD4}
+		{3F11F66E-DB4D-45CD-A58F-B58692C993AC} = {543CB4DB-5FF0-41E4-B059-CBE278DAE3E3}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{89718D44-70D2-4AC6-BF7D-DCC47613169B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -148,5 +151,9 @@ Global
 		{C43F6E88-17EA-403C-8B57-55EF6FB33969}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C43F6E88-17EA-403C-8B57-55EF6FB33969}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C43F6E88-17EA-403C-8B57-55EF6FB33969}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F11F66E-DB4D-45CD-A58F-B58692C993AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F11F66E-DB4D-45CD-A58F-B58692C993AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F11F66E-DB4D-45CD-A58F-B58692C993AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F11F66E-DB4D-45CD-A58F-B58692C993AC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
