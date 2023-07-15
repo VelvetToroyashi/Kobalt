@@ -29,7 +29,16 @@ public static class AddGuild
                 return Result.FromSuccess();
             }
 
-            db.Guilds.Add(new Guild() { ID = request.GuildID });
+            db.Guilds.Add
+            (
+                new Guild
+                {
+                    ID = request.GuildID,
+                    AutoModConfig  = new GuildAutoModConfig { GuildID = request.GuildID },
+                    AntiRaidConfig = GuildAntiRaidConfig.Default(request.GuildID),
+                    PhishingConfig = new GuildPhishingConfig { GuildID = request.GuildID },
+                }
+            );
 
             await db.SaveChangesAsync(cancellationToken);
 

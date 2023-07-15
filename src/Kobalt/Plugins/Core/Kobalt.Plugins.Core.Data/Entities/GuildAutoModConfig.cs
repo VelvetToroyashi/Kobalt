@@ -12,7 +12,7 @@ public class GuildAutoModConfig
     /// </summary>
     public int Id { get; set; }
 
-    public Snowflake GuildId { get; set; }
+    public Snowflake GuildID { get; set; }
 
     /// <summary>
     /// The threshold for Kobalt to transition a channel to push-to-talk and back.
@@ -27,6 +27,6 @@ public class GuildAutoModConfigConfiguration : IEntityTypeConfiguration<GuildAut
 {
     public void Configure(EntityTypeBuilder<GuildAutoModConfig> builder)
     {
-        builder.HasOne(x => x.Guild).WithOne(x => x.AutoModConfig).HasForeignKey<GuildAutoModConfig>(x => x.GuildId);
+        builder.HasOne(x => x.Guild).WithOne(x => x.AutoModConfig).HasForeignKey<GuildAutoModConfig>(x => x.GuildID);
     }
 }

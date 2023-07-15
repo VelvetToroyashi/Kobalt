@@ -74,4 +74,24 @@ public class GuildAntiRaidConfig
     /// The minimum age of an account that should be considered suspicious.
     /// </summary>
     public required TimeSpan MinimumAccountAge { get; set; }
+    
+    /// <summary>
+    /// Creates a "default" configuration instance with the assigned guild ID.
+    /// </summary>
+    /// <param name="guildID">The ID of the guild to assign this configuration to.</param>
+    /// <returns>The created configuration instance.</returns>
+    public static GuildAntiRaidConfig Default(Snowflake guildID) => new()
+    {
+        GuildID = guildID,
+        BaseJoinScore = 0,
+        AccountFlagsBypass = null,
+        JoinVelocityScore = 1,
+        AntiRaidCooldownPeriod = TimeSpan.FromSeconds(20),
+        MinimumAccountAge = TimeSpan.Zero,
+        LastJoinBufferPeriod = TimeSpan.FromSeconds(5),
+        MinimumAgeScore = 0,
+        NoAvatarScore = 1,
+        SuspiciousInviteScore = 1,
+        ThreatScoreThreshold = 10
+    };
 }
