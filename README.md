@@ -95,6 +95,6 @@ You can acquire your bot token and public key from the [Discord Developer Dashbo
     - [x] Delete Reminder
     - [x] Dispatch Reminder (Requires Kobalt Support)
 
-- [ ] Anti-Phish Microservice
-    - [ ] Handle aggregated phishing sources
-    - [ ] Expose API for Kobalt to query
+- [x] Anti-Phish Microservice
+    - [x] Handle aggregated phishing sources
+    - [x] Expose API for Kobalt to query
