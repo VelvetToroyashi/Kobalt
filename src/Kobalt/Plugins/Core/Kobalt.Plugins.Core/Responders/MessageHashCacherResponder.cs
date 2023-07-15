@@ -48,7 +48,7 @@ public class MessageHashCacherResponder(IConnectionMultiplexer redis, CacheServi
         
         var originalMessage = await cache.TryGetValueAsync<IMessageCreate>(new KeyHelpers.MessageCacheKey(gatewayEvent.ChannelID, gatewayEvent.ID), ct);
 
-        if (originalMessage.IsSuccess)
+        if (!originalMessage.IsSuccess)
         {
             // If it doesn't exist in cache, we didn't have this message to begin with.
             return Result.FromSuccess();
