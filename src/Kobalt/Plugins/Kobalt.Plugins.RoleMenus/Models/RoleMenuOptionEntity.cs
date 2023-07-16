@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -19,8 +20,10 @@ public class RoleMenuOptionEntity
 
     public Snowflake RoleID { get; set; }
 
+    [NotMapped]
     public List<Snowflake> MutuallyInclusiveRoles { get; set; }
 
+    [NotMapped]
     public List<Snowflake> MutuallyExclusiveRoles { get; set; }
 }
 
@@ -28,6 +31,8 @@ public class RoleMenuOptionConfiguration : IEntityTypeConfiguration<RoleMenuOpti
 {
     public void Configure(EntityTypeBuilder<RoleMenuOptionEntity> builder)
     {
+        builder.ToTable("RoleMenuOptions", RoleMenuContext.Schema);
+        
         builder
         .Property(rmo => rmo.MutuallyInclusiveRoles)
         .HasConversion<string>
