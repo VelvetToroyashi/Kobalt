@@ -6,14 +6,15 @@ using Remora.Results;
 
 namespace Kobalt.Plugins.RoleMenus.Mediator;
 
-public static class UpdateRoleMenuRequest
+public static class UpdateRoleMenu
 {
     public record Request
     (
         int MenuId,
-        Optional<string> Name,
-        Optional<string> Description,
-        Optional<int> MaxSelections
+        Optional<string> Name = default,
+        Optional<string> Description = default,
+        Optional<int> MaxSelections = default,
+        Optional<Snowflake> MessageID = default
     ) : IRequest<Result<RoleMenuEntity>>;
     
     internal class Handler(IDbContextFactory<RoleMenuContext> dbFactory) : IRequestHandler<Request, Result<RoleMenuEntity>>
@@ -37,7 +38,8 @@ public static class UpdateRoleMenuRequest
             roleMenu.Name = request.Name.OrDefault(roleMenu.Name);
             roleMenu.Description = request.Description.OrDefault(roleMenu.Description);
             roleMenu.MaxSelections = request.MaxSelections.OrDefault(roleMenu.MaxSelections);
-
+            roleMenu.MessageID = request.MessageID.OrDefault(roleMenu.MessageID);
+            
             return roleMenu;
         }
     }

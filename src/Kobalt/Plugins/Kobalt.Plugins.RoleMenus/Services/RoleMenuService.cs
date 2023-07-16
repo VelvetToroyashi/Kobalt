@@ -2,7 +2,6 @@ using Kobalt.Plugins.RoleMenus.Mediator;
 using Kobalt.Plugins.RoleMenus.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Remora.Discord.API.Abstractions.Gateway.Events;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
@@ -40,6 +39,18 @@ public class RoleMenuService
 
         var result = await channels.CreateMessageAsync(roleMenu.ChannelID, builder);
 
+        if (result.IsSuccess)
+        {
+            var updateResult = await mediator.Send(new UpdateRoleMenu.Request(roleMenu.Id, MessageID: result.Entity.ID));
+            
+            if (!updateResult.IsSuccess)
+            {
+                logger.LogError("Failed to update role menu with new message ID ({RoleMenuID})", roleMenu.Id);
+                return new InvalidOperationError("Something's gone wrong while publishing the role menu; " +
+                                                 "this is probably a bug in Kobalt, please [report it](https://github.com/VelvetToroyashi/Kobalt/issues/new).");
+            }
+        }
+        
         return (Result)result;
     }
 

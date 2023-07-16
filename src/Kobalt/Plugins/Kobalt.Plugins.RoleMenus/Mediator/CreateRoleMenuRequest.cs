@@ -17,7 +17,6 @@ public static class CreateRoleMenu
     /// <param name="Description">The description of the role menu.</param>
     /// <param name="GuildID">The ID of the guild the role menu is registered to.</param>
     /// <param name="ChannelID">The ID of the chanel the role menu is registered to.</param>
-    /// <param name="MessageID">The ID of the message the role menu is registered to.</param>
     /// <param name="MaxSelections">The maximum amount of roles that can be selected.</param>
     public record Request
     (
@@ -25,7 +24,6 @@ public static class CreateRoleMenu
         string Description,
         Snowflake GuildID,
         Snowflake ChannelID,
-        Snowflake MessageID,
         int MaxSelections
     ) : IRequest<RoleMenuEntity>;
 
@@ -40,7 +38,6 @@ public static class CreateRoleMenu
                 Name = request.Name,
                 GuildID = request.GuildID,
                 ChannelID = request.ChannelID,
-                MessageID = request.MessageID,
                 Description = request.Description,
                 MaxSelections = request.MaxSelections,
             };
