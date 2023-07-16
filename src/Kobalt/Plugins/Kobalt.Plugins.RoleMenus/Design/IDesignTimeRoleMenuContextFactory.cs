@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Kobalt.Plugins.RoleMenus.Design;
 
-public class IDesignTimeKobaltContextFactory : IDesignTimeDbContextFactory<RoleMenuContext>
+public class IDesignTimeRoleMenuContextFactory : IDesignTimeDbContextFactory<RoleMenuContext>
 {
     public RoleMenuContext CreateDbContext(string[] args) 
         => new ServiceCollection()
