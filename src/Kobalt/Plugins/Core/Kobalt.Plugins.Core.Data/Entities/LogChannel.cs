@@ -22,6 +22,8 @@ public class GuildLogChannelConfiguration : IEntityTypeConfiguration<LogChannel>
 {
     public void Configure(EntityTypeBuilder<LogChannel> builder)
     {
+        builder.ToTable("GuildLogChannels", KobaltContext.Schema);
+        
         builder.HasIndex(l => l.GuildID);
     }
 }

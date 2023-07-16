@@ -27,6 +27,8 @@ public class GuildAutoModConfigConfiguration : IEntityTypeConfiguration<GuildAut
 {
     public void Configure(EntityTypeBuilder<GuildAutoModConfig> builder)
     {
+        builder.ToTable("GuildAutoModConfigs", KobaltContext.Schema);
+        
         builder.HasOne(x => x.Guild).WithOne(x => x.AutoModConfig).HasForeignKey<GuildAutoModConfig>(x => x.GuildID);
     }
 }

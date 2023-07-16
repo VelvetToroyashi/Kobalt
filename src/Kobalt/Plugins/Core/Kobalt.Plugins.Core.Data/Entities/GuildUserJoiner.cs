@@ -22,6 +22,8 @@ public class GuildUserJoinerConfiguration : IEntityTypeConfiguration<GuildUserJo
 {
     public void Configure(EntityTypeBuilder<GuildUserJoiner> builder)
     {
+        builder.ToTable("GuildUserJoiners", KobaltContext.Schema);
+        
         builder.HasOne(x => x.User).WithMany(x => x.Guilds).HasForeignKey(x => x.UserId);
         builder.HasOne(x => x.Guild).WithMany(x => x.Users).HasForeignKey(x => x.GuildId);
     }

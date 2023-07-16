@@ -1,4 +1,6 @@
 ﻿using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Remora.Rest.Core;
 using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
@@ -31,4 +33,12 @@ public class Guild
     /// </summary>
     public List<LogChannel> LogChannels { get; set; } = new();
     // TODO: Configurations
+}
+
+public class GuildEntityConfiguration : IEntityTypeConfiguration<Guild>
+{
+    public void Configure(EntityTypeBuilder<Guild> builder)
+    {
+        builder.ToTable("Guilds", KobaltContext.Schema);
+    }
 }

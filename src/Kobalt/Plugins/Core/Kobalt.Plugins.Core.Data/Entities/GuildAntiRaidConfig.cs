@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Rest.Core;
 
@@ -94,4 +96,12 @@ public class GuildAntiRaidConfig
         SuspiciousInviteScore = 1,
         ThreatScoreThreshold = 10
     };
+}
+
+public class GuildAntiRaidConfigEntityConfiguration : IEntityTypeConfiguration<GuildAntiRaidConfig>
+{
+    public void Configure(EntityTypeBuilder<GuildAntiRaidConfig> builder)
+    {
+        builder.ToTable("GuildAntiRaidConfigs", KobaltContext.Schema);
+    }
 }

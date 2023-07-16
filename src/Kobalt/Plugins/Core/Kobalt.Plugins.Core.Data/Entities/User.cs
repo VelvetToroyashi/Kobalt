@@ -22,6 +22,8 @@ public class UserEntityConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
+        builder.ToTable("Users", KobaltContext.Schema);
+        
         builder.HasKey(p => p.ID);
     }
 }
