@@ -1,7 +1,6 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Kobalt.Infractions.Shared;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Remora.Rest.Core;
 
 namespace Kobalt.Plugins.Core.Data.Entities;
@@ -9,6 +8,7 @@ namespace Kobalt.Plugins.Core.Data.Entities;
 /// <summary>
 /// Represents various settings related to phishing detection.
 /// </summary>
+[Table("guild_phishing_configs", Schema = KobaltContext.Schema)]
 public class GuildPhishingConfig
 {
     public int Id { get; set; }
@@ -21,12 +21,4 @@ public class GuildPhishingConfig
     public bool ScanUsers { get; set; }
     public InfractionType DetectionAction { get; set; }
 
-}
-
-public class GuildPhishingConfigConfiguration : IEntityTypeConfiguration<GuildPhishingConfig>
-{
-    public void Configure(EntityTypeBuilder<GuildPhishingConfig> builder)
-    {
-        builder.ToTable("GuildPhishingConfigs", KobaltContext.Schema);
-    }
 }

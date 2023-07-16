@@ -1,10 +1,12 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Remora.Rest.Core;
 
 namespace Kobalt.Plugins.Core.Data.Entities;
 
+[Table("guild_user_joiners", Schema = KobaltContext.Schema)]
 public class GuildUserJoiner
 {
     public int Id { get; set; }
@@ -22,8 +24,6 @@ public class GuildUserJoinerConfiguration : IEntityTypeConfiguration<GuildUserJo
 {
     public void Configure(EntityTypeBuilder<GuildUserJoiner> builder)
     {
-        builder.ToTable("GuildUserJoiners", KobaltContext.Schema);
-        
         builder.HasOne(x => x.User).WithMany(x => x.Guilds).HasForeignKey(x => x.UserId);
         builder.HasOne(x => x.Guild).WithMany(x => x.Users).HasForeignKey(x => x.GuildId);
     }

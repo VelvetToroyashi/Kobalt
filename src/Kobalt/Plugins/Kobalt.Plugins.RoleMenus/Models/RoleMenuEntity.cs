@@ -1,11 +1,11 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Kobalt.Plugins.Core.Data.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Remora.Rest.Core;
 
 namespace Kobalt.Plugins.RoleMenus.Models;
 
+[Table("role_menus", Schema = RoleMenuContext.Schema)]
 public class RoleMenuEntity
 {
     public int Id { get; set; }
@@ -24,12 +24,4 @@ public class RoleMenuEntity
     public int MaxSelections { get; set; }
     
     public List<RoleMenuOptionEntity> Options { get; set; }
-}
-
-public class RoleMenuEntityConfiguration : IEntityTypeConfiguration<RoleMenuEntity>
-{
-    public void Configure(EntityTypeBuilder<RoleMenuEntity> builder)
-    {
-        builder.ToTable("RoleMenus", RoleMenuContext.Schema);
-    }
 }

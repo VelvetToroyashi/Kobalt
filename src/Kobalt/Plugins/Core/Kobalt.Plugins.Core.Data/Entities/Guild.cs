@@ -1,12 +1,10 @@
-﻿using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using Remora.Rest.Core;
-using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
 namespace Kobalt.Plugins.Core.Data.Entities;
 
-[PublicAPI]
+[Table("guilds", Schema = KobaltContext.Schema)]
 public class Guild
 {
     /// <summary>
@@ -33,12 +31,4 @@ public class Guild
     /// </summary>
     public List<LogChannel> LogChannels { get; set; } = new();
     // TODO: Configurations
-}
-
-public class GuildEntityConfiguration : IEntityTypeConfiguration<Guild>
-{
-    public void Configure(EntityTypeBuilder<Guild> builder)
-    {
-        builder.ToTable("Guilds", KobaltContext.Schema);
-    }
 }

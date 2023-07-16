@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Remora.Discord.API.Abstractions.Objects;
@@ -9,6 +10,7 @@ namespace Kobalt.Plugins.Core.Data.Entities;
 /// <summary>
 /// Represents various settings related to anti-raid.
 /// </summary>
+[Table("guild_anti_raid_configs", Schema = KobaltContext.Schema)]
 public class GuildAntiRaidConfig
 {
     public int Id { get; set; }
@@ -96,12 +98,4 @@ public class GuildAntiRaidConfig
         SuspiciousInviteScore = 1,
         ThreatScoreThreshold = 10
     };
-}
-
-public class GuildAntiRaidConfigEntityConfiguration : IEntityTypeConfiguration<GuildAntiRaidConfig>
-{
-    public void Configure(EntityTypeBuilder<GuildAntiRaidConfig> builder)
-    {
-        builder.ToTable("GuildAntiRaidConfigs", KobaltContext.Schema);
-    }
 }

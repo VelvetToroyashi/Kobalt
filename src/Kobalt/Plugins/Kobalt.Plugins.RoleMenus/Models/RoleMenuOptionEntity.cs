@@ -2,11 +2,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Remora.Discord.API;
 using Remora.Rest.Core;
 
 namespace Kobalt.Plugins.RoleMenus.Models;
 
+[Table("role_menu_options", Schema = RoleMenuContext.Schema)]
 public class RoleMenuOptionEntity
 {
     public int Id { get; set; }
@@ -31,8 +31,6 @@ public class RoleMenuOptionConfiguration : IEntityTypeConfiguration<RoleMenuOpti
 {
     public void Configure(EntityTypeBuilder<RoleMenuOptionEntity> builder)
     {
-        builder.ToTable("RoleMenuOptions", RoleMenuContext.Schema);
-        
         builder
         .Property(rmo => rmo.MutuallyInclusiveRoles)
         .HasConversion<string>
