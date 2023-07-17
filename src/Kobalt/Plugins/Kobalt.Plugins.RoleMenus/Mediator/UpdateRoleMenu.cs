@@ -11,6 +11,7 @@ public static class UpdateRoleMenu
     public record Request
     (
         int MenuId,
+        Snowflake GuildID,
         Optional<string> Name = default,
         Optional<string> Description = default,
         Optional<int> MaxSelections = default,
@@ -30,7 +31,7 @@ public static class UpdateRoleMenu
 
             var roleMenu = await db.RoleMenus.FindAsync(new object[] { request.MenuId }, cancellationToken);
             
-            if (roleMenu is null)
+            if (roleMenu is null || roleMenu.GuildID != request.GuildID)
             {
                 return new NotFoundError($"No menu exists with the ID `{request.MenuId}`");
             }

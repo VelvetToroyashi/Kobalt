@@ -41,7 +41,7 @@ public class RoleMenuService
 
         if (result.IsSuccess)
         {
-            var updateResult = await mediator.Send(new UpdateRoleMenu.Request(roleMenu.Id, MessageID: result.Entity.ID));
+            var updateResult = await mediator.Send(new UpdateRoleMenu.Request(roleMenu.Id, roleMenu.GuildID, MessageID: result.Entity.ID));
             
             if (!updateResult.IsSuccess)
             {

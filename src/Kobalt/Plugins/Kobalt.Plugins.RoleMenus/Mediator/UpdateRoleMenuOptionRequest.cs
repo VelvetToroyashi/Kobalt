@@ -12,6 +12,7 @@ public static class UpdateRoleMenuOption
     /// Updates a role menu option.
     /// </summary>
     /// <param name="OptionId">The ID of the option to update.</param>
+    /// <param name="GuildID">The ID of the guild the option belongs to.</param>
     /// <param name="Name">The new name of the option.</param>
     /// <param name="Description">The new description of the option.</param>
     /// <param name="RoleId">The new role ID of the option.</param>
@@ -20,6 +21,7 @@ public static class UpdateRoleMenuOption
     public record Request
     (
         int OptionId,
+        Snowflake GuildID,
         Optional<string> Name,
         Optional<string> Description,
         Optional<Snowflake> RoleId,
@@ -45,7 +47,8 @@ public static class UpdateRoleMenuOption
 
             await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
-            var option = await db.FindAsync<RoleMenuOptionEntity>(new object[] { request.OptionId }, cancellationToken);
+            var option = await db.Set<RoleMenuOptionEntity>()
+                                 .FirstOrDefaultAsync(c => c.Id == request.OptionId && c.RoleMenu.GuildID == request.GuildID, cancellationToken);
             
             if (option is null)
             {

@@ -1,12 +1,13 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Remora.Rest.Core;
 using Remora.Results;
 
 namespace Kobalt.Plugins.RoleMenus.Mediator;
 
 public static class DeleteRoleMenu
 {
-    public record Request(int MenuID) : IRequest<Result>;
+    public record Request(int MenuID, Snowflake GuildID) : IRequest<Result>;
     
     internal class Handler(IDbContextFactory<RoleMenuContext> dbFactory) : IRequestHandler<Request, Result>
     {
@@ -16,7 +17,7 @@ public static class DeleteRoleMenu
 
             var menu = await db.RoleMenus.FindAsync(new object[] { request.MenuID }, cancellationToken);
 
-            if (menu is null)
+            if (menu is null || menu.GuildID != request.GuildID)
             {
                 return new NotFoundError($"No role menu with the ID `{request.MenuID}` exists.");
             }
