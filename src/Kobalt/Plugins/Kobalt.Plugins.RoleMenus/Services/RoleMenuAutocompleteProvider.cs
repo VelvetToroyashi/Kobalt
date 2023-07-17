@@ -31,6 +31,6 @@ public class RoleMenuAutocompleteProvider(IMediator mediator, IInteractionContex
                .ToArray();
     }
     
-    private string GetRoleMenuName(RoleMenuEntity roleMenu) => $"\"{roleMenu.Name}\" in #{roleMenu.ChannelID}";
+    private string GetRoleMenuName(RoleMenuEntity roleMenu) => $"\"{roleMenu.Name}\" ({(roleMenu.MessageID.Value is 0 ? "UNPUBLISHED" : "PUBLISHED")})";
     
 }
