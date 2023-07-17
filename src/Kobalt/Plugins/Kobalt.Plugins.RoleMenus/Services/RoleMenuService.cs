@@ -113,7 +113,16 @@ public class RoleMenuService
         
         builder.AsEphemeral()
                .WithContent(description)
-               .AddComponent(new StringSelectComponent(RoleMenuID, options, "Self-assignable roles", MaxValues: maxSelections));
+               .AddComponent
+               (
+                   new StringSelectComponent
+                   (
+                       CustomIDHelpers.CreateSelectMenuIDWithState(RoleMenuID, interaction.Message.Value.ID.ToString()),
+                       options,
+                       "Self-assignable roles",
+                       MaxValues: maxSelections
+                   )
+               );
 
         var result = await interactions.CreateFollowupMessageAsync(interaction.ApplicationID, interaction.Token, builder);
         
