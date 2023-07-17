@@ -6,6 +6,7 @@ using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Builders;
+using Remora.Discord.Interactivity;
 using Remora.Rest.Core;
 using Remora.Results;
 
@@ -28,6 +29,14 @@ public class RoleMenuService
                                                  Press the button to acquire some roles.
                                                  """;
     
+    /// <summary>
+    /// Publishes a role menu if it does not exist.
+    /// </summary>
+    /// <param name="roleMenu">The role menu to publish.</param>
+    /// <returns>
+    /// A result that may or not have succeeded.
+    /// Generally, either the role menu is already published, or there was a permission issue regarding publishing.
+    /// </returns>
     public async Task<Result> PublishRoleMenuAsync(RoleMenuEntity roleMenu)
     {
         // Zero is a sentinel value for an unpublished role menu;
@@ -66,6 +75,11 @@ public class RoleMenuService
         return (Result)result;
     }
 
+    /// <summary>
+    /// Updates the content of an existing role menu.
+    /// </summary>
+    /// <param name="roleMenu">The role menu to be updated.</param>
+    /// <returns>A result that may or not have succeeded.</returns>
     public async Task<Result> UpdateRoleMenuInitiatorAsync(RoleMenuEntity roleMenu)
     {
         var builder = new MessageBuilder();
@@ -83,6 +97,11 @@ public class RoleMenuService
         return Result.FromSuccess();
     }
 
+    /// <summary>
+    /// Displays the role menu dropdown.
+    /// </summary>
+    /// <param name="interaction">The initial interaction that initiates the role menu flow.</param>
+    /// <returns>A result that may or not have succeeded.</returns>
     public async Task<Result> DisplayRoleMenuAsync(IInteraction interaction)
     {
         if (interaction.Type is not InteractionType.MessageComponent)
@@ -129,6 +148,13 @@ public class RoleMenuService
         return (Result)result;
     }
 
+    /// <summary>
+    /// Assigns roles to a user based on the selected options.
+    /// </summary>
+    /// <param name="sourceMessageID">The ID of the parent message.</param>
+    /// <param name="selectedRoleIDs"></param>
+    /// <param name="interaction"></param>
+    /// <returns></returns>
     public async Task<Result> AssignRoleMenuRolesAsync
     (
         Snowflake sourceMessageID,
