@@ -30,6 +30,18 @@ public class RoleMenuService
     
     public async Task<Result> PublishRoleMenuAsync(RoleMenuEntity roleMenu)
     {
+        // Zero is a sentinel value for an unpublished role menu;
+        // if the menu has already been published, we should check if the message still exists.
+        if (roleMenu.MessageID != 0)
+        {
+            var message = await channels.GetChannelMessageAsync(roleMenu.ChannelID, roleMenu.MessageID);
+            
+            if (message.IsSuccess)
+            {
+                return new InvalidOperationError("This role menu has already been published.");
+            }
+        }
+        
         var builder = new MessageBuilder();
 
         var content = string.IsNullOrWhiteSpace(roleMenu.Description) ? DefaultRoleMenuMessage : roleMenu.Description;
