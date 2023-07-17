@@ -66,7 +66,7 @@ public class RoleMenuService
             return Result.FromSuccess();
         }
         
-        var getRoleMenu = await mediator.Send(new GetRoleMenu.Request(interaction.Message.Value.ID));
+        var getRoleMenu = await mediator.Send(new GetRoleMenuByMessage.Request(interaction.Message.Value.ID));
 
         if (!getRoleMenu.IsDefined(out var roleMenu))
         {
@@ -98,7 +98,7 @@ public class RoleMenuService
         IInteraction interaction
     )
     {
-        var getRoleMenu = await mediator.Send(new GetRoleMenu.Request(sourceMessageID));
+        var getRoleMenu = await mediator.Send(new GetRoleMenuByMessage.Request(sourceMessageID));
         
         var guildID = interaction.GuildID.Value;
         var userID = interaction.Member.Value.User.Value.ID;

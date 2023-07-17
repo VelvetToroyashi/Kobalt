@@ -6,13 +6,13 @@ using Remora.Results;
 
 namespace Kobalt.Plugins.RoleMenus.Mediator;
 
-public static class GetRoleMenu
+public static class GetRoleMenuByMessage
 {
     /// <summary>
-    /// Requests a role menu.
+    /// Requests a rolemenu by the attached message's ID.
     /// </summary>
-    /// <param name="RoleMenuID"></param>
-    public record Request(int RoleMenuID, Snowflake GuildID) : IRequest<Result<RoleMenuEntity>>;
+    /// <param name="MessageID">The ID of the message the role menu is attached to.</param>
+    public record Request(Snowflake MessageID) : IRequest<Result<RoleMenuEntity>>;
     
     internal class Handler(IDbContextFactory<RoleMenuContext> dbFactory) : IRequestHandler<Request, Result<RoleMenuEntity>>
     {
@@ -22,16 +22,15 @@ public static class GetRoleMenu
             
             var roleMenu = await context.RoleMenus
                                        .Include(r => r.Options)
-                                       .FirstOrDefaultAsync(r => r.Id == request.RoleMenuID, cancellationToken);
+                                       .FirstOrDefaultAsync(r => r.MessageID == request.MessageID, cancellationToken);
 
-            if (roleMenu is null || roleMenu.GuildID != request.GuildID)
+            if (roleMenu is null)
             {
-                return new NotFoundError($"No role menu with the message ID `{request.RoleMenuID}` was found.");
+                return new NotFoundError($"No role menu with the message ID `{request.MessageID}` was found.");
             }
 
             return roleMenu;
         }
     }
-    
     
 }

@@ -3,6 +3,7 @@ using Kobalt.Plugins.RoleMenus.Commands;
 using Kobalt.Plugins.RoleMenus.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Interactivity.Extensions;
 using Remora.Plugins.Abstractions;
 using Remora.Plugins.Abstractions.Attributes;
@@ -19,6 +20,7 @@ public class RoleMenuPlugin : PluginDescriptor, IMigratablePlugin
     public override Result ConfigureServices(IServiceCollection services)
     {
         services.AddSingleton<RoleMenuService>()
+                .AddAutocompleteProvider<RoleMenuAutocompleteProvider>()
                 .AddInteractionGroup<RoleMenuComponentCommands>();
         
         return Result.FromSuccess();
