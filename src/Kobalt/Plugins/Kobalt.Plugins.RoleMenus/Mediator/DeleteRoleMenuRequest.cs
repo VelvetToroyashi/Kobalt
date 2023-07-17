@@ -1,3 +1,4 @@
+using Kobalt.Plugins.RoleMenus.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Remora.Rest.Core;
@@ -7,11 +8,11 @@ namespace Kobalt.Plugins.RoleMenus.Mediator;
 
 public static class DeleteRoleMenu
 {
-    public record Request(int MenuID, Snowflake GuildID) : IRequest<Result>;
+    public record Request(int MenuID, Snowflake GuildID) : IRequest<Result<RoleMenuEntity>>;
     
-    internal class Handler(IDbContextFactory<RoleMenuContext> dbFactory) : IRequestHandler<Request, Result>
+    internal class Handler(IDbContextFactory<RoleMenuContext> dbFactory) : IRequestHandler<Request, Result<RoleMenuEntity>>
     {
-        public async Task<Result> Handle(Request request, CancellationToken cancellationToken)
+        public async Task<Result<RoleMenuEntity>> Handle(Request request, CancellationToken cancellationToken)
         {
             await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
@@ -26,7 +27,7 @@ public static class DeleteRoleMenu
 
             await db.SaveChangesAsync(cancellationToken);
 
-            return Result.FromSuccess();
+            return menu;
         }
     }
     
