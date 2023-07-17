@@ -46,7 +46,7 @@ public class RoleMenuService
 
         var content = string.IsNullOrWhiteSpace(roleMenu.Description) ? DefaultRoleMenuMessage : roleMenu.Description;
         
-        builder.WithContent(content)
+        builder = builder.WithContent(content)
                .AddComponent(new ButtonComponent(ButtonComponentStyle.Primary, "Get Roles", CustomID: RoleMenuID));
 
         var result = await channels.CreateMessageAsync(roleMenu.ChannelID, builder);
@@ -64,6 +64,23 @@ public class RoleMenuService
         }
         
         return (Result)result;
+    }
+
+    public async Task<Result> UpdateRoleMenuInitiatorAsync(RoleMenuEntity roleMenu)
+    {
+        var builder = new MessageBuilder();
+        var content = string.IsNullOrWhiteSpace(roleMenu.Description) ? DefaultRoleMenuMessage : roleMenu.Description;
+
+        builder = builder.WithContent(content);
+        
+        var res = await channels.EditMessageAsync(roleMenu.ChannelID, roleMenu.MessageID, builder);
+
+        if (!res.IsSuccess)
+        {
+            return new NotFoundError("Sorry, but I can't edit that menu. Does it still exist?");
+        }
+        
+        return Result.FromSuccess();
     }
 
     public async Task<Result> DisplayRoleMenuAsync(IInteraction interaction)
