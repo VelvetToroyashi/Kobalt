@@ -85,7 +85,7 @@ public class RoleMenuService
             {
                 logger.LogError("Failed to update role menu with new message ID ({RoleMenuID})", roleMenu.Id);
                 return new InvalidOperationError("Something's gone wrong while publishing the role menu; " +
-                                                 "this is probably a bug in Kobalt, please [report it](https://github.com/VelvetToroyashi/Kobalt/issues/new).");
+                                                 "this is probably a bug in Kobalt, please [report it](<https://github.com/VelvetToroyashi/Kobalt/issues/new>).");
             }
         }
         
@@ -135,7 +135,7 @@ public class RoleMenuService
             logger.LogWarning("Parent role menu message no longer exists, but the dropdown does, old message? ({GuildID})", interaction.GuildID.Value);
                 
             return new NotFoundError("Sorry! This role menu no longer exists; " +
-                                     "this is probably a bug in Kobalt—please [report it](https://github.com/VelvetToroyashi/Kobalt/issues/new).");
+                                     "this is probably a bug in Kobalt—please [report it](<https://github.com/VelvetToroyashi/Kobalt/issues/new>).");
         }
         
         var description = string.IsNullOrWhiteSpace(getRoleMenu.Entity.Description) ? DefaultRoleMenuMessage : getRoleMenu.Entity.Description;
@@ -185,7 +185,7 @@ public class RoleMenuService
         {
             logger.LogWarning("Parent role menu message no longer exists, but the dropdown does, old message? ({GuildID})", guildID);
                 
-            return new NotFoundError("Sorry! This role menu no longer exists; this is probably a bug in Kobalt—please [report it](https://github.com/VelvetToroyashi/Kobalt/issues/new).");
+            return new NotFoundError("Sorry! This role menu no longer exists; this is probably a bug in Kobalt—please [report it]([https://github.com/VelvetToroyashi/Kobalt/issues/new>).");
         }
         
         var selectedOptions = roleMenu.Options.Where(it => selectedRoleIDs.Contains(it.RoleID)).ToArray();
