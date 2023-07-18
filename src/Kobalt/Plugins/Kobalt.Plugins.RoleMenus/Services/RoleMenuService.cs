@@ -156,7 +156,8 @@ public class RoleMenuService
             interaction.ApplicationID,
             interaction.Token,
             content: description,
-            components: new IMessageComponent[] { new ActionRowComponent(new[] { dropdown })}
+            components: new IMessageComponent[] { new ActionRowComponent(new[] { dropdown })},
+            flags: MessageFlags.Ephemeral
         );
         
         return (Result)result;
