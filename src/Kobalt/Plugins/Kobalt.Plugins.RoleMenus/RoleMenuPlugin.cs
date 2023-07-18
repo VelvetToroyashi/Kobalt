@@ -25,6 +25,7 @@ public class RoleMenuPlugin : PluginDescriptor, IMigratablePlugin
                 .AddCommandTree()
                 .WithCommandGroup<RoleMenuCommands>()
                 .Finish()
+                .AddMediatR(s => s.RegisterServicesFromAssemblyContaining<RoleMenuContext>())
                 .AddDbContextFactory<RoleMenuContext>("RoleMenus")
                 .AddAutocompleteProvider<RoleMenuAutocompleteProvider>()
                 .AddInteractionGroup<RoleMenuComponentCommands>();
@@ -34,7 +35,10 @@ public class RoleMenuPlugin : PluginDescriptor, IMigratablePlugin
 
     public async Task<Result> MigrateAsync(IServiceProvider serviceProvider, CancellationToken ct = default)
     {
-        var db = serviceProvider.GetRequiredService<RoleMenuContext>();
+        var dbContextFactory = serviceProvider.GetRequiredService<IDbContextFactory<RoleMenuContext>>();
+        
+        await using var db = await dbContextFactory.CreateDbContextAsync(ct);
+        
         await db.Database.MigrateAsync(ct);
         
         return Result.FromSuccess();

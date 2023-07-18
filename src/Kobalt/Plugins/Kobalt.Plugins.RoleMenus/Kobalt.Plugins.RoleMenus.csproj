@@ -14,6 +14,7 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.9" />
       <PackageReference Include="Remora.Discord.Interactivity" Version="4.5.0" />
       <PackageReference Include="Remora.Plugins.Abstractions" Version="4.0.6" />
       <PackageReference Include="Remora.Rest.Core" Version="2.2.0" />

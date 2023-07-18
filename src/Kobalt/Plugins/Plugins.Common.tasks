@@ -24,6 +24,6 @@
         </PropertyGroup>
 
         <Copy SourceFiles="@(PluginDlls)" DestinationFolder="$(PluginOutputDir)" SkipUnchangedFiles="true" />
-        <Message Text="Copied Plugin DLL to $(PluginOutputDir)" Importance="High" />
+        <Message Text="Copied Plugin DLL to $(PluginOutputDir)" Importance="High"  />
     </Target>
 </Project>
