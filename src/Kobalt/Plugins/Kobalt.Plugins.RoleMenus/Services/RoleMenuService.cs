@@ -141,7 +141,7 @@ public class RoleMenuService
         var description = string.IsNullOrWhiteSpace(getRoleMenu.Entity.Description) ? DefaultRoleMenuMessage : getRoleMenu.Entity.Description;
         var options = roleMenu.Options.Select(it => GetSelectOption(it, interaction)).ToArray();
 
-        var maxSelections = roleMenu.MaxSelections is 0 ? 25 : roleMenu.MaxSelections;
+        var maxSelections = roleMenu.MaxSelections is 0 ? options.Length : roleMenu.MaxSelections;
 
         var dropdown = new StringSelectComponent
         (
