@@ -22,9 +22,9 @@ public static class UpdateRoleMenu
     {
         public async Task<Result<RoleMenuEntity>> Handle(Request request, CancellationToken cancellationToken)
         {
-            if (!request.Name.HasValue && !request.Description.HasValue && !request.MaxSelections.HasValue)
+            if (!request.Name.HasValue && !request.Description.HasValue && !request.MaxSelections.HasValue && !request.MessageID.HasValue)
             {
-                return new InvalidOperationError("Name, description, or max selections must be specified.");
+                return new InvalidOperationError("Name, description, max selections, or message ID must be specified.");
             }
 
             await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
