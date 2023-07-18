@@ -70,6 +70,8 @@ public static class UpdateRoleMenuOption
             option.MutuallyInclusiveRoles = request.MutuallyInclusiveRoles.OrDefault(option.MutuallyInclusiveRoles).ToList();
             option.MutuallyExclusiveRoles = request.MutuallyExclusiveRoles.OrDefault(option.MutuallyExclusiveRoles).ToList();
 
+            await db.SaveChangesAsync(cancellationToken);
+            
             return option;
         }
     }

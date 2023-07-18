@@ -40,6 +40,8 @@ public static class UpdateRoleMenu
             roleMenu.Description = request.Description.OrDefault(roleMenu.Description);
             roleMenu.MaxSelections = request.MaxSelections.OrDefault(roleMenu.MaxSelections);
             roleMenu.MessageID = request.MessageID.OrDefault(roleMenu.MessageID);
+
+            await db.SaveChangesAsync(cancellationToken);
             
             return roleMenu;
         }
