@@ -26,7 +26,7 @@ public class RoleMenuAutocompleteProvider(IMediator mediator, IInteractionContex
         
         //TODO: Caching, perhaps at the EF Level?
         return roleMenus
-               .Where(rm => Fuzz.PartialRatio(rm.Name, userInput) > 80)
+               .Where(rm => string.IsNullOrWhiteSpace(userInput) || Fuzz.PartialRatio(rm.Name, userInput) > 80)
                .Select(rm => new ApplicationCommandOptionChoice(GetRoleMenuName(rm), rm.Id.ToString()))
                .ToArray();
     }
