@@ -62,7 +62,7 @@ public class RoleMenuCommands
         );
 
         var slashCommand = slashCommands.CommandMap
-                                        .First(cm => cm.Value.TryPickT0(out var group, out _) && group.TryGetValue("add-option", out _))
+                                        .First(cm => cm.Value.TryPickT0(out var group, out _) && group.TryGetValue("role-menu::add-option", out _))
                                         .Key
                                         .CommandID;
 
