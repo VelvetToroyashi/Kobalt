@@ -123,7 +123,7 @@ public class RoleMenuService
             return new InvalidOperationError("This interaction is not a message component.");
         }
         
-        if (interaction.Data.Value.AsT1.CustomID != RoleMenuID)
+        if (interaction.Data.Value.AsT1.CustomID.Split("::")[^1] != RoleMenuID)
         {
             return Result.FromSuccess();
         }
