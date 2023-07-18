@@ -29,6 +29,16 @@ public class RoleMenuCommands
     SlashService slashCommands
 ) : CommandGroup
 {
+    private readonly Snowflake _publishCommandID = slashCommands.CommandMap
+                                                                .First(cm => cm.Value.TryPickT0(out var group, out _) && group.TryGetValue("role-menu::publish", out _))
+                                                                .Key
+                                                                .CommandID;
+    
+    private readonly Snowflake _addCommandID = slashCommands.CommandMap
+                                                            .First(cm => cm.Value.TryPickT0(out var group, out _) && group.TryGetValue("role-menu::add-option", out _))
+                                                            .Key
+                                                            .CommandID;
+    
     [Command("create")]
     [Description("Registers a new role menu.")]
     public async Task<Result> CreateAsync
@@ -61,22 +71,64 @@ public class RoleMenuCommands
             )
         );
 
-        var slashCommand = slashCommands.CommandMap
-                                        .First(cm => cm.Value.TryPickT0(out var group, out _) && group.TryGetValue("role-menu::add-option", out _))
-                                        .Key
-                                        .CommandID;
-
         await interactions.CreateFollowupMessageAsync
         (
             context.Interaction.ApplicationID,
             context.Interaction.Token,
-            $"Consider it done. You can add options to this role menu with </role-menu add-option:{slashCommand}>. \n" +
+            $"Consider it done. You can add options to this role menu with </role-menu add-option:{_addCommandID}>. \n" +
             $"Your role menu's ID is `{rolemenu.Id}`, but there's also autocomplete."
         );
         
         return Result.FromSuccess();
     }
-    
+
+    [Command("publish")]
+    [Description("Publishes a role menu.")]
+    public async Task<Result> PublishAsync
+    (
+        [AutocompleteProvider(RoleMenuAutocompleteProvider.Identifier)]
+        [Description("The ID of the role menu to publish.")]
+        int role_menu_id
+    )
+    {
+        var roleMenu = await mediator.Send(new GetRoleMenu.Request(role_menu_id, context.Interaction.GuildID.Value));
+
+        if (!roleMenu.IsSuccess)
+        {
+            await interactions.CreateFollowupMessageAsync
+            (
+                context.Interaction.ApplicationID,
+                context.Interaction.Token,
+                roleMenu.Error!.Message
+            );
+
+            return Result.FromSuccess();    
+        }
+
+        var publishResult = await rolemenus.PublishRoleMenuAsync(roleMenu.Entity);
+
+        if (publishResult.IsSuccess)
+        {
+            await interactions.CreateFollowupMessageAsync
+            (
+                context.Interaction.ApplicationID,
+                context.Interaction.Token,
+                $"Published. View it [here](<https://discord.com/channels/{roleMenu.Entity.GuildID}/{roleMenu.Entity.ChannelID}/{roleMenu.Entity.MessageID}>)."
+            );
+        }
+        else
+        {
+            await interactions.CreateFollowupMessageAsync
+            (
+                context.Interaction.ApplicationID,
+                context.Interaction.Token,
+                publishResult.Error!.Message
+            );
+        }
+
+        return Result.FromSuccess();
+    }
+
     [Command("delete")]
     [Description("Deletes a role menu.")]
     public async Task<Result> DeleteAsync
@@ -151,11 +203,16 @@ public class RoleMenuCommands
         
         if (editResult.IsSuccess)
         {
+            var published = editResult.Entity.MessageID != 0;
+            var message = published
+                ? $"Done. View the changes [here](<https://discord.com/channels/{editResult.Entity.GuildID}/{editResult.Entity.ChannelID}/{editResult.Entity.MessageID}>)."
+                : $"Done. Publish the role menu with </role-menu publish:{_publishCommandID}>.";
+            
             await interactions.CreateFollowupMessageAsync
             (
                 context.Interaction.ApplicationID,
                 context.Interaction.Token,
-                $"Done. View the changes [here](https://discord.com/channels/{editResult.Entity.GuildID}/{editResult.Entity.ChannelID}/{editResult.Entity.MessageID})."
+                message
             );
         }
         else
@@ -219,17 +276,22 @@ public class RoleMenuCommands
                     context.Interaction.ApplicationID,
                     context.Interaction.Token,
                     $"(I was able to edit the option, but your role menu has gone missing. " +
-                    $"This is a bug in Kobalt, [please report it](https://github.com/VelvetToroyashi/Kobalt/issues/new).)"
+                    $"This is a bug in Kobalt, [please report it](<https://github.com/VelvetToroyashi/Kobalt/issues/new>).)"
                 );
             }
 
             await rolemenus.UpdateRoleMenuInitiatorAsync(roleMenu.Entity);
             
+            var published = roleMenu.Entity.MessageID != 0;
+            var message = published
+                ? $"Done. View the changes [here](<https://discord.com/channels/{roleMenu.Entity.GuildID}/{roleMenu.Entity.ChannelID}/{roleMenu.Entity.MessageID}>)."
+                : $"Done. Publish the role menu with </role-menu publish:{_publishCommandID}>.";
+            
             await interactions.CreateFollowupMessageAsync
             (
                 context.Interaction.ApplicationID,
                 context.Interaction.Token,
-                $"Done. View the changes [here](https://discord.com/channels/{roleMenu.Entity.GuildID}/{roleMenu.Entity.ChannelID}/{roleMenu.Entity.MessageID})."
+                message
             );
         }
         
@@ -274,11 +336,16 @@ public class RoleMenuCommands
             
             await rolemenus.UpdateRoleMenuInitiatorAsync(roleMenu.Entity);
             
+            var published = roleMenu.Entity.MessageID != 0;
+            var message = published
+                ? $"Done. View the changes [here](<https://discord.com/channels/{roleMenu.Entity.GuildID}/{roleMenu.Entity.ChannelID}/{roleMenu.Entity.MessageID}>)."
+                : $"Done. Publish the role menu with </role-menu publish:{_publishCommandID}>.";
+            
             await interactions.CreateFollowupMessageAsync
             (
                 context.Interaction.ApplicationID,
                 context.Interaction.Token,
-                $"Done. View the changes [here](https://discord.com/channels/{roleMenu.Entity.GuildID}/{roleMenu.Entity.ChannelID}/{roleMenu.Entity.MessageID})."
+                message
             );
         }
         else
