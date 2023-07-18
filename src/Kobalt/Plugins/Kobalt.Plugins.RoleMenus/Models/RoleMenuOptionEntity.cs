@@ -36,7 +36,7 @@ public class RoleMenuOptionConfiguration : IEntityTypeConfiguration<RoleMenuOpti
         .HasConversion<string>
         (
             roles => string.Join(',', roles),
-            str => str.Split(',', StringSplitOptions.None).Select(s => new Snowflake(ulong.Parse(s), 0)).ToList()
+            str => str.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => new Snowflake(ulong.Parse(s), 0)).ToList()
         );
         
         builder
@@ -44,7 +44,7 @@ public class RoleMenuOptionConfiguration : IEntityTypeConfiguration<RoleMenuOpti
         .HasConversion<string>
         (
             roles => string.Join(',', roles),
-            str => str.Split(',', StringSplitOptions.None).Select(s => new Snowflake(ulong.Parse(s), 0)).ToList()
+            str => str.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => new Snowflake(ulong.Parse(s), 0)).ToList()
         );
     }
 } 
