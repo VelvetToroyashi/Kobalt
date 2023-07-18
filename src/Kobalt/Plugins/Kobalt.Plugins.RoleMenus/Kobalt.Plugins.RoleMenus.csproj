@@ -14,7 +14,6 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.9" />
       <PackageReference Include="Remora.Discord.Interactivity" Version="4.5.0" />
       <PackageReference Include="Remora.Plugins.Abstractions" Version="4.0.6" />
       <PackageReference Include="Remora.Rest.Core" Version="2.2.0" />
@@ -30,18 +29,4 @@
     <ItemGroup>
       <Folder Include="Migrations\" />
     </ItemGroup>
-
-
-    <ItemGroup>
-      <Compile Remove="Migrations\20230715231737_InitialMigration.Designer.cs" />
-      <Compile Remove="Migrations\20230715231834_InitialMigration.Designer.cs" />
-      <Compile Remove="Migrations\RoleMenuContextModelSnapshot.cs" />
-      <Compile Remove="Migrations\20230715234329_InitialMigration.Designer.cs" />
-      <Compile Remove="Migrations\20230715234728_InitialMigration.Designer.cs" />
-      <Compile Remove="Migrations\20230716013228_InitialMigration.Designer.cs" />
-      <Compile Remove="Migrations\20230716013347_InitialMigration.Designer.cs" />
-      <Compile Remove="Migrations\20230716102744_InitialMigration.Designer.cs" />
-      <Compile Remove="Migrations\20230716105135_InitialMigration.Designer.cs" />
-    </ItemGroup>
-
 </Project>
