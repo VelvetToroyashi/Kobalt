@@ -28,6 +28,23 @@ public class RoleMenuService
                                                  
                                                  Press the button to acquire some roles.
                                                  """;
+
+    private static readonly IReadOnlyList<IMessageComponent> RoleMenuInitiatorComponents =
+        new IMessageComponent[]
+        {
+            new ActionRowComponent
+            (
+                new[]
+                {
+                    new ButtonComponent
+                    (
+                        ButtonComponentStyle.Primary,
+                        "Get Roles",
+                        CustomID: CustomIDHelpers.CreateButtonID(RoleMenuID)
+                    ),
+                }
+            ),
+        };
     
     /// <summary>
     /// Publishes a role menu if it does not exist.
@@ -50,15 +67,15 @@ public class RoleMenuService
                 return new InvalidOperationError("This role menu has already been published.");
             }
         }
-        
-        var builder = new MessageBuilder();
 
         var content = string.IsNullOrWhiteSpace(roleMenu.Description) ? DefaultRoleMenuMessage : roleMenu.Description;
-        
-        builder = builder.WithContent(content)
-               .AddComponent(new ButtonComponent(ButtonComponentStyle.Primary, "Get Roles", CustomID: RoleMenuID));
 
-        var result = await channels.CreateMessageAsync(roleMenu.ChannelID, builder);
+        var result = await channels.CreateMessageAsync
+        (
+            roleMenu.ChannelID,
+            content: content,
+            components: new Optional<IReadOnlyList<IMessageComponent>>(RoleMenuInitiatorComponents)
+        );
 
         if (result.IsSuccess)
         {
@@ -82,12 +99,9 @@ public class RoleMenuService
     /// <returns>A result that may or not have succeeded.</returns>
     public async Task<Result> UpdateRoleMenuInitiatorAsync(RoleMenuEntity roleMenu)
     {
-        var builder = new MessageBuilder();
         var content = string.IsNullOrWhiteSpace(roleMenu.Description) ? DefaultRoleMenuMessage : roleMenu.Description;
-
-        builder = builder.WithContent(content);
         
-        var res = await channels.EditMessageAsync(roleMenu.ChannelID, roleMenu.MessageID, builder);
+        var res = await channels.EditMessageAsync(roleMenu.ChannelID, roleMenu.MessageID, content: content);
 
         if (!res.IsSuccess)
         {
@@ -120,30 +134,30 @@ public class RoleMenuService
         {
             logger.LogWarning("Parent role menu message no longer exists, but the dropdown does, old message? ({GuildID})", interaction.GuildID.Value);
                 
-            return new NotFoundError("Sorry! This role menu no longer exists; this is probably a bug in Kobalt—please [report it](https://github.com/VelvetToroyashi/Kobalt/issues/new).");
+            return new NotFoundError("Sorry! This role menu no longer exists; " +
+                                     "this is probably a bug in Kobalt—please [report it](https://github.com/VelvetToroyashi/Kobalt/issues/new).");
         }
-        
-        var builder = new InteractionBuilder();
         
         var description = string.IsNullOrWhiteSpace(getRoleMenu.Entity.Description) ? DefaultRoleMenuMessage : getRoleMenu.Entity.Description;
         var options = roleMenu.Options.Select(it => GetSelectOption(it, interaction)).ToArray();
 
         var maxSelections = roleMenu.MaxSelections is 0 ? 25 : roleMenu.MaxSelections;
-        
-        builder.AsEphemeral()
-               .WithContent(description)
-               .AddComponent
-               (
-                   new StringSelectComponent
-                   (
-                       CustomIDHelpers.CreateSelectMenuIDWithState(RoleMenuID, interaction.Message.Value.ID.ToString()),
-                       options,
-                       "Self-assignable roles",
-                       MaxValues: maxSelections
-                   )
-               );
 
-        var result = await interactions.CreateFollowupMessageAsync(interaction.ApplicationID, interaction.Token, builder);
+        var dropdown = new StringSelectComponent
+        (
+            CustomIDHelpers.CreateSelectMenuIDWithState(RoleMenuID, interaction.Message.Value.ID.ToString()),
+            options,
+            "Self-assignable roles",
+            MaxValues: maxSelections
+        );
+
+        var result = await interactions.CreateFollowupMessageAsync
+        (
+            interaction.ApplicationID,
+            interaction.Token,
+            content: description,
+            components: new IMessageComponent[] { new ActionRowComponent(new[] { dropdown })}
+        );
         
         return (Result)result;
     }
@@ -154,7 +168,7 @@ public class RoleMenuService
     /// <param name="sourceMessageID">The ID of the parent message.</param>
     /// <param name="selectedRoleIDs"></param>
     /// <param name="interaction"></param>
-    /// <returns></returns>
+    /// <returns>A result that may or not have succeeded</returns>
     public async Task<Result> AssignRoleMenuRolesAsync
     (
         Snowflake sourceMessageID,
