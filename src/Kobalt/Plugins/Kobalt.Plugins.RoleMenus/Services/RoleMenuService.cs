@@ -227,6 +227,16 @@ public class RoleMenuService
                 flags: MessageFlags.Ephemeral
             );
         }
+        
+        var newDropdown = RoleHelper.GetDropdownFromSelections(selectedOptions, interaction);
+        
+        await interactions.EditOriginalInteractionResponseAsync
+        (
+            interaction.ApplicationID,
+            interaction.Token,
+            "Enjoy the new roles.",
+            components: new IMessageComponent[] { new ActionRowComponent(new[] { newDropdown })}
+        );
 
         return Result.FromSuccess();
     }
@@ -291,5 +301,22 @@ file static class RoleHelper
         roles.RemoveAll(it => rolesToRemove.Contains(it));
 
         return roles;
+    }
+
+    public static StringSelectComponent GetDropdownFromSelections(RoleMenuOptionEntity[] selectedOptions, IInteraction interaction)
+    {
+        var selectedRoleIDs = selectedOptions.Select(it => it.RoleID.ToString()).ToArray();
+        var dropdown = (IStringSelectComponent)((IActionRowComponent)interaction.Message.Value.Components.Value[0]).Components[0];
+
+        var ret = new StringSelectComponent(dropdown.CustomID, dropdown.Options.Select(GetSelectOption).ToArray(), dropdown.Placeholder, MaxValues: dropdown.MaxValues);
+
+        ISelectOption GetSelectOption(ISelectOption opt)
+        {
+            var selected = selectedRoleIDs.Contains(opt.Value);
+            
+            return new SelectOption(opt.Label, opt.Value, opt.Description, IsDefault: selected);
+        }
+        
+        return ret;
     }
 }

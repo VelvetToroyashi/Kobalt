@@ -28,18 +28,6 @@ public class RoleMenuComponentCommands
     public async Task<Result> HandleRoleMenuSelectMenuAsync(IReadOnlyList<Snowflake> values, Snowflake state)
     {
         var res = await roleMenus.AssignRoleMenuRolesAsync(state, values, context.Interaction);
-        
-        if (!res.IsSuccess)
-        {
-            return res;
-        }
-
-        await interactions.EditOriginalInteractionResponseAsync
-        (
-            context.Interaction.ApplicationID,
-            context.Interaction.Token,
-            "Enjoy the new roles."
-        );
 
         return Result.FromSuccess();
     }
