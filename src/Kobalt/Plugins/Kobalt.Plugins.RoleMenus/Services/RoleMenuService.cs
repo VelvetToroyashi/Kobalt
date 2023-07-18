@@ -192,7 +192,7 @@ public class RoleMenuService
         var selectedOptions = roleMenu.Options.Where(it => selectedRoleIDs.Contains(it.RoleID)).ToArray();
         var validityResult = RoleHelper.EnsureRoleValidity(selectedOptions, interaction.Member.Value.Roles);
 
-        if (validityResult.IsSuccess)
+        if (!validityResult.IsSuccess)
         {
             return (Result)await interactions.CreateFollowupMessageAsync
             (
