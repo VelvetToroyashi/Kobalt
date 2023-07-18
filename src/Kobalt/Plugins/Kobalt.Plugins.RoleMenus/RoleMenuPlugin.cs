@@ -1,3 +1,4 @@
+using System.Reflection;
 using Kobalt.Plugins.RoleMenus;
 using Kobalt.Plugins.RoleMenus.Commands;
 using Kobalt.Plugins.RoleMenus.Services;
@@ -25,7 +26,7 @@ public class RoleMenuPlugin : PluginDescriptor, IMigratablePlugin
                 .AddCommandTree()
                 .WithCommandGroup<RoleMenuCommands>()
                 .Finish()
-                .AddMediatR(s => s.RegisterServicesFromAssemblyContaining<RoleMenuContext>())
+                .AddMediatR(s => s.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()))
                 .AddDbContextFactory<RoleMenuContext>("RoleMenus")
                 .AddAutocompleteProvider<RoleMenuAutocompleteProvider>()
                 .AddInteractionGroup<RoleMenuComponentCommands>();
