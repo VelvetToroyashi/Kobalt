@@ -1,4 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Rest.Core;
 
@@ -7,6 +10,7 @@ namespace Kobalt.Plugins.Core.Data.Entities;
 /// <summary>
 /// Represents various settings related to anti-raid.
 /// </summary>
+[Table("guild_anti_raid_configs", Schema = KobaltContext.Schema)]
 public class GuildAntiRaidConfig
 {
     public int Id { get; set; }

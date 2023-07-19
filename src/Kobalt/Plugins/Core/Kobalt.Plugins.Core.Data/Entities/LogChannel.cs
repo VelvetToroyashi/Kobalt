@@ -1,10 +1,12 @@
-﻿using Kobalt.Shared.Types;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Kobalt.Shared.Types;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Remora.Rest.Core;
 
 namespace Kobalt.Plugins.Core.Data.Entities;
 
+[Table("log_channels", Schema = KobaltContext.Schema)]
 public class LogChannel
 {
     public int Id { get; set; }

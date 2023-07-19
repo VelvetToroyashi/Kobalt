@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="AngleSharp" Version="1.0.2-alpha-278" />
+      <PackageReference Include="AngleSharp" Version="1.0.4" />
       <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0-preview.1.23110.8" />
       <PackageReference Include="Remora.Results" Version="7.2.3" />
     </ItemGroup>

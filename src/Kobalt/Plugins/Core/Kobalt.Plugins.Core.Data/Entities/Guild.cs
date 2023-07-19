@@ -1,10 +1,10 @@
-﻿using JetBrains.Annotations;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using Remora.Rest.Core;
-using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
 namespace Kobalt.Plugins.Core.Data.Entities;
 
-[PublicAPI]
+[Table("guilds", Schema = KobaltContext.Schema)]
 public class Guild
 {
     /// <summary>

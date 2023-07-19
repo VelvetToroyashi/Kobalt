@@ -20,10 +20,10 @@
             <!-- By default uses current project framework; update if 'Kobalt' project framework changes -->
             <KobaltCoreProjectFramework>$(TargetFramework)</KobaltCoreProjectFramework>
 
-            <PluginOutputDir>$(RootPath)\.artifacts\bin\$(KobaltCoreProjectName)\$(Configuration)\plugins</PluginOutputDir>
+            <PluginOutputDir>$(RootPath)\artifacts\bin\$(KobaltCoreProjectName)\$(Configuration)\plugins</PluginOutputDir>
         </PropertyGroup>
 
         <Copy SourceFiles="@(PluginDlls)" DestinationFolder="$(PluginOutputDir)" SkipUnchangedFiles="true" />
-        <Message Text="Copied Plugin DLL to $(PluginOutputDir)" Importance="High" />
+        <Message Text="Copied Plugin DLL to $(PluginOutputDir)" Importance="High"  />
     </Target>
 </Project>

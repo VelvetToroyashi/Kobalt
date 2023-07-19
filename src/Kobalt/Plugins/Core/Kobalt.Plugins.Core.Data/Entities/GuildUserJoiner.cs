@@ -1,10 +1,12 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Remora.Rest.Core;
 
 namespace Kobalt.Plugins.Core.Data.Entities;
 
+[Table("guild_user_joiners", Schema = KobaltContext.Schema)]
 public class GuildUserJoiner
 {
     public int Id { get; set; }
