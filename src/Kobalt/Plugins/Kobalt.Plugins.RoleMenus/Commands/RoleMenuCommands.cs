@@ -478,7 +478,7 @@ public class RoleMenuCommands
         var rolesResult = await guilds.GetGuildRolesAsync(context.Interaction.GuildID.Value);
         var selfMemberResult = await guilds.GetGuildMemberAsync(context.Interaction.GuildID.Value, context.Interaction.ApplicationID);
 
-        if (rolesResult.IsDefined(out var roles) || selfMemberResult.IsDefined(out var selfMember))
+        if (!rolesResult.IsDefined(out var roles) || !selfMemberResult.IsDefined(out var selfMember))
         {
             return Result.FromError(rolesResult.Error ?? selfMemberResult.Error!);
         }
