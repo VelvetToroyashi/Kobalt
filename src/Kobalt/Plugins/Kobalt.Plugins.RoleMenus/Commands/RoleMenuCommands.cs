@@ -338,6 +338,7 @@ public class RoleMenuCommands
             new DeleteRoleMenuOption.Request
             (
                 role_menu_id,
+                context.Interaction.GuildID.Value,
                 role.ID
             )
         );
