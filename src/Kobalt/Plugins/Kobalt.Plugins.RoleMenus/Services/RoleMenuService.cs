@@ -68,6 +68,11 @@ public class RoleMenuService
             }
         }
 
+        if (!roleMenu.Options.Any())
+        {
+            return new InvalidOperationError("The role menu must have at least one option.");
+        }
+
         var content = string.IsNullOrWhiteSpace(roleMenu.Description) ? DefaultRoleMenuMessage : roleMenu.Description;
 
         var result = await channels.CreateMessageAsync

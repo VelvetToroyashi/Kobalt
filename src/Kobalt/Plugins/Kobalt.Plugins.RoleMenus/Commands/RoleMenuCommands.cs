@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Kobalt.Plugins.RoleMenus.Mediator;
+using Kobalt.Plugins.RoleMenus.Models;
 using Kobalt.Plugins.RoleMenus.Services;
 using MediatR;
 using Remora.Commands.Attributes;
@@ -23,10 +24,12 @@ public class RoleMenuCommands
 (
     IMediator mediator,
     RoleMenuService rolemenus,
+    IDiscordRestGuildAPI guilds,
     IDiscordRestChannelAPI channels,
     IDiscordRestInteractionAPI interactions,
     IInteractionCommandContext context,
     SlashService slashCommands
+    
 ) : CommandGroup
 {
     private readonly Snowflake _publishCommandID = slashCommands.CommandMap
@@ -252,6 +255,30 @@ public class RoleMenuCommands
             name = role.Name;
         }
         
+        var roleMenu = await mediator.Send(new GetRoleMenu.Request(role_menu_id, context.Interaction.GuildID.Value));
+
+        if (!roleMenu.IsSuccess)
+        {
+            await interactions.CreateFollowupMessageAsync
+            (
+                context.Interaction.ApplicationID,
+                context.Interaction.Token,
+                "I don't see a role menu with that ID, sorry."
+            );
+        }
+
+        var validateRoleResult = await EnsureValidRoleAsync(role, roleMenu.Entity.Options);
+
+        if (!validateRoleResult.IsSuccess)
+        {
+            return (Result)await interactions.CreateFollowupMessageAsync
+            (
+                context.Interaction.ApplicationID,
+                context.Interaction.Token,
+                validateRoleResult.Error!.Message
+            );
+        }
+        
         var addResult = await mediator.Send
         (
             new CreateRoleMenuOption.Request
@@ -265,36 +292,31 @@ public class RoleMenuCommands
             )
         );
 
-        if (addResult.IsSuccess)
+        if (!addResult.IsSuccess)
         {
-            var roleMenu = await mediator.Send(new GetRoleMenu.Request(role_menu_id, context.Interaction.GuildID.Value));
-
-            if (!roleMenu.IsSuccess)
-            {
-                await interactions.CreateFollowupMessageAsync
-                (
-                    context.Interaction.ApplicationID,
-                    context.Interaction.Token,
-                    $"(I was able to edit the option, but your role menu has gone missing. " +
-                    $"This is a bug in Kobalt, [please report it](<https://github.com/VelvetToroyashi/Kobalt/issues/new>).)"
-                );
-            }
-
-            await rolemenus.UpdateRoleMenuInitiatorAsync(roleMenu.Entity);
-            
-            var published = roleMenu.Entity.MessageID != 0;
-            var message = published
-                ? $"Done. View the changes [here](<https://discord.com/channels/{roleMenu.Entity.GuildID}/{roleMenu.Entity.ChannelID}/{roleMenu.Entity.MessageID}>)."
-                : $"Done. Publish the role menu with </role-menu publish:{_publishCommandID}>.";
-            
             await interactions.CreateFollowupMessageAsync
             (
                 context.Interaction.ApplicationID,
                 context.Interaction.Token,
-                message
+                addResult.Error!.Message
             );
+            return Result.FromSuccess();
         }
-        
+
+        await rolemenus.UpdateRoleMenuInitiatorAsync(roleMenu.Entity);
+            
+        var published = roleMenu.Entity.MessageID != 0;
+        var message = published
+            ? $"Done. View the changes [here](<https://discord.com/channels/{roleMenu.Entity.GuildID}/{roleMenu.Entity.ChannelID}/{roleMenu.Entity.MessageID}>)."
+            : $"Done. Publish the role menu with </role-menu publish:{_publishCommandID}>.";
+            
+        await interactions.CreateFollowupMessageAsync
+        (
+            context.Interaction.ApplicationID,
+            context.Interaction.Token,
+            message
+        );
+
         return Result.FromSuccess();
     }
     
@@ -303,6 +325,7 @@ public class RoleMenuCommands
     public async Task<Result> RemoveOptionAsync
     (
         [Description("The ID of the role menu to remove the role from.")]
+        [AutocompleteProvider(RoleMenuAutocompleteProvider.Identifier)]
         int role_menu_id,
         
         [Description("The role to remove.")]
@@ -429,6 +452,41 @@ public class RoleMenuCommands
                 context.Interaction.Token,
                 editResult.Error!.Message
             );
+        }
+        
+        return Result.FromSuccess();
+    }
+    
+    private async Task<Result> EnsureValidRoleAsync(IRole role, IEnumerable<RoleMenuOptionEntity> options)
+    {
+        if (options.Any(opt => opt.RoleID == role.ID))
+        {
+            return new InvalidOperationError("That role is already in the menu.");
+        }
+
+        if (role.ID == context.Interaction.GuildID)
+        {
+            return new InvalidOperationError("As much as I'd love to, everyone already has the @everyone role.");
+        }
+
+        if (role.IsManaged)
+        {
+            return new InvalidOperationError("That role is managed, meaning it's assigned automatically by Discord.");
+        }
+
+        var rolesResult = await guilds.GetGuildRolesAsync(context.Interaction.GuildID.Value);
+        var selfMemberResult = await guilds.GetGuildMemberAsync(context.Interaction.GuildID.Value, context.Interaction.ApplicationID);
+
+        if (rolesResult.IsDefined(out var roles) || selfMemberResult.IsDefined(out var selfMember))
+        {
+            return Result.FromError(rolesResult.Error ?? selfMemberResult.Error!);
+        }
+
+        var highestSelfRole = roles!.First(r => r.ID == selfMember!.Roles[^1]);
+        
+        if (role.Position >= highestSelfRole.Position)
+        {
+            return new InvalidOperationError("That role is higher than my highest role.");
         }
         
         return Result.FromSuccess();
