@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System.Reflection;
+using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Remora.Plugins;
@@ -20,7 +21,8 @@ public static class PluginHelper
     /// <returns>A result representing the outcome of the operation.</returns>
     public static Result LoadPlugins(IServiceCollection services)
     {
-        var pluginService = new PluginService(Options.Create(new PluginServiceOptions(new[] { "plugins" }, false)));
+        var assemblyFolder = Directory.GetParent(Assembly.GetEntryAssembly()!.Location)!.FullName;
+        var pluginService = new PluginService(Options.Create(new PluginServiceOptions(new[] { $"{assemblyFolder}/plugins" }, false)));
         
         var pluginTree = pluginService.LoadPluginTree();
         var configureResult = pluginTree.ConfigureServices(services);

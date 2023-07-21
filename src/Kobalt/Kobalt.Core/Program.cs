@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+using Kobalt.Core;
+using System.Reflection;
 using System.Text;
 using Kobalt.Core.Handlers;
 using Kobalt.Core.Services.Discord;
@@ -38,22 +39,24 @@ builder.Configuration
 
 builder.Services.AddSerilogLogging();
 
-
 ConfigureKobaltBotServices(builder.Configuration, builder.Services);
+
 var initResult = PluginHelper.LoadPlugins(builder.Services);
 
-if (!initResult.IsSuccess)
-{
-    Log.Fatal("Failed to load plugins: {Error}", initResult.Error);
-    return;
-}
+ if (!initResult.IsSuccess)
+ {
+     Log.Fatal("Failed to load plugins: {Error}", initResult.Error);
+     return;
+ }
 
 builder.WebHost.ConfigureKestrel(c => c.ListenLocalhost(builder.Configuration.GetKobaltConfig().ApiPort));
 builder.Host.AddStartupTaskSupport();
 
-var host = builder.Build();
+// Add services to the container.
+builder.Services.AddRazorComponents();
 
-initResult = await PluginHelper.InitializePluginsAsync(host.Services);
+var app = builder.Build();
+initResult = await PluginHelper.InitializePluginsAsync(app.Services);
 
 if (!initResult.IsSuccess)
 {
@@ -61,7 +64,21 @@ if (!initResult.IsSuccess)
     return;
 }
 
-host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper handler, IOptions<KobaltConfig> config) =>
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+
+app.MapRazorComponents<App>();
+
+app.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper handler, IOptions<KobaltConfig> config) =>
     {
         var hasHeaders = DiscordHeaders.TryExtractHeaders(ctx.Request.Headers, out var timestamp, out var signature);
         var body = await new StreamReader(ctx.Request.Body).ReadToEndAsync();
@@ -98,7 +115,7 @@ host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper ha
     }
 );
 
-await host.RunAsync();
+app.Run();
 
 void ConfigureRedis(IConfiguration config, IServiceCollection services)
 {

@@ -1,0 +1,49 @@
+@page "/plugins/{PluginName}/{*Slug}"
+
+@using Remora.Plugins
+@using Remora.Plugins.Abstractions
+
+@inject PluginTree Plugins;
+@inject IJSRuntime JsRuntime;
+
+<PluginRouter>
+    <Found Plugin="_plugin" RoutePath=@(Slug ?? "/")>
+    </Found>
+</PluginRouter>
+
+<!-- This file is taken from https://github.com/YumeChan-DT/YumeChan/tree/main/src/YumeChan.NetRunner/PluginRoute.razor -->
+
+@code
+{
+    [Parameter]
+    public string PluginName { get; set; }
+    
+    [Parameter]
+    public string Slug { get; set; }
+
+    private IPluginDescriptor? _pluginDescriptor;
+    
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        
+        var plugin = Plugins.Branches.FirstOrDefault(b => b.Plugin.Name.Equals(PluginName, StringComparison.OrdinalIgnoreCase));
+        
+        _pluginDescriptor = plugin?.Plugin;
+    }
+    
+    protected override bool ShouldRender() => false; // ?
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _pluginDescriptor is not null)
+        {
+            await JsRuntime.InvokeVoidAsync("setBase", $"/plugin/{PluginName}/");
+            await JsRuntime.InvokeVoidAsync("loadCss", "css/plugin.css");
+            await JsRuntime.InvokeVoidAsync("loadCss", $"{PluginName}.bundle.scp.css");
+            await JsRuntime.InvokeVoidAsync("loadJs", "js/plugin.js");
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}
