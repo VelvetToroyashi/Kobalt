@@ -23,10 +23,22 @@
                 <span class="bi bi-list-nested" aria-hidden="true"></span> Fetch data
             </NavLink>
         </div>
+        
+        @foreach(var node in PluginTree.Branches)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@GetSlugUrl(node)">
+                    <span class="by by-list-nested" aria-hidden="true"></span> @node.Plugin.Name
+                </NavLink>
+            </div>              
+        }
     </nav>
 </div>
 
 @code {
+
+    public string GetSlugUrl(PluginTreeNode node) => $"/plugins/{node.Plugin.Name}";
+    
     private bool collapseNavMenu = true;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
