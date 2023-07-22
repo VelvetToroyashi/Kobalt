@@ -37,7 +37,7 @@
 
 @code {
 
-    public string GetSlugUrl(PluginTreeNode node) => $"/plugins/{node.Plugin.Name}";
+    public string GetSlugUrl(PluginTreeNode node) => $"/plugin/{node.Plugin.GetType().Assembly.GetName().Name!}/";
     
     private bool collapseNavMenu = true;
 

@@ -5,13 +5,14 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using static Kobalt.Core.Blazor.LinkerFlags;
 
 namespace Kobalt.Core.Blazor;
 
 [DebuggerDisplay("Handler = {Handler}, Template = {Template}")]
 internal class RouteEntry
 {
-	public RouteEntry(RouteTemplate template, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type handler, List<string>? unusedRouteParameterNames)
+	public RouteEntry(RouteTemplate template, [DynamicallyAccessedMembers(Component)] Type handler, List<string>? unusedRouteParameterNames)
 	{
 		Template = template;
 		UnusedRouteParameterNames = unusedRouteParameterNames;
@@ -22,7 +23,7 @@ internal class RouteEntry
 
 	public List<string>? UnusedRouteParameterNames { get; }
 
-	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+	[DynamicallyAccessedMembers(Component)]
 	public Type Handler { get; }
 
 	internal void Match(RouteContext context)

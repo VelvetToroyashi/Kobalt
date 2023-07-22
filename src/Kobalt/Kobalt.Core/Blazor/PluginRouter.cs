@@ -8,6 +8,7 @@ using System.Runtime.ExceptionServices;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.Extensions.Logging;
 using Remora.Plugins.Abstractions;
 using RouteData = Microsoft.AspNetCore.Components.RouteData;
 

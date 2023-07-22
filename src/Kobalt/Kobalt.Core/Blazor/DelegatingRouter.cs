@@ -1,19 +1,24 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable warnings
 
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.Extensions.Logging;
 using RouteData = Microsoft.AspNetCore.Components.RouteData;
 
 namespace Kobalt.Core.Blazor;
 
+/// <summary>
+/// A component that supplies route data corresponding to the current navigation state.
+/// </summary>
 public class DelegatingRouter : IComponent, IHandleAfterRender, IDisposable
 {
-     private static readonly char[] _queryOrHashStartChar = { '?', '#' };
+    private static readonly char[] _queryOrHashStartChar = { '?', '#' };
     // Dictionary is intentionally used instead of ReadOnlyDictionary to reduce Blazor size
     private static readonly IReadOnlyDictionary<string, object> _emptyParametersDictionary
         = new Dictionary<string, object>();
@@ -126,7 +131,7 @@ public class DelegatingRouter : IComponent, IHandleAfterRender, IDisposable
             await RunOnNavigateAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute), isNavigationIntercepted: false);
         }
 
-        // Refresh(isNavigationIntercepted: false);
+        Refresh(isNavigationIntercepted: false);
     }
 
     /// <inheritdoc />
@@ -182,7 +187,7 @@ public class DelegatingRouter : IComponent, IHandleAfterRender, IDisposable
 
         if (context.Handler is not null)
         {
-            if (!typeof(IComponent).IsAssignableFrom((Type?)context.Handler))
+            if (!typeof(IComponent).IsAssignableFrom(context.Handler))
             {
                 throw new InvalidOperationException($"The type {context.Handler.FullName} does not implement {typeof(IComponent).FullName}.");
             }
@@ -200,7 +205,7 @@ public class DelegatingRouter : IComponent, IHandleAfterRender, IDisposable
         {
             if (!isNavigationIntercepted)
             {
-                //Log.DisplayingNotFound(_logger, locationPath, _baseUri);
+                Log.DisplayingNotFound(_logger, locationPath, _baseUri);
 
                 // We did not find a Component that matches the route.
                 // Only show the NotFound content if the application developer programatically got us here i.e we did not
@@ -209,7 +214,7 @@ public class DelegatingRouter : IComponent, IHandleAfterRender, IDisposable
             }
             else
             {
-                //Log.NavigatingToExternalUri(_logger, _locationAbsolute, locationPath, _baseUri);
+                Log.NavigatingToExternalUri(_logger, _locationAbsolute, locationPath, _baseUri);
                 NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
         }
@@ -309,5 +314,19 @@ public class DelegatingRouter : IComponent, IHandleAfterRender, IDisposable
         }
 
         return false;
+    }
+
+    private static class Log
+    {
+        private static readonly Action<ILogger, string, string, Exception> _displayingNotFound =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new(1, "DisplayingNotFound"), 
+                $"[HandoffRouter] Displaying {nameof(NotFound)} because path '{{Path}}' with base URI '{{BaseUri}}' does not match any component route.");
+
+        private static readonly Action<ILogger, string, string, string, Exception> _navigatingToExternalUri =
+            LoggerMessage.Define<string, string, string>(LogLevel.Debug, new(3, "NavigatingToExternalUri"), 
+                "[HandoffRouter] Navigating to non-component URI '{ExternalUri}' in response to path '{Path}' with base URI '{BaseUri}'");
+
+        internal static void DisplayingNotFound(ILogger logger, string path, string baseUri) => _displayingNotFound(logger, path, baseUri, null);
+        internal static void NavigatingToExternalUri(ILogger logger, string externalUri, string path, string baseUri) => _navigatingToExternalUri(logger, externalUri, path, baseUri, null);
     }
 }

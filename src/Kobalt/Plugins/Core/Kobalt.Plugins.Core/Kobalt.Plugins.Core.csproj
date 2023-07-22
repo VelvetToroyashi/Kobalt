@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
     <Import Project="..\..\Plugins.Common.tasks" />
 
     <PropertyGroup>
@@ -17,6 +17,9 @@
       <PackageReference Include="Remora.Plugins.Abstractions" Version="4.0.6" />
       <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
       <PackageReference Include="StackExchange.Redis" Version="2.6.122" />
+        <PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.4" />
     </ItemGroup>
 
     <ItemGroup>
@@ -26,5 +29,6 @@
       <ProjectReference Include="..\..\..\Kobalt.Infrastructure\Kobalt.Infrastructure.csproj" />
       <ProjectReference Include="..\..\..\Kobalt.Shared\Kobalt.Shared.csproj" />
     </ItemGroup>
+
 
 </Project>

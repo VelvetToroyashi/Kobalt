@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using static Kobalt.Core.Blazor.LinkerFlags;
+
 namespace Kobalt.Core.Blazor;
 
 internal class RouteContext
@@ -22,7 +24,7 @@ internal class RouteContext
 
     public string[] Segments { get; }
 
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+    [DynamicallyAccessedMembers(Component)]
     public Type? Handler { get; set; }
 
     public IReadOnlyDictionary<string, object>? Parameters { get; set; }

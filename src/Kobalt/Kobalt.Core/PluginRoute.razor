@@ -1,14 +1,29 @@
-@page "/plugins/{PluginName}/{*Slug}"
-
 @using Remora.Plugins
 @using Remora.Plugins.Abstractions
+@using Kobalt.Core.Blazor
 
 @inject PluginTree Plugins;
 @inject IJSRuntime JsRuntime;
 
-<PluginRouter>
-    <Found Plugin="_plugin" RoutePath=@(Slug ?? "/")>
+@page "/plugin/{PluginName}/{*PathSlug}"
+@page "/p/{PluginName}/{*PathSlug}"
+
+<PluginRouter Plugin=@_pluginDescriptor RoutePath=@(PathSlug ?? "/")>
+    <Found Context="routeData">
+        <RouteView RouteData=routeData />
     </Found>
+    
+    <NotFound>
+        @if (PathSlug is null)
+        {
+            <h1>Sorry! This plugin doesn't have a configuration.</h1>
+        }
+        else
+        {
+            <h3>Sorry, but there's nothing here.</h3>
+        }
+        
+    </NotFound>
 </PluginRouter>
 
 <!-- This file is taken from https://github.com/YumeChan-DT/YumeChan/tree/main/src/YumeChan.NetRunner/PluginRoute.razor -->
@@ -16,10 +31,10 @@
 @code
 {
     [Parameter]
-    public string PluginName { get; set; }
+    public string? PluginName { get; set; }
     
     [Parameter]
-    public string Slug { get; set; }
+    public string? PathSlug { get; set; }
 
     private IPluginDescriptor? _pluginDescriptor;
     
@@ -27,7 +42,7 @@
     {
         base.OnParametersSet();
         
-        var plugin = Plugins.Branches.FirstOrDefault(b => b.Plugin.Name.Equals(PluginName, StringComparison.OrdinalIgnoreCase));
+        var plugin = Plugins.Branches.FirstOrDefault(b => b.Plugin.GetType().Assembly.GetName().Name!.Equals(PluginName, StringComparison.OrdinalIgnoreCase));
         
         _pluginDescriptor = plugin?.Plugin;
     }
