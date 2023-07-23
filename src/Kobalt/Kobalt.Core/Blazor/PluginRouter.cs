@@ -106,7 +106,7 @@ public class PluginRouter : IComponent, IHandleAfterRender, IDisposable
     public async Task SetParametersAsync(ParameterView parameters)
     {
         parameters.SetParameterProperties(this);
-
+        
         // Found content is mandatory, because even though we could use something like <RouteView ...> as a
         // reasonable default, if it's not declared explicitly in the template then people will have no way
         // to discover how to customize this (e.g., to add authorization).
@@ -114,20 +114,20 @@ public class PluginRouter : IComponent, IHandleAfterRender, IDisposable
         {
             throw new InvalidOperationException($"The {nameof(Router)} component requires a value for the parameter {nameof(Found)}.");
         }
-
+        
         // NotFound content is mandatory, because even though we could display a default message like "Not found",
         // it has to be specified explicitly so that it can also be wrapped in a specific layout
         if (NotFound == null)
         {
             throw new InvalidOperationException($"The {nameof(Router)} component requires a value for the parameter {nameof(NotFound)}.");
         }
-
+        
         if (!_onNavigateCalled)
         {
             _onNavigateCalled = true;
             await RunOnNavigateAsync(RoutePath, isNavigationIntercepted: false);
         }
-
+        
         Refresh(isNavigationIntercepted: false, RoutePath);
     }
 

@@ -9,6 +9,7 @@ using Kobalt.Infrastructure.Services;
 using Kobalt.Infrastructure.Types;
 using Kobalt.Reminders.API.Extensions;
 using Kobalt.Shared.Extensions;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -30,6 +31,7 @@ using RemoraHTTPInteractions.Extensions;
 using RemoraHTTPInteractions.Services;
 using Serilog;
 using StackExchange.Redis;
+using YumeChan.NetRunner.Infrastructure.Blazor;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +40,13 @@ builder.Configuration
        .AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
 builder.Services.AddSerilogLogging();
+
+builder.Services.AddSingleton<IComponentActivator, ComponentActivator>();
+
+var services = builder.Services;
+services.AddRazorPages();
+// services.AddServerSideBlazor();
+// services.AddHttpContextAccessor();
 
 ConfigureKobaltBotServices(builder.Configuration, builder.Services);
 
@@ -51,9 +60,6 @@ var initResult = PluginHelper.LoadPlugins(builder.Services);
 
 builder.WebHost.ConfigureKestrel(c => c.ListenLocalhost(builder.Configuration.GetKobaltConfig().ApiPort));
 builder.Host.AddStartupTaskSupport();
-
-// Add services to the container.
-builder.Services.AddRazorComponents();
 
 var app = builder.Build();
 initResult = await PluginHelper.InitializePluginsAsync(app.Services);

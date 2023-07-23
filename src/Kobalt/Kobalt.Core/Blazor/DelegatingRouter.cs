@@ -192,7 +192,7 @@ public class DelegatingRouter : IComponent, IHandleAfterRender, IDisposable
                 throw new InvalidOperationException($"The type {context.Handler.FullName} does not implement {typeof(IComponent).FullName}.");
             }
 
-            _logger.LogDebug("[HandoffRouter] Navigating to component {ComponentType} in response to path '{Path}' with base URI '{BaseUri}'. Current Handoff: {_currentHandoff}",
+            _logger.LogDebug("Navigating to component {ComponentType} in response to path '{Path}' with base URI '{BaseUri}'. Current Handoff: {_currentHandoff}",
                 context.Handler, locationPath, _baseUri, _currentHandoff
                 );
 

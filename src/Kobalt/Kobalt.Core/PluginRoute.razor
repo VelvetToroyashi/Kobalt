@@ -8,9 +8,9 @@
 @page "/plugin/{PluginName}/{*PathSlug}"
 @page "/p/{PluginName}/{*PathSlug}"
 
-<PluginRouter Plugin=@_pluginDescriptor RoutePath=@(PathSlug ?? "/")>
+<PluginRouter Plugin="@_pluginDescriptor" RoutePath=@(PathSlug ?? "/")>
     <Found Context="routeData">
-        <RouteView RouteData=routeData />
+        <RouteView RouteData="routeData" />
     </Found>
     
     <NotFound>
