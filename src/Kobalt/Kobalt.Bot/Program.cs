@@ -141,7 +141,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
         "Reminders",
         (s, c) =>
         {
-            var address = s.GetService<IConfiguration>()!["Plugins:Reminders:ApiUrl"] ??
+            var address = s.GetService<IConfiguration>()!["Kobalt:RemindersApiUrl"] ??
                           throw new KeyNotFoundException("The API url was not configured.");
 
             c.BaseAddress = new Uri(address);
