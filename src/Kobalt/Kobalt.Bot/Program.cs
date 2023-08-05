@@ -151,6 +151,8 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddAutocompleteProvider<ReminderAutoCompleteProvider>()
             .AddAutocompleteProvider<RoleMenuAutocompleteProvider>();
 
+    services.AddSingleton<RoleMenuService>();
+
     services.AddRabbitMQ();
     services.AddSingleton<ReminderAPIService>();
 
