@@ -53,28 +53,12 @@ builder.Configuration
 
 builder.Services.AddSerilogLogging();
 
-
 ConfigureKobaltBotServices(builder.Configuration, builder.Services);
-var initResult = PluginHelper.LoadPlugins(builder.Services);
-
-if (!initResult.IsSuccess)
-{
-    Log.Fatal("Failed to load plugins: {Error}", initResult.Error);
-    return;
-}
 
 builder.WebHost.ConfigureKestrel(c => c.ListenLocalhost(builder.Configuration.GetKobaltConfig().ApiPort));
 builder.Host.AddStartupTaskSupport();
 
 var host = builder.Build();
-
-initResult = await PluginHelper.InitializePluginsAsync(host.Services);
-
-if (!initResult.IsSuccess)
-{
-    Log.Fatal("Failed to initialize plugins: {Error}", initResult.Error);
-    return;
-}
 
 host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper handler, IOptions<KobaltConfig> config) =>
     {
