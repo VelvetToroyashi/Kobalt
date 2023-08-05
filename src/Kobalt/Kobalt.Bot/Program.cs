@@ -226,6 +226,8 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     );
 }
 
+// TODO: Make these optional?
+
 void AddInfractionServices(IServiceCollection services)
 {
     services.AddHttpClient
@@ -233,7 +235,7 @@ void AddInfractionServices(IServiceCollection services)
         "Infractions",
         (s, c) =>
         {
-            var address = s.GetService<IConfiguration>()!["Plugins:Core:InfractionsApiUrl"] ??
+            var address = s.GetService<IConfiguration>()!["Kobalt:InfractionsApiUrl"] ??
                           throw new KeyNotFoundException("The Phishing API url was not configured.");
 
             c.BaseAddress = new Uri(address);
@@ -250,7 +252,7 @@ void AddPhishingServices(IServiceCollection services)
         "Phishing",
         (s, c) =>
         {
-            var address = s.GetService<IConfiguration>()!["Plugins:Core:PhishingApiUrl"] ??
+            var address = s.GetService<IConfiguration>()!["Kobalt:PhishingApiUrl"] ??
                           throw new KeyNotFoundException("The Phishing API url was not configured.");
 
             c.BaseAddress = new Uri(address);
