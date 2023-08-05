@@ -1,11 +1,10 @@
-﻿using Kobalt.Infractions.Data;
-using Kobalt.Infractions.Data.Entities;
-using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
+﻿using Kobalt.Infractions.Data.Entities;
+using Kobalt.Infractions.Shared.DTOs;
 using Kobalt.Infractions.Shared.Payloads;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kobalt.Infractions.Infrastructure.Mediator.Mediator;
+namespace Kobalt.Infractions.Data.MediatR;
 
 // PUT /infractions/guilds/{guildID}
 public record BulkAddInfractionsForGuildRequest(ulong GuildID, IReadOnlyList<InfractionCreatePayload> Infractions)

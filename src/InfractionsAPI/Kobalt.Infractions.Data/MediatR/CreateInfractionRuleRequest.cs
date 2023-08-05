@@ -1,13 +1,12 @@
-﻿using Kobalt.Infractions.Data;
-using Kobalt.Infractions.Data.Entities;
-using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
-using Kobalt.Infractions.Infrastructure.Mediator.Errors;
+﻿using Kobalt.Infractions.Data.Entities;
 using Kobalt.Infractions.Shared;
+using Kobalt.Infractions.Shared.DTOs;
+using Kobalt.Infractions.Shared.Errors;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
-namespace Kobalt.Infractions.Infrastructure.Mediator;
+namespace Kobalt.Infractions.Data.MediatR;
 
 // POST /infractions/guilds/{guildID}/rules
 public record CreateInfractionRuleRequest

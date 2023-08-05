@@ -1,9 +1,8 @@
-﻿using Kobalt.Infractions.Data;
-using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
+﻿using Kobalt.Infractions.Shared.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kobalt.Infractions.Infrastructure.Mediator.Mediator;
+namespace Kobalt.Infractions.Data.MediatR;
 
 // GET /infractions/guilds/{guildID}/users/{userID}
 public record GetInfractionsForUserRequest(ulong GuildID, ulong UserID) : IRequest<IEnumerable<InfractionDTO>>;

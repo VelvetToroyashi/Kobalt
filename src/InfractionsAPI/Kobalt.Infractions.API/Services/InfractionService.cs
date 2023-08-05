@@ -1,11 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading.Channels;
-using Kobalt.Infractions.Data.Mediator;
-using Kobalt.Infractions.Infrastructure.Interfaces;
-using Kobalt.Infractions.Infrastructure.Mediator;
-using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
-using Kobalt.Infractions.Infrastructure.Mediator.Mediator;
+using Kobalt.Infractions.Data.MediatR;
 using Kobalt.Infractions.Shared;
+using Kobalt.Infractions.Shared.DTOs;
+using Kobalt.Infractions.Shared.Interfaces;
 using MassTransit;
 using MediatR;
 using Remora.Rest.Core;

@@ -1,5 +1,5 @@
-﻿using Kobalt.Infrastructure.DTOs.Reminders;
-using Kobalt.Reminders.Data.Entities;
+﻿using Kobalt.Reminders.Data.Entities;
+using Kobalt.Shared.DTOs.Reminders;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,7 +1,7 @@
 ﻿using Kobalt.Infrastructure.Types;
 using Microsoft.Extensions.Configuration;
 
-namespace Kobalt.Reminders.API.Extensions;
+namespace Kobalt.Infrastructure.Extensions;
 
 public static class IConfigurationExtensions
 {

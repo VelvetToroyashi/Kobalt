@@ -1,9 +1,8 @@
-﻿using Kobalt.Infractions.Data;
-using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
+﻿using Kobalt.Infractions.Shared.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kobalt.Infractions.Infrastructure.Mediator;
+namespace Kobalt.Infractions.Data.MediatR;
 
 public record GetGuildInfractionRulesRequest(ulong GuildID) : IRequest<IEnumerable<InfractionRuleDTO>>;
 

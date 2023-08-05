@@ -1,7 +1,6 @@
-﻿using Kobalt.Infractions.Shared;
-using Remora.Results;
+﻿using Remora.Results;
 
-namespace Kobalt.Infractions.Infrastructure.Mediator.Errors;
+namespace Kobalt.Infractions.Shared.Errors;
 
 public record RuleAlreadyExistsError(int MatchCount, InfractionType Type)
 : ResultError($"A rule already matches {Type} with {MatchCount} matches.");

@@ -1,4 +1,4 @@
-﻿namespace Kobalt.Infrastructure.DTOs.Reminders;
+﻿namespace Kobalt.Shared.DTOs.Reminders;
 
 /// <summary>
 /// Represents the return result of creating a reminder.

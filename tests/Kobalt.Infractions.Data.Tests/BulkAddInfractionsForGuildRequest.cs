@@ -1,6 +1,6 @@
 ﻿using DotNet.Testcontainers.Builders;
 using Kobalt.Infractions.Data.Entities;
-using Kobalt.Infractions.Infrastructure.Mediator.Mediator;
+using Kobalt.Infractions.Data.MediatR;
 using Kobalt.Infractions.Shared;
 using Kobalt.Infractions.Shared.Payloads;
 using Microsoft.EntityFrameworkCore;
