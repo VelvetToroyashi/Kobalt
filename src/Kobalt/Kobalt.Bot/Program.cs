@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
+﻿using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using Kobalt.Bot.Autocomplete;
@@ -16,14 +13,9 @@ using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Services;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Polly;
 using Remora.Commands.Extensions;
@@ -31,7 +23,6 @@ using Remora.Discord.API.Abstractions.Gateway.Commands;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Gateway.Commands;
-using Remora.Discord.API.Objects;
 using Remora.Discord.Caching.Extensions;
 using Remora.Discord.Caching.Redis.Extensions;
 using Remora.Discord.Commands.Extensions;
@@ -44,6 +35,7 @@ using RemoraHTTPInteractions.Extensions;
 using RemoraHTTPInteractions.Services;
 using Serilog;
 using StackExchange.Redis;
+using Activity = Remora.Discord.API.Objects.Activity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -184,6 +176,23 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
             }
 
             cache.Set(CacheKey, result.Entity);
+        }
+    );
+
+    services.AddStartupTask
+    (
+        async provider =>
+        {
+            var logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger("Kobalt");
+            logger.LogInformation("Migrating Database");
+
+            var now = Stopwatch.GetTimestamp();
+            
+            await using var db = provider.GetRequiredService<IDbContextFactory<KobaltContext>>().CreateDbContext();
+
+            await db.Database.MigrateAsync();
+            
+            logger.LogInformation("Migrated DB successfully in {TimeMs:N0} ms", Stopwatch.GetElapsedTime(now).TotalMilliseconds);
         }
     );
 
