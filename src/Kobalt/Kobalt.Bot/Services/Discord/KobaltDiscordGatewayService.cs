@@ -1,9 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Kobalt.Infrastructure.Types;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+﻿using Kobalt.Infrastructure.Types;
 using Microsoft.Extensions.Options;
 using Remora.Discord.Commands.Services;
 using Remora.Discord.Gateway;

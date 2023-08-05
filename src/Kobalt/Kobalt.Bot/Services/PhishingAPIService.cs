@@ -1,9 +1,5 @@
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Humanizer;
 using Kobalt.Phishing.Shared.Models;
 using Kobalt.Shared.Extensions;

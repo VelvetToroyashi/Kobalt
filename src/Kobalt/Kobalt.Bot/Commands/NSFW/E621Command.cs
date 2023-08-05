@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types.Booru;
 using Remora.Commands.Attributes;

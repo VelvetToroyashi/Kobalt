@@ -1,5 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Humanizer;
 using Kobalt.Bot.Services;
 using Remora.Discord.API.Abstractions.Gateway.Events;

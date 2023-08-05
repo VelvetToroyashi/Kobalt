@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using FuzzySharp;
+﻿using FuzzySharp;
 using Humanizer;
 using Humanizer.Localisation;
 using Kobalt.Bot.Services;

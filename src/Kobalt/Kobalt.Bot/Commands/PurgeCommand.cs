@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Threading.Tasks;
 using Kobalt.Bot.Services;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;

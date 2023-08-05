@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using Kobalt.Bot.Data.MediatR;
 using Kobalt.Shared.Services;
 using MediatR;

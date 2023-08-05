@@ -1,10 +1,6 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Kobalt.Bot.Data.Entities.RoleMenus;
 using Kobalt.Bot.Data.MediatR.RoleMenus;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;

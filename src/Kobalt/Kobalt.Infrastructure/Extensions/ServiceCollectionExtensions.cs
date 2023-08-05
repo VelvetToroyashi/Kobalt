@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using Kobalt.Infrastructure.Parsers;
 using Kobalt.Infrastructure.Types;
 using Microsoft.Extensions.DependencyInjection;

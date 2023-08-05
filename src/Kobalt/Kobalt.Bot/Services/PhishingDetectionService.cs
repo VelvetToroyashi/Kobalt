@@ -1,5 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Kobalt.Bot.Data.Entities;
 using Kobalt.Bot.Data.MediatR.Guilds;
 using Kobalt.Infractions.Shared;

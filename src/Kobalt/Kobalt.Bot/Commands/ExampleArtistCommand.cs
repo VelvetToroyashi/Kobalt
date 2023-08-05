@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Remora.Commands.Attributes;
+﻿using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;

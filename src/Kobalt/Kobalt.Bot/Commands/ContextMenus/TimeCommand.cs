@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Threading.Tasks;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.MediatR.Users;
 using Kobalt.Shared.Results;

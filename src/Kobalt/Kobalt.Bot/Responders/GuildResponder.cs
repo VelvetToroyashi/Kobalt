@@ -1,5 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Kobalt.Bot.Data.MediatR.Guilds;
 using MediatR;
 using Remora.Discord.API.Abstractions.Gateway.Events;
