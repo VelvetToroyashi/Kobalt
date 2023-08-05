@@ -55,13 +55,13 @@ public class PurgeCommand(IInteractionContext context, IDiscordRestInteractionAP
         }
         else if (!string.IsNullOrEmpty(regex))
         {
-            result = await purgeService.PurgeByRegexAsync(channel?.ID ?? context.Interaction.ChannelID.Value, amount, regex, reason);
+            result = await purgeService.PurgeByRegexAsync(channel?.ID ?? context.Interaction.Channel.Value.ID.Value, amount, regex, reason);
         }
         else
         {
             result = await purgeService.PurgeByChannelAsync
             (
-                channel?.ID ?? context.Interaction.ChannelID.Value,
+                channel?.ID ?? context.Interaction.Channel.Value.ID.Value,
                 around,
                 before,
                 after,

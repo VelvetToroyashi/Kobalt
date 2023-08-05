@@ -401,7 +401,7 @@ public class ModerationCommands : CommandGroup
 
         return (Result)await _feedback.SendPaginatedMessageAsync
         (
-            _context.Interaction.ChannelID.Value,
+            _context.Interaction.Channel.Value.ID.Value,
             _context.Interaction.Member.Map(m => m.User).OrDefault(_context.Interaction.User).Value.ID,
             embeds
         );
