@@ -1,9 +1,9 @@
-﻿using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
+﻿using Kobalt.Infractions.Shared.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
-namespace Kobalt.Infractions.Data.Mediator;
+namespace Kobalt.Infractions.Data.MediatR;
 
 // GET /infractions/guilds/{guildID}/{id}
 /// <summary>

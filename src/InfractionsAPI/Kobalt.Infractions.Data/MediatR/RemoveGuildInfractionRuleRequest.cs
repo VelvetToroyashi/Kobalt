@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
-namespace Kobalt.Infractions.Data.Mediator;
+namespace Kobalt.Infractions.Data.MediatR;
 
 public record RemoveGuildInfractionRuleRequest(int Id, ulong GuildID) : IRequest<Result>;
 

@@ -1,9 +1,8 @@
-﻿using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
-using Kobalt.Infractions.Shared;
+﻿using Kobalt.Infractions.Shared.DTOs;
 using Remora.Rest.Core;
 using Remora.Results;
 
-namespace Kobalt.Infractions.Infrastructure.Interfaces;
+namespace Kobalt.Infractions.Shared.Interfaces;
 
 public interface IInfractionService
 {

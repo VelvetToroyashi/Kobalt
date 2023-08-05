@@ -1,4 +1,4 @@
-﻿using Kobalt.Shared.Mediator.Users;
+﻿using Kobalt.Shared.MediatR.Users;
 using MediatR;
 using Microsoft.Recognizers.Text;
 using NodaTime;
@@ -37,7 +37,7 @@ public class ZonedDateTimeParser : AbstractTypeParser<ZonedDateTime>
             return new InvalidOperationError("Could not get user ID.");
         }
 
-        var userResult = await _mediator.Send(new GetUserRequest(userID.Value), ct);
+        var userResult = await _mediator.Send(new GetUserRequest(userID), ct);
 
         var offset = userResult.Entity?.Timezone ?? Offset.Zero;
         var extractionResult = ExtractDateTimeOffset(token, offset.ToTimeSpan());

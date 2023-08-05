@@ -1,12 +1,11 @@
-﻿using Kobalt.Infractions.Data;
-using Kobalt.Infractions.Data.Entities;
-using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
+﻿using Kobalt.Infractions.Data.Entities;
 using Kobalt.Infractions.Shared;
+using Kobalt.Infractions.Shared.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
-namespace Kobalt.Infractions.Infrastructure.Mediator;
+namespace Kobalt.Infractions.Data.MediatR;
 
 public record CreateInfractionRequest
 (

@@ -3,7 +3,7 @@ using MediatR;
 using Remora.Rest.Core;
 using Remora.Results;
 
-namespace Kobalt.Shared.Mediator.Users;
+namespace Kobalt.Shared.MediatR.Users;
 
 /// <summary>
 /// Requests a user.

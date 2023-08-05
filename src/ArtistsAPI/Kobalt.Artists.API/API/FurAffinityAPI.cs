@@ -1,7 +1,7 @@
 ﻿using AngleSharp;
 using Remora.Results;
 
-namespace Kobalt.Artists.API.Services;
+namespace Kobalt.Artists.API.API;
 
 public class FurAffinityParser
 {

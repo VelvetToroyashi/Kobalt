@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Kobalt.Infrastructure.DTOs.Reminders;
 using Kobalt.Reminders.API.Services;
 using Kobalt.Reminders.Data;
 using Kobalt.Reminders.Data.Mediator;
+using Kobalt.Shared.DTOs.Reminders;
 using Kobalt.Shared.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

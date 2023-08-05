@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <UserSecretsId>4d510d59-52c0-4034-b92e-b47cd01672cc</UserSecretsId>
+        <PackageId>Kobalt.Bot</PackageId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-preview.2.23128.3" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0-preview.2.23128.3" />
+      <PackageReference Include="Remora.Discord.Caching" Version="37.0.0" />
+      <PackageReference Include="Remora.Discord.Caching.Redis" Version="1.1.5" />
+      <PackageReference Include="Remora.Discord.Commands" Version="28.0.0" />
+      <PackageReference Include="Remora.Discord.Extensions" Version="5.3.2" />
+      <PackageReference Include="Remora.Discord.Gateway" Version="11.1.0" />
+      <PackageReference Include="Serilog" Version="3.0.1" />
+      <PackageReference Include="Serilog.Expressions" Version="3.4.2-dev-00119" />
+      <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="4.1.1-dev-00910" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0-preview.2.23128.3" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
+        <PackageReference Include="VTP.Remora.Discord.Builders" Version="1.0.2" />
+        <PackageReference Include="VTP.Remora.Discord.HTTPInteractions" Version="1.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\InfractionsAPI\Kobalt.Infractions.Shared\Kobalt.Infractions.Shared.csproj" />
+      <ProjectReference Include="..\..\PhishingAPI\Kobalt.Phishing.Shared\Kobalt.Phishing.Shared.csproj" />
+      <ProjectReference Include="..\Kobalt.Bot.Data\Kobalt.Bot.Data.csproj" />
+      <ProjectReference Include="..\Kobalt.Infrastructure\Kobalt.Infrastructure.csproj" />
+      <ProjectReference Include="..\Kobalt.Shared\Kobalt.Shared.csproj" />
+    </ItemGroup>
+
+
+
+
+</Project>

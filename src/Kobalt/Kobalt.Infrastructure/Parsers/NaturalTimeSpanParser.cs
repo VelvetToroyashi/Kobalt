@@ -1,4 +1,4 @@
-﻿using Kobalt.Shared.Mediator.Users;
+﻿using Kobalt.Shared.MediatR.Users;
 using MediatR;
 using Recognizers.Text.DateTime.Wrapper;
 using Recognizers.Text.DateTime.Wrapper.Models.BclDateTime;
@@ -29,7 +29,7 @@ public class NaturalTimeSpanParser : AbstractTypeParser<TimeSpan>
         }
 
         var refTime = DateTime.UtcNow;
-        var userResult = await _mediator.Send(new GetUserRequest(userID.Value));
+        var userResult = await _mediator.Send(new GetUserRequest(userID));
 
         if (userResult.IsSuccess)
         {

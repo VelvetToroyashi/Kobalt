@@ -1,6 +1,6 @@
 ﻿using Remora.Rest.Core;
 
-namespace Kobalt.Infrastructure.DTOs.Reminders;
+namespace Kobalt.Shared.DTOs.Reminders;
 
 /// <summary>
 /// Represents a reminder.

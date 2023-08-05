@@ -1,6 +1,6 @@
 <Project>
   <!-- See https://aka.ms/dotnet/msbuild/customize for more details on customizing your build -->
   <PropertyGroup>
-    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <UseArtifactsOutput>false</UseArtifactsOutput>
   </PropertyGroup>
 </Project>

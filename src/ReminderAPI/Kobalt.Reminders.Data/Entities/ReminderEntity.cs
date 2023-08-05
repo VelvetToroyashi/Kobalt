@@ -1,4 +1,4 @@
-﻿using Kobalt.Infrastructure.DTOs.Reminders;
+﻿using Kobalt.Shared.DTOs.Reminders;
 using Remora.Discord.API;
 
 namespace Kobalt.Reminders.Data.Entities;

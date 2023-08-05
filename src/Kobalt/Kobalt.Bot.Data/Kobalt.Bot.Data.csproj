@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>preview</LangVersion>
+        <Nullable>enable</Nullable>
+        <UserSecretsId>4f0e9cec-2c3d-45c7-ad5e-3bca50ab287c</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.9" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.9" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.9">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+      <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
+      <PackageReference Include="NodaTime" Version="3.1.9" />
+      <PackageReference Include="Remora.Rest.Core" Version="2.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Migrations\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\InfractionsAPI\Kobalt.Infractions.Shared\Kobalt.Infractions.Shared.csproj" />
+      <ProjectReference Include="..\Kobalt.Shared\Kobalt.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\InfractionsAPI\Kobalt.Infractions.Shared\Kobalt.Infractions.Shared.csproj" />
+      <ProjectReference Include="..\Kobalt.Shared\Kobalt.Shared.csproj" />
+    </ItemGroup>
+
+</Project>

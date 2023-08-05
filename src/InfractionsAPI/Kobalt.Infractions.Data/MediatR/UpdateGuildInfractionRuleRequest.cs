@@ -1,12 +1,11 @@
-﻿using Kobalt.Infractions.Data;
-using Kobalt.Infractions.Infrastructure.Mediator.DTOs;
-using Kobalt.Infractions.Shared;
+﻿using Kobalt.Infractions.Shared;
+using Kobalt.Infractions.Shared.DTOs;
 using Kobalt.Infractions.Shared.Payloads;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
-namespace Kobalt.Infractions.Infrastructure.Mediator;
+namespace Kobalt.Infractions.Data.MediatR;
 
 // PATCH /infractions/guilds/{guildID}/rules/{id}
 public record UpdateGuildInfractionRuleRequest(int Id, ulong GuildID, InfractionRuleUpdatePayload Update) : IRequest<Result<InfractionRuleDTO>>;

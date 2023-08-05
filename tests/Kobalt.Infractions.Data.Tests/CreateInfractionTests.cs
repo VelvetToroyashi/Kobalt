@@ -1,5 +1,5 @@
 ﻿using DotNet.Testcontainers.Builders;
-using Kobalt.Infractions.Infrastructure.Mediator;
+using Kobalt.Infractions.Data.MediatR;
 using Kobalt.Infractions.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

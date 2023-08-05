@@ -1,6 +1,4 @@
-﻿using Kobalt.Infractions.Shared;
-
-namespace Kobalt.Infractions.Infrastructure.Mediator.DTOs;
+﻿namespace Kobalt.Infractions.Shared.DTOs;
 
 /// <summary>
 /// Represents a match on an infraction rule.

@@ -1,5 +1,5 @@
-﻿using Kobalt.Infrastructure.DTOs.Reminders;
-using Kobalt.Reminders.Data.Mediator;
+﻿using Kobalt.Reminders.Data.Mediator;
+using Kobalt.Shared.DTOs.Reminders;
 using MassTransit;
 using MediatR;
 using Remora.Results;
