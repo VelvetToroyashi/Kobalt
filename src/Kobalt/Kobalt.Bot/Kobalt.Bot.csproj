@@ -26,7 +26,7 @@
         <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0-preview.2.23128.3" />
         <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
         <PackageReference Include="VTP.Remora.Discord.Builders" Version="1.0.2" />
-        <PackageReference Include="VTP.Remora.Discord.HTTPInteractions" Version="1.0.2" />
+        <PackageReference Include="VTP.Remora.Discord.HTTPInteractions" Version="1.0.3" />
     </ItemGroup>
 
     <ItemGroup>
