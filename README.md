@@ -24,15 +24,10 @@ You can acquire your bot token and public key from the [Discord Developer Dashbo
 
 ```json
 {
-  "Plugins": {
-    "Reminders":
-    {
-      "ApiUrl": "http://localhost:5010"
-    },
-    "Infractions":
-    {
-      "ApiUrl": "http://localhost:5020"
-    }
+  "Kobalt": {
+    "RemindersApiUrl": "http://localhost:5010",
+    "InfractionsApiUrl":"http://localhost:5020",
+    "PhishingApiUrl": "http://localhost:5030"
   },
   "ConnectionStrings": {
     "Kobalt": "Server=localhost;Database=kobalt;Username=kobalt;Password=kobalt;",
@@ -56,7 +51,7 @@ You can acquire your bot token and public key from the [Discord Developer Dashbo
     - [ ] Utility
         - [ ] ID Search/Info
         - [x] Reminders
-        - [ ] Role Menus
+        - [x] Role Menus
         - [x] Timezone/Timestamp helper
         - [x] Push-to-Talk (PTT) Threshold
 
