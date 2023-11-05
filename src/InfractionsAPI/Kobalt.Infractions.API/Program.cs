@@ -104,9 +104,9 @@ app.MapPatch("/infractions/guilds/{guildID}/{id}", async (ulong guildID, int id,
     return Results.Ok(infraction);
 });
 
-app.MapGet("/infractions/guilds/{guildID}/users/{id}", async (ulong guildID, ulong id, IMediator mediator) =>
+app.MapGet("/infractions/guilds/{guildID}/users/{id}", async (ulong guildID, ulong id, [FromQuery(Name = "with_pardons")] bool includePardons, IMediator mediator) =>
 {
-    var result = await mediator.Send(new GetInfractionsForUserRequest(guildID, id));
+    var result = await mediator.Send(new GetInfractionsForUserRequest(guildID, id, includePardons));
 
     var infractions = result.ToArray();
 

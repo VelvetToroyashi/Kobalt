@@ -22,32 +22,17 @@ namespace Kobalt.Bot.Commands;
 [RequireContext(ChannelContext.Guild)]
 [RequireDiscordPermission(DiscordPermission.ManageRoles, DiscordPermission.KickMembers)]
 [RequireBotDiscordPermissions(DiscordPermission.BanMembers, DiscordPermission.ModerateMembers)]
-public class ModerationCommands : CommandGroup
+public class ModerationCommands
+(
+    FeedbackService feedback,
+    IDiscordRestUserAPI users,
+    IInteractionContext context,
+    InfractionAPIService apiService,
+    IDiscordRestInteractionAPI interactions
+) : CommandGroup
 {
     private const string UnknownUser = "@unknown.user";
     private const string UnknownUserID = "000000000000000000";
-
-    private readonly FeedbackService _feedback;
-    private readonly IDiscordRestUserAPI _users;
-    private readonly IInteractionContext _context;
-    private readonly InfractionAPIService _apiService;
-    private readonly IDiscordRestInteractionAPI _interactions;
-
-    public ModerationCommands
-    (
-        FeedbackService feedback,
-        IDiscordRestUserAPI users,
-        IInteractionContext context,
-        InfractionAPIService apiService,
-        IDiscordRestInteractionAPI interactions
-    )
-    {
-        _feedback = feedback;
-        _users = users;
-        _context = context;
-        _apiService = apiService;
-        _interactions = interactions;
-    }
 
 
     [Command("kick")]
@@ -63,19 +48,19 @@ public class ModerationCommands : CommandGroup
         string reason = "Not Given."
     )
     {
-        var result = await _apiService.AddUserKickAsync(_context.Interaction.GuildID.Value, target, _context.Interaction.Member.Value.User.Value, reason);
+        var result = await apiService.AddUserKickAsync(context.Interaction.GuildID.Value, target, context.Interaction.Member.Value.User.Value, reason);
 
         if (!result.IsSuccess)
         {
             return result;
         }
 
-        await _apiService.TryEscalateInfractionAsync(_context.Interaction.GuildID.Value, target);
+        await apiService.TryEscalateInfractionAsync(context.Interaction.GuildID.Value, target);
 
-        return (Result)await _interactions.EditOriginalInteractionResponseAsync
+        return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
-            _context.Interaction.ApplicationID,
-            _context.Interaction.Token,
+            context.Interaction.ApplicationID,
+            context.Interaction.Token,
             "User kicked successfully."
         );
     }
@@ -102,19 +87,19 @@ public class ModerationCommands : CommandGroup
         TimeSpan? delete = null
     )
     {
-        var result = await _apiService.AddUserBanAsync(_context.Interaction.GuildID.Value, target, _context.Interaction.Member.Value.User.Value, reason, duration, delete);
+        var result = await apiService.AddUserBanAsync(context.Interaction.GuildID.Value, target, context.Interaction.Member.Value.User.Value, reason, duration, delete);
 
         if (!result.IsSuccess)
         {
             return result;
         }
 
-        await _apiService.TryEscalateInfractionAsync(_context.Interaction.GuildID.Value, target);
+        await apiService.TryEscalateInfractionAsync(context.Interaction.GuildID.Value, target);
 
-        return (Result)await _interactions.EditOriginalInteractionResponseAsync
+        return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
-            _context.Interaction.ApplicationID,
-            _context.Interaction.Token,
+            context.Interaction.ApplicationID,
+            context.Interaction.Token,
             "User banned successfully."
         );
     }
@@ -136,19 +121,19 @@ public class ModerationCommands : CommandGroup
         string reason = "Not Given."
     )
     {
-        var result = await _apiService.AddUserMuteAsync(_context.Interaction.GuildID.Value, target, _context.Interaction.Member.Value.User.Value, reason, duration);
+        var result = await apiService.AddUserMuteAsync(context.Interaction.GuildID.Value, target, context.Interaction.Member.Value.User.Value, reason, duration);
 
         if (!result.IsSuccess)
         {
             return result;
         }
 
-        await _apiService.TryEscalateInfractionAsync(_context.Interaction.GuildID.Value, target);
+        await apiService.TryEscalateInfractionAsync(context.Interaction.GuildID.Value, target);
 
-        return (Result)await _interactions.EditOriginalInteractionResponseAsync
+        return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
-            _context.Interaction.ApplicationID,
-            _context.Interaction.Token,
+            context.Interaction.ApplicationID,
+            context.Interaction.Token,
             "User muted successfully."
         );
     }
@@ -166,19 +151,19 @@ public class ModerationCommands : CommandGroup
         string reason = "Not Given."
     )
     {
-        var result = await _apiService.AddUserStrikeAsync(_context.Interaction.GuildID.Value, target, _context.Interaction.Member.Value.User.Value, reason);
+        var result = await apiService.AddUserStrikeAsync(context.Interaction.GuildID.Value, target, context.Interaction.Member.Value.User.Value, reason);
 
         if (!result.IsSuccess)
         {
             return result;
         }
 
-        await _apiService.TryEscalateInfractionAsync(_context.Interaction.GuildID.Value, target);
+        await apiService.TryEscalateInfractionAsync(context.Interaction.GuildID.Value, target);
 
-        return (Result)await _interactions.EditOriginalInteractionResponseAsync
+        return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
-            _context.Interaction.ApplicationID,
-            _context.Interaction.Token,
+            context.Interaction.ApplicationID,
+            context.Interaction.Token,
             "User warned successfully."
         );
     }
@@ -199,17 +184,17 @@ public class ModerationCommands : CommandGroup
         int? caseID = null
     )
     {
-        var result = await _apiService.AddUserNoteAsync(_context.Interaction.GuildID.Value, target, _context.Interaction.Member.Value.User.Value, reason);
+        var result = await apiService.AddUserNoteAsync(context.Interaction.GuildID.Value, target, context.Interaction.Member.Value.User.Value, reason);
 
         if (!result.IsSuccess)
         {
             return result;
         }
 
-        return (Result)await _interactions.EditOriginalInteractionResponseAsync
+        return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
-            _context.Interaction.ApplicationID,
-            _context.Interaction.Token,
+            context.Interaction.ApplicationID,
+            context.Interaction.Token,
             "I've recorded your note."
         );
     }
@@ -227,17 +212,17 @@ public class ModerationCommands : CommandGroup
         string reason = "Not Given."
     )
     {
-        var result = await _apiService.AddUserUnbanAsync(_context.Interaction.GuildID.Value, target, _context.Interaction.Member.Value.User.Value, reason);
+        var result = await apiService.AddUserUnbanAsync(context.Interaction.GuildID.Value, target, context.Interaction.Member.Value.User.Value, reason);
 
         if (!result.IsSuccess)
         {
             return result;
         }
 
-        return (Result)await _interactions.EditOriginalInteractionResponseAsync
+        return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
-            _context.Interaction.ApplicationID,
-            _context.Interaction.Token,
+            context.Interaction.ApplicationID,
+            context.Interaction.Token,
             "User un-banned successfully."
         );
     }
@@ -255,17 +240,17 @@ public class ModerationCommands : CommandGroup
         string reason = "Not Given."
     )
     {
-        var result = await _apiService.UnmuteAsync(_context.Interaction.GuildID.Value, target, _context.Interaction.Member.Value.User.Value, reason);
+        var result = await apiService.UnmuteAsync(context.Interaction.GuildID.Value, target, context.Interaction.Member.Value.User.Value, reason);
 
         if (!result.IsSuccess)
         {
             return result;
         }
 
-        return (Result)await _interactions.EditOriginalInteractionResponseAsync
+        return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
-            _context.Interaction.ApplicationID,
-            _context.Interaction.Token,
+            context.Interaction.ApplicationID,
+            context.Interaction.Token,
             "User un-muted successfully."
         );
     }
@@ -282,17 +267,17 @@ public class ModerationCommands : CommandGroup
         string reason = "Not Given."
     )
     {
-        var result = await _apiService.PardonAsync(_context.Interaction.GuildID.Value, _context.Interaction.Member.Value.User.Value, reason, caseID);
+        var result = await apiService.PardonAsync(context.Interaction.GuildID.Value, context.Interaction.Member.Value.User.Value, reason, caseID);
 
         if (!result.IsSuccess)
         {
             return result;
         }
 
-        return (Result)await _interactions.EditOriginalInteractionResponseAsync
+        return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
-            _context.Interaction.ApplicationID,
-            _context.Interaction.Token,
+            context.Interaction.ApplicationID,
+            context.Interaction.Token,
             "User un-muted successfully."
         );
     }
@@ -306,20 +291,20 @@ public class ModerationCommands : CommandGroup
         int caseID
     )
     {
-        var result = await _apiService.GetUserCaseAsync(_context.Interaction.GuildID.Value, caseID);
+        var result = await apiService.GetUserCaseAsync(context.Interaction.GuildID.Value, caseID);
 
         if (!result.IsDefined(out var infraction))
         {
-            return (Result)await _interactions.EditOriginalInteractionResponseAsync
+            return (Result)await interactions.EditOriginalInteractionResponseAsync
             (
-                _context.Interaction.ApplicationID,
-                _context.Interaction.Token,
+                context.Interaction.ApplicationID,
+                context.Interaction.Token,
                 "I couldn't find that case."
             );
         }
 
-        var moderatorResult = await _users.GetUserAsync(new Snowflake(infraction.ModeratorID));
-        var targetResult = await _users.GetUserAsync(new Snowflake(infraction.UserID));
+        var moderatorResult = await users.GetUserAsync(new Snowflake(infraction.ModeratorID));
+        var targetResult = await users.GetUserAsync(new Snowflake(infraction.UserID));
 
         var (moderatorID, moderatorTag) = moderatorResult.IsDefined(out var moderator)
             ? (moderator.ID.ToString(), moderator.DiscordTag())
@@ -346,10 +331,10 @@ public class ModerationCommands : CommandGroup
             }
         };
 
-        return (Result)await _interactions.EditOriginalInteractionResponseAsync
+        return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
-            _context.Interaction.ApplicationID,
-            _context.Interaction.Token,
+            context.Interaction.ApplicationID,
+            context.Interaction.Token,
             embeds: new[] { embed }
         );
     }
@@ -360,18 +345,22 @@ public class ModerationCommands : CommandGroup
     (
         [Option("user")]
         [Description("The user to view cases for.")]
-        IUser target
+        IUser target,
+                
+        [Option("include_pardons")]
+        [Description("Whether to include padons, unbans, and unmutes in the log.")]
+        bool includePardons
     )
     {
-        var result = await _apiService.GetUserCasesAsync(_context.Interaction.GuildID.Value, target.ID);
+        var result = await apiService.GetUserCasesAsync(context.Interaction.GuildID.Value, target.ID, includePardons);
 
         if (!result.IsDefined(out var infractions))
         {
-            return (Result)await _interactions.EditOriginalInteractionResponseAsync
+            return (Result)await interactions.EditOriginalInteractionResponseAsync
             (
-                _context.Interaction.ApplicationID,
-                _context.Interaction.Token,
-                "That user's history is squaky clean."
+                context.Interaction.ApplicationID,
+                context.Interaction.Token,
+                "That user's history is squeaky clean."
             );
         }
 
@@ -391,18 +380,18 @@ public class ModerationCommands : CommandGroup
 
         if (embeds.Length is 1)
         {
-            return (Result)await _interactions.EditOriginalInteractionResponseAsync
+            return (Result)await interactions.EditOriginalInteractionResponseAsync
             (
-                _context.Interaction.ApplicationID,
-                _context.Interaction.Token,
+                context.Interaction.ApplicationID,
+                context.Interaction.Token,
                 embeds: embeds
             );
         }
 
-        return (Result)await _feedback.SendPaginatedMessageAsync
+        return (Result)await feedback.SendPaginatedMessageAsync
         (
-            _context.Interaction.Channel.Value.ID.Value,
-            _context.Interaction.Member.Map(m => m.User).OrDefault(_context.Interaction.User).Value.ID,
+            context.Interaction.Channel.Value.ID.Value,
+            context.Interaction.Member.Map(m => m.User).OrDefault(context.Interaction.User).Value.ID,
             embeds
         );
 

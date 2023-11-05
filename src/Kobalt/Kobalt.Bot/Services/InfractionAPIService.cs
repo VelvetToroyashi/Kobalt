@@ -338,12 +338,13 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     /// </summary>
     /// <param name="guildID">The ID of the guild to request infractions for.</param>
     /// <param name="userID">The ID fo the user to request infractions for.</param>
+    /// <param name="includePardons"></param>
     /// <returns>The user's infractions, if any.</returns>
-    public async Task<Result<IReadOnlyList<InfractionDTO>>> GetUserCasesAsync(Snowflake guildID, Snowflake userID)
+    public async Task<Result<IReadOnlyList<InfractionDTO>>> GetUserCasesAsync(Snowflake guildID, Snowflake userID, bool includePardons)
     {
         var getInfractionsResult = await ResultExtensions.TryCatchAsync
         (
-            () => _client.GetFromJsonAsync<IEnumerable<InfractionDTO>>($"infractions/guilds/{guildID}/users/{userID}", _serializerOptions)
+            () => _client.GetFromJsonAsync<InfractionDTO[]>($"infractions/guilds/{guildID}/users/{userID}?with_pardons={includePardons}", _serializerOptions)
         );
 
         if (!getInfractionsResult.IsDefined(out var fetched) || !fetched.Any())
@@ -351,9 +352,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             return new NotFoundError("That user doesn't have any cases.");
         }
 
-        fetched = fetched.Where(f => f.Type is not InfractionType.Unmute);
-
-        return fetched.ToArray();
+        return fetched;
     }
 
     /// <summary>

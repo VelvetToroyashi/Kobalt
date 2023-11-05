@@ -133,7 +133,7 @@ public class InfractionService : BackgroundService, IInfractionService
             return default;
         }
 
-        var infractions = await _mediator.Send(new GetInfractionsForUserRequest(guildID, userID));
+        var infractions = await _mediator.Send(new GetInfractionsForUserRequest(guildID, userID, false));
 
         if (!infractions.Any())
         {
