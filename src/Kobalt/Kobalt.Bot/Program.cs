@@ -20,6 +20,7 @@ using Microsoft.Extensions.Options;
 using Polly;
 using Remora.Commands.Extensions;
 using Remora.Discord.API.Abstractions.Gateway.Commands;
+using Remora.Discord.API.Abstractions.Gateway.Events;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Gateway.Commands;
@@ -31,6 +32,7 @@ using Remora.Discord.Extensions.Extensions;
 using Remora.Discord.Gateway;
 using Remora.Discord.Gateway.Extensions;
 using Remora.Discord.Interactivity.Extensions;
+using RemoraDelegateDispatch.Extensions;
 using RemoraHTTPInteractions.Extensions;
 using RemoraHTTPInteractions.Services;
 using Serilog;
@@ -225,6 +227,26 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
                 }
             );
         }
+    );
+
+    services.AddDelegateResponders();
+
+    services.AddDelegateResponder<IGuildMemberAdd>
+    (
+        (IGuildMemberAdd member, PhishingDetectionService phishing, CancellationToken ct) 
+            => phishing.HandleAsync(member.User.Value, member.GuildID, ct)
+    );
+    
+    services.AddDelegateResponder<IGuildMemberUpdate>
+    (
+        (IGuildMemberUpdate member, PhishingDetectionService phishing, CancellationToken ct) 
+            => phishing.HandleAsync(member.User, member.GuildID, ct)
+    );
+    
+    services.AddDelegateResponder<IMessageCreate>
+    (
+        (IMessageCreate message, PhishingDetectionService phishing, CancellationToken ct) 
+            => phishing.HandleAsync(message, message.GuildID, ct)
     );
 }
 
