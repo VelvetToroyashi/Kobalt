@@ -23,4 +23,10 @@
       <Folder Include="wwwroot\css\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Remora.Discord.Rest">
+        <HintPath>..\..\..\..\..\..\..\..\home\velvet\.nuget\packages\remora.discord.rest\48.0.0\lib\net7.0\Remora.Discord.Rest.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

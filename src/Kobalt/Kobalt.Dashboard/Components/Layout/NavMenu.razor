@@ -1,4 +1,10 @@
-﻿<nav id="nav" class="sticky flex justify-between w-full px-5 lg:px-10 my-4 lg:text-l font-bold">
+﻿@using Kobalt.Dashboard.Extensions
+@using Microsoft.Extensions.Options
+@using AspNet.Security.OAuth.Discord
+@inject IOptions<IConfiguration> Config
+@inject NavigationManager NavigationManager
+
+<nav id="nav" class="sticky flex justify-between w-full px-5 lg:px-10 my-4 lg:text-l font-bold">
     <script async src="Navbar.js"></script>
     <div class="flex gap-10">
         <span class="text-2xl">Kobalt</span>
@@ -13,6 +19,17 @@
 
     <div class="buttons flex flex-row gap-3 items-center">
         <a class="flex items-center leading-none bg-gray-500 p-2 rounded-md">Add To Server</a>
-        <a class="bg-green-500 leading-none p-2 rounded-md">Login with Discord</a>
+        <AuthorizeView>
+            <Authorized>
+                <a>Hello @context.User.GetUsername()! (Not you?)</a>
+            </Authorized>
+            <NotAuthorized>
+                <form action="api/auth/login" method="post" asp-antiforgery="false">
+                    <button class="bg-green-500 leading-none p-2 rounded-md">Login with Discord</button>
+                    <AntiforgeryToken/>
+                </form>
+                <input type="hidden" name="returnUrl" value="@NavigationManager.Uri"/>
+            </NotAuthorized>
+        </AuthorizeView>
     </div>
 </nav>

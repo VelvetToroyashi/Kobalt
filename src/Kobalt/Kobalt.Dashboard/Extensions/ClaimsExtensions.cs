@@ -8,4 +8,17 @@ public static class ClaimsExtensions
     {
         return principal.Identity?.IsAuthenticated ?? false;
     }
+    
+    public static ulong GetUserID(this ClaimsPrincipal principal)
+    {
+        var id = principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new InvalidOperationException("No user is authenticated.");
+        
+        
+        return ulong.Parse(id);
+    }
+    
+    public static string GetUsername(this ClaimsPrincipal principal)
+    {
+        return principal.FindFirstValue(ClaimTypes.Name) ?? throw new InvalidOperationException("No user is authenticated.");
+    }
 }
