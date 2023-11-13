@@ -75,6 +75,8 @@ builder.Services.AddAuthentication
                 return CDN.GetDefaultUserAvatarUrl(DiscordSnowflake.New(id)).Entity.ToString();
             }
         );
+        
+        config.ClaimActions.MapCustomJson("urn:discord:username", user => user.GetString("global_name") ?? user.GetString("username")!);
     }
 );
 
@@ -86,7 +88,6 @@ builder.Services.AddAuthorization();
 builder.Services.AddAntiforgery();
 
 builder.Services.AddScoped<AuthenticationStateProvider, DiscordAuthenticationStateProvider>();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
