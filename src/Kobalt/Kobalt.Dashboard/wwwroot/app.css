@@ -24,6 +24,10 @@ a, .btn-link {
     padding-top: 1.1rem;
 }
 
+.nav-icon {
+    background: url("img/logs.svg")
+}
+
 h1:focus {
     outline: none;
 }

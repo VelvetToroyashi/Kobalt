@@ -57,7 +57,8 @@ var host = builder.Build();
 host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper handler, IOptions<KobaltConfig> config) =>
     {
         var hasHeaders = DiscordHeaders.TryExtractHeaders(ctx.Request.Headers, out var timestamp, out var signature);
-        var body = await new StreamReader(ctx.Request.Body).ReadToEndAsync();
+        using var sr = new StreamReader(ctx.Request.Body);
+        var body = await sr.ReadToEndAsync();
 
         if (!hasHeaders || !DiscordHeaders.VerifySignature(body, timestamp!, signature!, config.Value.Discord.PublicKey!))
         {
