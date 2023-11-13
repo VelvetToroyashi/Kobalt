@@ -10,6 +10,18 @@ a, .btn-link {
     color: #006bb7;
 }
 
+.vcenter {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* optional */
+}
+
+span { 
+    line-height: 100%;
+    text-align: center;
+    
+}
+
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;

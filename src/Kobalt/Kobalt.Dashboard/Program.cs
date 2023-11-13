@@ -1,3 +1,4 @@
+using System.Globalization;
 using AspNet.Security.OAuth.Discord;
 using Kobalt.Dashboard.Components;
 using Kobalt.Dashboard.Extensions;
@@ -7,6 +8,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MudBlazor.Services;
+using Remora.Discord.API;
+using Remora.Discord.API.Objects;
+using Remora.Rest.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +58,23 @@ builder.Services.AddAuthentication
             
             return Task.CompletedTask;
         };
+
+        config.ClaimActions.MapCustomJson
+        (
+            "urn:discord:avatar:url",
+            user =>
+            {
+                var id = ulong.Parse(user.GetString("id")!);
+                
+                if (user.GetString("avatar") is {} avatarHash)
+                {
+                    var avatar = CDN.GetUserAvatarUrl(DiscordSnowflake.New(id), new ImageHash(avatarHash));
+                    return avatar.Entity.ToString();
+                }
+                
+                return CDN.GetDefaultUserAvatarUrl(DiscordSnowflake.New(id)).Entity.ToString();
+            }
+        );
     }
 );
 

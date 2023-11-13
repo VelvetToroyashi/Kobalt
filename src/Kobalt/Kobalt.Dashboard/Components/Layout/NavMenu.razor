@@ -1,13 +1,14 @@
 ﻿@using Kobalt.Dashboard.Extensions
 @using Microsoft.Extensions.Options
 @using AspNet.Security.OAuth.Discord
+@using MudBlazor
 @inject IOptions<IConfiguration> Config
 @inject NavigationManager NavigationManager
 
-<nav id="nav" class="sticky flex justify-between w-full px-5 lg:px-10 my-4 lg:text-l font-bold">
+<nav id="nav" class="sticky flex justify-between w-full px-5 lg:px-10 my-4 lg:text-xl font-bold">
     <script async src="Navbar.js"></script>
     <div class="flex gap-10">
-        <span class="text-2xl">Kobalt</span>
+        <span class="text-3xl self-center">Kobalt</span>
        
         <div class="space-x-2.5 lg:space-x-10 self-center text-white">
             <a href="#">Home</a>
@@ -18,14 +19,21 @@
     </div>
 
     <div class="buttons flex flex-row gap-3 items-center">
-        <a class="flex items-center leading-none bg-gray-500 p-2 rounded-md">Add To Server</a>
+        <href class="vcenter pt-[0.375rem] bg-gray-500 p-2 pb-1 rounded-md">Add to Server</href>
         <AuthorizeView>
             <Authorized>
-                <a>Hello @context.User.GetUsername()! (Not you?)</a>
+                <MudMenu>
+                    <ActivatorContent>
+                        <MudAvatar>
+                            <MudImage Src="@context.User.GetAvatarUrl()" Class="h-9 rounded-lg"></MudImage>
+                        </MudAvatar>
+                    </ActivatorContent>
+                </MudMenu>
+                @* <a>Hello @context.User.GetUsername()! (Not you?)</a> *@
             </Authorized>
             <NotAuthorized>
                 <form action="api/auth/login" method="post" asp-antiforgery="false">
-                    <button class="bg-green-500 leading-none p-2 rounded-md">Login with Discord</button>
+                    <a class="vcenter pt-[0.375rem] bg-green-500 p-2 pb-1 rounded-md">Login with Discord</a>
                     <AntiforgeryToken/>
                 </form>
                 <input type="hidden" name="returnUrl" value="@NavigationManager.Uri"/>

@@ -19,6 +19,11 @@ public static class ClaimsExtensions
     
     public static string GetUsername(this ClaimsPrincipal principal)
     {
-        return principal.FindFirstValue(ClaimTypes.Name) ?? throw new InvalidOperationException("No user is authenticated.");
+        return principal.FindFirstValue("urn:discord:username") ?? throw new InvalidOperationException("No user is authenticated.");
+    }
+    
+    public static string GetAvatarUrl(this ClaimsPrincipal principal)
+    {
+        return principal.FindFirstValue("urn:discord:avatar:url") ?? throw new InvalidOperationException("No user is authenticated.");
     }
 }
