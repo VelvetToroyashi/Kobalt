@@ -5,11 +5,7 @@ window.mobileCheck = function() {
     return check;
 };
 
-const button = document.querySelector("button");
-
-if (button && !window.mobileCheck()) {
-    button.remove();
-}
+// TODO: Make mobile-friendly...
 
 function expandNav() {
     const menuItems = document.getElementsByClassName("nav-items");
