@@ -1,9 +1,4 @@
-.page {
-    display: flex;
-    flex-direction: column;
 
-    align-items: stretch;
-}
 
 #blazor-error-ui {
     background: lightyellow;

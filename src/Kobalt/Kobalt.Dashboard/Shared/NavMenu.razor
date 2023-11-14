@@ -2,8 +2,19 @@
 @using Microsoft.Extensions.Options
 @using AspNet.Security.OAuth.Discord
 @using MudBlazor
+@using MudBlazor.Utilities
 @inject IOptions<IConfiguration> Config
 @inject NavigationManager NavigationManager
+
+<style>
+    .mud-popover-open {
+        margin-top: 4px;
+    }
+    
+    .mud-list.mud-list-padding { 
+        padding-bottom: 0;
+    }
+</style>
 
 <nav id="nav" class="sticky flex justify-between w-full px-5 lg:px-10 my-4 lg:text-xl font-bold">
     <script async src="Navbar.js"></script>
@@ -23,22 +34,26 @@
         <CascadingAuthenticationState>
                     <AuthorizeView>
                         <Authorized>
-                            <MudMenu Dense>
+                            <MudMenu Color="Color.Primary" Dense="true" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                                 <ActivatorContent>
                                     <MudAvatar>
                                         <MudImage Src="@context.User.GetAvatarUrl()" Class="h-9 rounded-lg"></MudImage>
                                     </MudAvatar>                    
                                 </ActivatorContent>
                                 <ChildContent>
-                                    <MudText>
+                                    <MudText Class="px-2">
                                         Signed in as <br/>
                                         <span class="font-bold">@context.User.GetUsername()</span>
                                     </MudText>
                                     <MudDivider/>
-                                    <MudText>Profile</MudText>
-                                    <MudText>Settings</MudText>
+                                    <MudMenuItem Class="px-2">Profile</MudMenuItem>
+                                    <MudMenuItem Class="px-2">Settings</MudMenuItem>
                                     <MudDivider/>
-                                    <MudText>Not you? Sign out</MudText>
+                                    <form action="api/auth/login" method="post">
+                                        <MudMenuItem Class="mb-0 px-2">Not you? Sign out</MudMenuItem>
+                                        <AntiforgeryToken/>
+                                    </form>
+                                    
                                 </ChildContent>
                             </MudMenu>
                             @* <a>Hello @context.User.GetUsername()! (Not you?)</a> *@
@@ -46,7 +61,7 @@
                         <NotAuthorized>
                             <form action="api/auth/login" method="post" asp-antiforgery="false">
                                 <button class="vcenter pt-[0.375rem] bg-green-500 p-2 pb-1 rounded-md">Login with Discord</button>
-                                <AntiforgeryToken/>
+                                
                             </form>
                             <input type="hidden" name="returnUrl" value="@NavigationManager.Uri"/>
                         </NotAuthorized>

@@ -1,11 +1,8 @@
 using AspNet.Security.OAuth.Discord;
-using Kobalt.Dashboard.Components;
 using Kobalt.Dashboard.Extensions;
 using Kobalt.Dashboard.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using MudBlazor.Services;
 using Remora.Discord.API;
 using Remora.Discord.API.Objects;
@@ -13,11 +10,9 @@ using Remora.Discord.API.Objects;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorComponents()
-       .AddInteractiveServerComponents();
-
-builder.Services.AddMudServices().AddRazorPages(p => p.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute()));
-builder.Configuration.AddUserSecrets<Program>();
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
+builder.Services.AddMudServices();
 
 builder.Services.AddAuthentication
 (
@@ -78,41 +73,33 @@ builder.Services.AddAuthentication
     }
 );
 
-builder.Services.AddServerSideBlazor();
-
-builder.Services.AddSingleton<ITokenRepository, TokenRespository>();
-
-builder.Services.AddAuthorization();
-builder.Services.AddAntiforgery();
-
-builder.Services.AddScoped<AuthenticationStateProvider, DiscordAuthenticationStateProvider>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseExceptionHandler("/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 
-app.UseRouting();
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseAntiforgery();
-
 app.UseStaticFiles();
 
-app.MapRazorComponents<App>()
-   .AddInteractiveServerRenderMode();
+app.UseRouting();
+
+app.MapBlazorHub();
+app.MapFallbackToPage("/_Host");
+
 
 app.MapPost
 (
     "api/auth/login",
-    async (HttpContext context, [FromForm] string returnUrl = "/") =>
+    async (HttpContext context) =>
     {
+        var returnUrl = context.Request.Form["returnUrl"][0]!;
+        
         if (context.User.IsAuthenticated())
         {
             return Results.LocalRedirect(returnUrl);
@@ -134,5 +121,6 @@ app.MapPost
         return Results.LocalRedirect("/");
     }
 );
+
 
 app.Run();
