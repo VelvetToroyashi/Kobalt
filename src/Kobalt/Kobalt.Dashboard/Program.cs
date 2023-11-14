@@ -1,4 +1,3 @@
-using System.Globalization;
 using AspNet.Security.OAuth.Discord;
 using Kobalt.Dashboard.Components;
 using Kobalt.Dashboard.Extensions;
@@ -10,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using MudBlazor.Services;
 using Remora.Discord.API;
 using Remora.Discord.API.Objects;
-using Remora.Rest.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 

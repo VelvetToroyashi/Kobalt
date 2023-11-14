@@ -1,9 +1,6 @@
 using System.Collections.Concurrent;
 using Kobalt.Dashboard.Extensions;
 using Microsoft.AspNetCore.Authentication.OAuth;
-using OneOf;
-using Remora.Discord.Rest;
-using Remora.Rest.Core;
 
 namespace Kobalt.Dashboard.Services;
 
