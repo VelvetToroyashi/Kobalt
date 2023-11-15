@@ -6,9 +6,12 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using MudBlazor.Services;
 using Remora.Discord.API;
 using Remora.Discord.API.Objects;
+using Remora.Discord.Rest;
+using Remora.Discord.Rest.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,11 +79,15 @@ builder.Services.AddAuthentication
     }
 );
 
-builder.Services.AddSingleton<ITokenRepository, TokenRespository>();
+builder.Services.AddSingleton<ITokenRepository, TokenRepository>();
 
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<AuthenticationStateProvider, DiscordAuthenticationStateProvider>();
+builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+builder.Services.AddDiscordRest(_ => ("Dummy token", DiscordTokenType.Bearer));
+builder.Services.AddSingleton<ITokenStore>(s => s.GetRequiredService<ITokenRepository>());
 
 var app = builder.Build();
 

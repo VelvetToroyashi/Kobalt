@@ -1,0 +1,40 @@
+@page "/ManageGuilds"
+@using Remora.Discord.API.Abstractions.Objects
+@using Remora.Discord.API.Abstractions.Rest
+@using Remora.Results
+
+<MudContainer>
+    @if (_guilds is not {} result)
+    {
+        <MudProgressCircular />
+    }    
+    else if (!result.IsSuccess)
+    {
+        <MudAlert Severity="Severity.Error">@result.Error.Message</MudAlert>
+    }
+    else
+    {
+        <MudSelect FullWidth="false" Label="Select a guild..."  T="IPartialGuild" bind-Value="_selectedGuild">
+            @foreach (var guild in result.Entity)
+            {
+                <MudSelectItem Value="guild" T="IPartialGuild">@guild.Name</MudSelectItem>
+            }
+        </MudSelect>
+    }
+</MudContainer>
+
+
+@code {
+    private IPartialGuild? _selectedGuild;
+
+    [Inject]
+    public IDiscordRestUserAPI OAuth2 { get; set; }
+    
+    private Result<IReadOnlyList<IPartialGuild>>? _guilds;
+
+    protected async override Task OnInitializedAsync()
+    {
+        _guilds = await OAuth2.GetCurrentUserGuildsAsync();
+        await base.OnInitializedAsync();
+    }
+}
