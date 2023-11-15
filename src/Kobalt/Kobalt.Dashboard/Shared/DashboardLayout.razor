@@ -4,20 +4,35 @@
 @inject ProtectedLocalStorage LocalStorage
 
 <MudContainer>
-    <MudDrawer Open="true" Color="Color.Secondary" Elevation="0">
-        <MudDrawerHeader>
-            <MudText Align="Align.Center" Typo="Typo.h6">Manage</MudText>
-        </MudDrawerHeader>
-        <MudNavMenu>
-            <MudNavGroup Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.ClearAll" Title="Guilds">
-                <MudNavLink Match="NavLinkMatch.All">Logging</MudNavLink>
-                <MudNavLink Match="NavLinkMatch.All">Role Menus</MudNavLink>
-                <MudNavLink Match="NavLinkMatch.All">Infraction Rules</MudNavLink>
-                <MudNavLink Match="NavLinkMatch.All">Security & Antiraid</MudNavLink>
-            </MudNavGroup>
-            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Feedback">Reminders</MudNavLink>
-            <MudNavLink Match="NavLinkMatch.All" Disabled="true" Icon="@Icons.Material.Outlined.HowToReg">Artist Verification (Coming soon!)</MudNavLink>
-        </MudNavMenu>
-    </MudDrawer>
-    @Body
+    <CascadingValue TValue="Action<string>" Value="UpdateValue">
+        <MudDrawer Open="true" Color="Color.Secondary" Elevation="0">
+            <MudDrawerHeader>
+                <MudText Align="Align.Center" Typo="Typo.h6">Manage</MudText>
+            </MudDrawerHeader>
+            <MudNavMenu>
+                <MudNavGroup Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.ClearAll" Title="Guilds">
+                    <MudNavLink Href="@GetHref("logging")" Match="NavLinkMatch.All">Logging</MudNavLink>
+                    <MudNavLink Href="@GetHref("role-menus")" Match="NavLinkMatch.All">Role Menus</MudNavLink>
+                    <MudNavLink Href="@GetHref("infractions")" Match="NavLinkMatch.All">Infraction Rules</MudNavLink>
+                    <MudNavLink Href="@GetHref("security")" Match="NavLinkMatch.All">Security & Antiraid</MudNavLink>
+                </MudNavGroup>
+                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Feedback">Reminders</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Disabled="true" Icon="@Icons.Material.Outlined.HowToReg">Artist Verification (Coming soon!)</MudNavLink>
+            </MudNavMenu>
+        </MudDrawer>
+        @Body
+    </CascadingValue>
 </MudContainer>
+
+@code
+{
+    private string? _value = null;
+    
+    public string? GetHref(string route) => _value is null ? null : $"/manage/{route}/{_value}";
+
+    public void UpdateValue(string value)
+    {
+        _value = value;
+        StateHasChanged();
+    }
+}
