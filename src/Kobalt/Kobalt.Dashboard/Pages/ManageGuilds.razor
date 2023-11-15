@@ -14,8 +14,9 @@
     }
     else
     {
-        <MudSelect FullWidth="false" Label="Select a guild..."  T="IPartialGuild" bind-Value="_selectedGuild">
-            @foreach (var guild in result.Entity)
+        <MudSelect AnchorOrigin="Origin.BottomCenter" Dense="true" Variant="Variant.Text"  Label="Select a guild..." T="IPartialGuild" bind-Value="_selectedGuild">
+            @{var filteredGuilds = result.Entity.Where(x => x.Permissions.Map(p => p.HasPermission(DiscordPermission.ManageGuild)).OrDefault(false));}
+            @foreach (var guild in filteredGuilds)
             {
                 <MudSelectItem Value="guild" T="IPartialGuild">@guild.Name</MudSelectItem>
             }
