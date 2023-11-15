@@ -1,13 +1,18 @@
-@page "/ManageGuilds"
+@page "/Dashboard"
 @using Remora.Discord.API.Abstractions.Objects
 @using Remora.Discord.API.Abstractions.Rest
 @using Remora.Results
+@layout DashboardLayout
 
-<MudContainer>
+
+<MudContainer MaxWidth="MaxWidth.Small">
+    <MudText Align="Align.Center" Typo="Typo.h4" Class="font-bold">Get started by selecting a guild.</MudText>
+
+    
     @if (_guilds is not {} result)
     {
-        <MudProgressCircular />
-    }    
+        <MudProgressCircular Size="Size.Large"/>
+    }
     else if (!result.IsSuccess)
     {
         <MudAlert Severity="Severity.Error">@result.Error.Message</MudAlert>
@@ -18,7 +23,7 @@
             @{var filteredGuilds = result.Entity.Where(x => x.Permissions.Map(p => p.HasPermission(DiscordPermission.ManageGuild)).OrDefault(false));}
             @foreach (var guild in filteredGuilds)
             {
-                <MudSelectItem Value="guild" T="IPartialGuild">@guild.Name</MudSelectItem>
+                <MudSelectItem Value="guild" T="IPartialGuild">@guild.Name.Value</MudSelectItem>
             }
         </MudSelect>
     }
@@ -35,7 +40,7 @@
 
     protected async override Task OnInitializedAsync()
     {
-        _guilds = await OAuth2.GetCurrentUserGuildsAsync();
+        _guilds ??= await OAuth2.GetCurrentUserGuildsAsync();
         await base.OnInitializedAsync();
     }
 }
