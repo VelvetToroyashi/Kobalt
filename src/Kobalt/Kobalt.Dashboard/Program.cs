@@ -87,7 +87,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, DiscordAuthenticationSta
 builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 builder.Services.AddDiscordRest(_ => ("Dummy token", DiscordTokenType.Bearer));
-builder.Services.AddSingleton<ITokenStore>(s => s.GetRequiredService<ITokenRepository>());
+builder.Services.AddSingleton<IAsyncTokenStore>(s => s.GetRequiredService<ITokenRepository>());
 
 var app = builder.Build();
 

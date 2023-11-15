@@ -54,7 +54,8 @@ public class TokenRepository(IHttpContextAccessor contextAccessor) : ITokenRepos
 
     // Maybe Caleb was on to something with storing the current user token?
     // It seems a little weird though; one wrong request and boom, you're logged in as someone else.
-    public string Token => GetCurrentToken();
+    public ValueTask<string> GetTokenAsync(CancellationToken cancellationToken) => ValueTask.FromResult(GetCurrentToken());
+
     public DiscordTokenType TokenType => DiscordTokenType.Bearer;
 
     private string GetCurrentToken()
@@ -84,7 +85,7 @@ public class TokenRepository(IHttpContextAccessor contextAccessor) : ITokenRepos
 /// <summary>
 /// Represents a central repository for tokens.
 /// </summary>
-public interface ITokenRepository: ITokenStore
+public interface ITokenRepository: IAsyncTokenStore
 {
     /// <summary>
     /// Gets the token for the specified user.

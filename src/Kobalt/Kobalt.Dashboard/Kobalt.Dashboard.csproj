@@ -12,8 +12,8 @@
     <PackageReference Include="AspNet.Security.OAuth.Discord" Version="7.0.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0-rc.2.23479.6" />
     <PackageReference Include="MudBlazor" Version="6.11.0" />
-    <PackageReference Include="Remora.Discord.API.Abstractions" Version="79.0.0" />
-    <PackageReference Include="Remora.Discord.Rest" Version="48.0.0" />
+    <PackageReference Include="Remora.Discord.API.Abstractions" Version="80.0.0" />
+    <PackageReference Include="Remora.Discord.Rest" Version="49.0.0" />
   </ItemGroup>
 
 </Project>
