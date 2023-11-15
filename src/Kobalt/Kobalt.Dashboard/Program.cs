@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using AspNet.Security.OAuth.Discord;
 using Kobalt.Dashboard.Extensions;
 using Kobalt.Dashboard.Services;
@@ -114,7 +115,7 @@ app.MapPost
         
         if (context.User.IsAuthenticated())
         {
-            return Results.LocalRedirect(returnUrl);
+            return Results.Redirect(returnUrl);
         }
 
         return Results.Challenge(new AuthenticationProperties { RedirectUri = returnUrl }, new[] { DiscordAuthenticationDefaults.AuthenticationScheme });
@@ -123,14 +124,30 @@ app.MapPost
 
 app.MapPost
 (
-    "api/auth/logout", async (HttpContext context, [FromServices] ITokenRepository tokens) =>
+    "api/auth/logout", async (HttpContext context, ITokenRepository tokens) =>
     {
         if (context.User.IsAuthenticated())
         {
+            var token = tokens.GetToken(context.User.GetUserID());
+
+            if (token is { AccessToken: not null })
+            {
+                var bearer = new AuthenticationHeaderValue("Bearer", token.AccessToken);
+                // TODO: Use IHttpClientFactory
+                using var client = new HttpClient();
+                
+                client.DefaultRequestHeaders.Authorization = bearer;
+                
+                await client.PostAsync("https://discord.com/api/oauth2/token/revoke", new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["token"] = token.AccessToken
+                }));
+            }
+            
             tokens.RevokeToken(context.User.GetUserID());
         }
         await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return Results.LocalRedirect("/");
+        return Results.Redirect("/");
     }
 );
 

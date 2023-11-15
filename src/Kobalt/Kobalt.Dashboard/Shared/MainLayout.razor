@@ -1,5 +1,5 @@
 ﻿@inherits LayoutComponentBase
-<MudThemeProvider IsDarkMode="true"/>
+<MudThemeProvider IsDarkMode="true" Theme="KobaltTheme"/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 
@@ -10,3 +10,16 @@
         @Body
     </MudMainContent>
 </MudLayout>
+
+@code {
+    MudTheme KobaltTheme = new MudTheme()
+    {
+        Typography = new Typography()
+        {
+            Default = new Default()
+            {
+                FontFamily = new[] { "Inter", "Roboto", "Poppins", "Helvetica Neue", "Arial", "sans-serif" }
+            }
+        }
+    };
+}

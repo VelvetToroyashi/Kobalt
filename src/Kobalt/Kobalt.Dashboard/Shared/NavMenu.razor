@@ -7,22 +7,11 @@
 @inject IOptions<IConfiguration> Config
 @inject NavigationManager NavigationManager
 
-<style>
-    .mud-popover-open {
-        margin-top: 4px;
-    }
-    
-    .mud-list.mud-list-padding { 
-        padding-bottom: 0;
-    }
-</style>
-
 <nav id="nav" class="sticky flex justify-between w-full px-5 lg:px-10 my-4 lg:text-xl font-bold">
     <script async src="Navbar.js"></script>
     <div class="flex gap-10">
-        <p class="text-3xl leading-0">Kobalt</p>
-       
         <div class="space-x-2.5 lg:space-x-10 self-center text-white">
+            <span>Kobalt</span>
             <a href="#">Home</a>
             <a>About</a>
             <a>Features</a>
@@ -30,15 +19,15 @@
         </div>
     </div>
 
-    <div class="buttons flex flex-row gap-3 items-center">
-        <href class="vcenter pt-[0.375rem] bg-gray-500 p-2 pb-1 rounded-md">Add to Server</href>
+    <div class="buttons flex flex-row gap-3">
+        <MudButton Variant="Variant.Filled" Color="Color.Dark" Size="Size.Large" Class="cta-button bg-gray-500 rounded-md">Add to Server</MudButton>
         <CascadingAuthenticationState>
             <AuthorizeView>
                 <Authorized>
                     <MudMenu Color="Color.Primary" Dense="true" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                         <ActivatorContent>
-                            <MudAvatar Class="h-full rounded">
-                                <MudImage Src="@context.User.GetAvatarUrl()"  ></MudImage>
+                            <MudAvatar Rounded="true" Size="Size.Medium">
+                                <MudImage Src="@context.User.GetAvatarUrl()"></MudImage>
                             </MudAvatar>                    
                         </ActivatorContent>
                         <ChildContent>
@@ -47,31 +36,37 @@
                                 <span class="font-bold">@context.User.GetUsername()</span>
                             </MudText>
                             <MudDivider/>
-                            <MudMenuItem Class="px-2">Profile</MudMenuItem>
-                            <MudMenuItem Class="px-2">Settings</MudMenuItem>
+                            <MudMenuItem Class="px-2">Lorem</MudMenuItem>
+                            <MudMenuItem Class="px-2">Ipsum</MudMenuItem>
                             <MudDivider/>
-                                    
                             <form action="api/auth/logout" method="post">
                                 <button type="submit">
                                     <MudMenuItem Class="px-2">Not you? Sign out</MudMenuItem>
                                 </button>
                                 <input type="hidden" name="returnUrl" value="@NavigationManager.BaseUri"/>
                             </form>
-                            
-                                    
                         </ChildContent>
                     </MudMenu>
                 </Authorized>
                 <NotAuthorized>
                     <form action="api/auth/login" method="post">
-                        <button type="submit" class="vcenter pt-[0.375rem] bg-green-500 p-2 pb-1 rounded-md">Login with Discord</button>
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" ButtonType="ButtonType.Submit" Size="Size.Large" Class="cta-button bg-green-500 rounded-md">Login with Discord</MudButton>
                         <input type="hidden" name="returnUrl" value="@NavigationManager.Uri"/>
                     </form>
-                    
                 </NotAuthorized>
             </AuthorizeView>
         </CascadingAuthenticationState>
-
     </div>
 </nav>
 
+@* This is temporary as isolated CSS doesn't currently work for mudblazor. *@
+
+<style>
+    .mud-popover-open {
+        margin-top: 4px !important;
+    }
+    
+    .mud-list.mud-list-padding {
+        padding-bottom: 0;
+    }
+</style>
