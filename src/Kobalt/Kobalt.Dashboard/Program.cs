@@ -5,7 +5,6 @@ using Kobalt.Dashboard.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MudBlazor.Services;
 using Remora.Discord.API;
@@ -116,7 +115,7 @@ app.MapFallbackToPage("/_Host");
 app.MapPost
 (
     "api/auth/login",
-    async (HttpContext context) =>
+    (HttpContext context) =>
     {
         var returnUrl = context.Request.Form["returnUrl"][0]!;
         
@@ -125,7 +124,8 @@ app.MapPost
             return Results.Redirect(returnUrl);
         }
 
-        return Results.Challenge(new AuthenticationProperties { RedirectUri = returnUrl }, new[] { DiscordAuthenticationDefaults.AuthenticationScheme });
+        var authenticate = new AuthenticationProperties { RedirectUri = returnUrl };
+        return Results.Challenge(authenticate, new[] { DiscordAuthenticationDefaults.AuthenticationScheme });
     }
 );
 

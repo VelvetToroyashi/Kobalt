@@ -28,15 +28,16 @@
     }
 </MudContainer>
 
-
+@* ReSharper disable once FieldCanBeMadeReadOnly.Local *@
 @code {
-    private IPartialGuild? _selectedGuild;
+    #pragma disable CS0414 // Blazor injects this at runtime
+    private IPartialGuild? _selectedGuild = null;
 
     [Inject]
-    public IDiscordRestUserAPI OAuth2 { get; set; }
+    public required IDiscordRestUserAPI OAuth2 { get; set; }
     
     [CascadingParameter] 
-    public Action<string> SelectionUpdated { get; set; }
+    public required Action<string> SelectionUpdated { get; set; }
     
     private Result<IReadOnlyList<IPartialGuild>>? _guilds;
 
