@@ -3,7 +3,7 @@
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <AuthorizeRouteView @rendermode="RenderMode.InteractiveServer" RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
                     @{NavigationManager.NavigateTo(NavigationManager.GetDiscordLoginUrl(), true);}
                 </NotAuthorized>
