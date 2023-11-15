@@ -3,6 +3,8 @@ using Kobalt.Dashboard.Extensions;
 using Kobalt.Dashboard.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MudBlazor.Services;
 using Remora.Discord.API;
 using Remora.Discord.API.Objects;
@@ -73,6 +75,12 @@ builder.Services.AddAuthentication
     }
 );
 
+builder.Services.AddSingleton<ITokenRepository, TokenRespository>();
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddScoped<AuthenticationStateProvider, DiscordAuthenticationStateProvider>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -88,6 +96,10 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
@@ -111,7 +123,7 @@ app.MapPost
 
 app.MapPost
 (
-    "api/logout", async (HttpContext context, ITokenRepository tokens) =>
+    "api/auth/logout", async (HttpContext context, [FromServices] ITokenRepository tokens) =>
     {
         if (context.User.IsAuthenticated())
         {
@@ -121,6 +133,5 @@ app.MapPost
         return Results.LocalRedirect("/");
     }
 );
-
 
 app.Run();
