@@ -1,0 +1,23 @@
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inherits LayoutComponentBase
+@layout MainLayout
+@inject ProtectedLocalStorage LocalStorage
+
+<MudContainer>
+    <MudDrawer Open="true" Color="Color.Secondary" Elevation="0">
+        <MudDrawerHeader>
+            <MudText Align="Align.Center" Typo="Typo.h6">Manage</MudText>
+        </MudDrawerHeader>
+        <MudNavMenu>
+            <MudNavGroup Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.ClearAll" Title="Guilds">
+                <MudNavLink Match="NavLinkMatch.All">Logging</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All">Role Menus</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All">Infraction Rules</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All">Security & Antiraid</MudNavLink>
+            </MudNavGroup>
+            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Feedback">Reminders</MudNavLink>
+            <MudNavLink Match="NavLinkMatch.All" Disabled="true" Icon="@Icons.Material.Outlined.HowToReg">Artist Verification (Coming soon!)</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+    @Body
+</MudContainer>

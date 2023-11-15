@@ -5,15 +5,25 @@
 
 <MudLayout>
     <NavMenu/>
-
-    <MudMainContent>
-        @Body
-    </MudMainContent>
+    <div>
+      @Body  
+    </div>
 </MudLayout>
+
 
 @code {
     MudTheme KobaltTheme = new MudTheme()
     {
+        PaletteDark = new PaletteDark()
+        {
+            Black = new ("#050609"),
+            GrayDefault = new("#707078"),
+            Primary = new("#03CEA4"),
+            Error = new("#FB4D3D"),
+            Warning = new("#FFBF00"),
+            Info = new("#2274A5"),
+            Secondary = new("#333333"),
+        },
         Typography = new Typography()
         {
             Default = new Default()
