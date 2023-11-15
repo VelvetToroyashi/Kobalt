@@ -1,8 +1,13 @@
-﻿<CascadingAuthenticationState>
+﻿@using Kobalt.Dashboard.Extensions
+@inject NavigationManager NavigationManager
+<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    @{NavigationManager.NavigateTo(NavigationManager.GetDiscordLoginUrl(), true);}
+                </NotAuthorized>
+            </AuthorizeRouteView>
         </Found>
         <NotFound>
             <PageTitle>Not found</PageTitle>

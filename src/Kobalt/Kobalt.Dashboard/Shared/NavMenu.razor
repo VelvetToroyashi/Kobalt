@@ -2,6 +2,7 @@
 @using Microsoft.Extensions.Options
 @using AspNet.Security.OAuth.Discord
 @using Microsoft.AspNetCore.Components.Forms
+@using Kobalt.Dashboard.Extensions
 @using MudBlazor
 @using MudBlazor.Utilities
 @inject IOptions<IConfiguration> Config
@@ -49,10 +50,7 @@
                     </MudMenu>
                 </Authorized>
                 <NotAuthorized>
-                    <form action="api/auth/login" method="post">
-                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" ButtonType="ButtonType.Submit" Size="Size.Large" Class="cta-button bg-green-500 rounded-md">Login with Discord</MudButton>
-                        <input type="hidden" name="returnUrl" value="@NavigationManager.Uri"/>
-                    </form>
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Href="@NavigationManager.GetDiscordLoginUrl()" ButtonType="ButtonType.Submit" Size="Size.Large" Class="cta-button bg-green-500 rounded-md">Login with Discord</MudButton>
                 </NotAuthorized>
             </AuthorizeView>
         </CascadingAuthenticationState>

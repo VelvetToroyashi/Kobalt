@@ -5,6 +5,7 @@ using Kobalt.Dashboard.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MudBlazor.Services;
 using Remora.Discord.API;
@@ -112,13 +113,11 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 
-app.MapPost
+app.MapGet
 (
     "api/auth/login",
-    (HttpContext context) =>
+    (HttpContext context, [FromQuery] string returnUrl = "/") =>
     {
-        var returnUrl = context.Request.Form["returnUrl"][0]!;
-        
         if (context.User.IsAuthenticated())
         {
             return Results.Redirect(returnUrl);

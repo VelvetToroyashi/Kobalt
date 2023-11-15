@@ -3,14 +3,16 @@
 @using Remora.Discord.API.Abstractions.Rest
 @using Remora.Results
 @layout DashboardLayout
+@attribute [Authorize]
 
 
 <MudContainer MaxWidth="MaxWidth.Small">
-    <MudText Align="Align.Center" Typo="Typo.h4" Class="font-bold">Get started by selecting a guild.</MudText>
-
     @if (_guilds is not {} result)
     {
-        <MudProgressCircular Size="Size.Large"/>
+        <MudText Typo="Typo.h4">Loading your guilds. Hold tight...</MudText>
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <MudProgressLinear Color="Color.Tertiary" Indeterminate="true" Size="Size.Large"/>
+        </div>
     }
     else if (!result.IsSuccess)
     {
@@ -18,7 +20,8 @@
     }
     else
     {
-        <MudSelect AnchorOrigin="Origin.BottomCenter" Dense="true" Variant="Variant.Text" ValueChanged="(v) => SelectionUpdated(v.ID.Value.ToString())"  Style="flex-grow: 0;" FullWidth="true" Label="Select a guild..." T="IPartialGuild" bind-Value="_selectedGuild">
+        <MudText Align="Align.Center" Typo="Typo.h4" Class="font-bold">Get started by selecting a guild.</MudText>
+        <MudSelect AnchorOrigin="Origin.BottomCenter" Dense="true" Variant="Variant.Text" ValueChanged="(v) => SelectionUpdated(v.ID.Value.ToString())" FullWidth="true" Label="Select a guild..." T="IPartialGuild" bind-Value="_selectedGuild">
             @{var filteredGuilds = result.Entity.Where(x => x.Permissions.Map(p => p.HasPermission(DiscordPermission.ManageGuild)).OrDefault(false));}
             @foreach (var guild in filteredGuilds)
             {
@@ -32,6 +35,7 @@
 @code {
     #pragma disable CS0414 // Blazor injects this at runtime
     private IPartialGuild? _selectedGuild = null;
+    #pragma enable CS0414
 
     [Inject]
     public required IDiscordRestUserAPI OAuth2 { get; set; }
@@ -41,9 +45,17 @@
     
     private Result<IReadOnlyList<IPartialGuild>>? _guilds;
 
-    protected async override Task OnInitializedAsync()
+    protected async override Task OnAfterRenderAsync(bool firstRender)
     {
-        _guilds ??= await OAuth2.GetCurrentUserGuildsAsync();
-        await base.OnInitializedAsync();
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            _guilds ??= await OAuth2.GetCurrentUserGuildsAsync();
+            await Task.Delay(1500);
+            
+            StateHasChanged();
+        }
     }
+    
 }
