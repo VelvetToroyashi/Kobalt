@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using AspNet.Security.OAuth.Discord;
 using Kobalt.Dashboard.Extensions;
 using Kobalt.Dashboard.Services;
+using Kobalt.Dashboard.Services.Remora;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -9,7 +10,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MudBlazor.Services;
 using Remora.Discord.API;
+using Remora.Discord.API.Abstractions.Objects;
+using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
+using Remora.Discord.Caching.Extensions;
+using Remora.Discord.Caching.Services;
 using Remora.Discord.Rest;
 using Remora.Discord.Rest.Extensions;
 
@@ -89,6 +94,11 @@ builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddDiscordRest(_ => ("Dummy token", DiscordTokenType.Bearer));
 builder.Services.AddSingleton<IAsyncTokenStore>(s => s.GetRequiredService<ITokenRepository>());
 
+builder.Services.AddDiscordCaching()
+.Configure<CacheSettings>(c => c.SetAbsoluteExpiration<IReadOnlyList<IPartialGuild>>(TimeSpan.FromMinutes(10)));
+
+builder.Services.Decorate<IDiscordRestUserAPI, TokenScopedDiscordRestUserAPI>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -100,18 +110,14 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-
 
 app.MapGet
 (

@@ -5,7 +5,6 @@
 @layout DashboardLayout
 @attribute [Authorize]
 
-
 <MudContainer MaxWidth="MaxWidth.Small">
     @if (_guilds is not {} result)
     {
@@ -52,8 +51,6 @@
         if (firstRender)
         {
             _guilds ??= await OAuth2.GetCurrentUserGuildsAsync();
-            await Task.Delay(1500);
-            
             StateHasChanged();
         }
     }
