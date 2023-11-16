@@ -1,15 +1,12 @@
 using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Security.Principal;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
-using Remora.Discord.API;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.Caching.Abstractions;
 using Remora.Discord.Caching.Abstractions.Services;
 using Remora.Discord.Rest.Extensions;
 using Remora.Rest;
-using Remora.Rest.Core;
 
 namespace Kobalt.Bot.Auth;
 
