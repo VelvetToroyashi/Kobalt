@@ -52,6 +52,8 @@ builder.Services.AddAuthentication
 
         config.ClientId = builder.Configuration["Discord:ClientId"]         ?? throw new InvalidOperationException("Discord Client ID is required.");
         config.ClientSecret = builder.Configuration["Discord:ClientSecret"] ?? throw new InvalidOperationException("Discord Client Secret is required.");
+        
+        config.Prompt = "none";
 
         config.Events.OnCreatingTicket +=  (context) =>
         {
