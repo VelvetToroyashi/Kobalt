@@ -1,0 +1,119 @@
+@page "/Dashboard"
+@using Remora.Discord.API.Abstractions.Objects
+@using Remora.Discord.API.Abstractions.Rest
+@using Remora.Results
+@using Kobalt.Dashboard.Services
+@using Remora.Rest.Core
+@using System.Text.RegularExpressions
+@layout DashboardLayout
+@attribute [Authorize]
+
+<MudContainer MaxWidth="MaxWidth.Small">
+    @if (_guilds is not {} result)
+    {
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <MudText Typo="Typo.h4">Loading your guilds. Hold tight...</MudText>
+            <MudProgressLinear Color="Color.Tertiary" Indeterminate="true" Size="Size.Large"/>
+        </div>
+    }
+    else if (!result.IsSuccess)
+    {
+        <MudAlert Severity="Severity.Error">@result.Error.Message</MudAlert>
+    }
+    else
+    {
+        <MudText Align="Align.Center" Typo="Typo.h4" Class="font-bold">Get started by selecting a guild.</MudText>
+        <MudSelect AnchorOrigin="Origin.BottomCenter" Dense="true" Variant="Variant.Text" ValueChanged="OnSelectionChangedAsync" FullWidth="true" Label="Select a guild..." T="IPartialGuild" Value="_selectedGuild">
+            @{var filteredGuilds = result.Entity.Where(x => x.Permissions.Map(p => p.HasPermission(DiscordPermission.ManageGuild)).OrDefault(false));}
+            @foreach (var guild in filteredGuilds)
+            {
+                <MudSelectItem Value="guild" T="IPartialGuild">@guild.Name.Value</MudSelectItem>
+            }
+        </MudSelect>
+        
+        @if (_promptToAddBot)
+        {
+            <MudText>Looks like Kobalt isn't added to that server just yet.</MudText>
+            <MudText>Click <MudLink Href="@GetOAuth2Link()">here</MudLink> to add it.</MudText>
+        }
+    }
+</MudContainer>
+
+@* ReSharper disable once FieldCanBeMadeReadOnly.Local *@
+@code {
+    #pragma disable CS0414 // Blazor injects this at runtime
+    private IPartialGuild? _selectedGuild = null;
+    #pragma enable CS0414
+    
+    [SupplyParameterFromForm(Name = "guild_id", FormName = "guild_id")]
+    public IFormCollection? DiscordData { get; set; }
+        
+    private const long PermissionBits = 1100317010950;
+    
+    private bool _promptToAddBot;
+
+    [Inject]
+    public required DashboardRestClient OAuth2 { get; set; }
+    
+    [Inject]
+    public required IConfiguration Configuration { get; set; }
+    
+    [Inject]
+    public required NavigationManager Navigation { get; set; }
+    
+    [CascadingParameter] 
+    public required Action<string> SelectionUpdated { get; set; }
+    
+    private static readonly Regex GuildIDRegex = new(@"guild_id=(?<ID>\d{17,20})");
+    
+    private Result<IReadOnlyList<IPartialGuild>>? _guilds;
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            var fragment = new Uri(Navigation.Uri).Fragment;
+            
+            if (GuildIDRegex.Match(fragment) is { Success: true, Groups: [ .., { Success: true, Value: {} filledGuild }]})
+            {
+                Navigation.NavigateTo($"/manage/{filledGuild}", true);
+                return;
+            }
+            
+            _guilds ??= await OAuth2.GetCurrentUserGuildsAsync();
+            StateHasChanged();
+        }
+    }
+    
+    private async Task OnSelectionChangedAsync(IPartialGuild guild)
+    {
+        _selectedGuild = guild;
+        var selfResult = await OAuth2.IsSelfInGuildAsync(guild.ID.Value);
+
+        if (!selfResult.IsSuccess)
+        {
+            _promptToAddBot = true;
+            return;
+        }
+
+        if (!selfResult.Entity)
+        {
+            _promptToAddBot = true;
+        }
+        
+        Navigation.NavigateTo($"/manage/{guild.ID}", true);
+        StateHasChanged();
+    }
+
+    private string GetOAuth2Link()
+    {
+        var clientID = Configuration.GetValue<ulong>("Discord:ClientId");
+        var currentPath = Uri.EscapeDataString(Navigation.Uri);
+        var redirectUri = $"https://discord.com/api/oauth2/authorize?client_id={clientID}&permissions={PermissionBits}&scope=bot%20applications.commands&response_type=token&guild_id={_selectedGuild?.ID}&disable_guild_select=true&redirect_uri={currentPath}";
+        
+        return redirectUri;
+    }
+    
+}
