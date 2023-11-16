@@ -91,13 +91,14 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<AuthenticationStateProvider, DiscordAuthenticationStateProvider>();
 builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-builder.Services.AddDiscordRest(_ => ("Dummy token", DiscordTokenType.Bearer));
-builder.Services.AddSingleton<IAsyncTokenStore>(s => s.GetRequiredService<ITokenRepository>());
+builder.Services.AddDiscordRest(s => (s.GetRequiredService<IConfiguration>()["Discord:Token"]!, DiscordTokenType.Bot));
 
 builder.Services.AddDiscordCaching()
-.Configure<CacheSettings>(c => c.SetAbsoluteExpiration<IReadOnlyList<IPartialGuild>>(TimeSpan.FromMinutes(10)));
+.Configure<CacheSettings>(c => c.SetDefaultAbsoluteExpiration(null).SetDefaultSlidingExpiration(null).SetAbsoluteExpiration<IReadOnlyList<IPartialGuild>>(TimeSpan.FromMinutes(10)));
 
 builder.Services.Decorate<IDiscordRestUserAPI, TokenScopedDiscordRestUserAPI>();
+
+builder.Services.AddScoped<DashboardRestClient>();
 
 var app = builder.Build();
 
