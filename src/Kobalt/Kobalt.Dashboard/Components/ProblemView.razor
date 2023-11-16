@@ -1,0 +1,25 @@
+<MudContainer Class="d-flex flex-column align-center justify-center">
+    <MudImage Class="rounded" Src="@ImageUrl" Width="256" ObjectFit="ObjectFit.Contain"/>
+
+    @if (!string.IsNullOrWhiteSpace(Message))
+    {
+        <MudText Class="my-3" Typo="Typo.h4">
+            @Message
+        </MudText>
+    }
+
+    @ChildContent
+</MudContainer>
+
+@code {
+
+    [Parameter]
+    public string Message { get; set; } = "Uh Oh, something went wrong!";
+
+    [Parameter]
+    public string ImageUrl { get; set; } = "https://raw.githubusercontent.com/VelvetToroyashi/Silk/rewrite/dashboard/src/Silk.Dashboard/wwwroot/images/rp_flop.png?raw=true";
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+}

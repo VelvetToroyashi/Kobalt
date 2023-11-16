@@ -1,0 +1,109 @@
+@page "/manage/{GuildID:long}/overview"
+@using Remora.Discord.API.Abstractions.Objects
+@using Kobalt.Dashboard.Components
+@using Kobalt.Dashboard.Services
+@using Remora.Rest.Core
+@using Humanizer
+@layout DashboardLayout
+
+@if (_requestFailed)
+{
+    <ProblemView Message="Oh boy.">
+        <MudText Typo="Typo.h5" Align="Align.Center">
+            Looks like that guild either isn't available or the request failed. <br/>
+            Refresh the page or try a different guild id.
+        </MudText>
+    </ProblemView>
+}
+else if (_guild is null)
+{
+    <MudContainer>
+        <MudText Typo="Typo.h2">Loading some additional information...</MudText>
+        <MudProgressLinear Indeterminate="true" />
+    </MudContainer>
+}
+else
+{
+    <MudText Typo="Typo.h3">Overview of @(_guild!.Name)</MudText>
+    <div style="margin-top: 20px"></div>
+    <MudGrid>
+        <MudItem>
+            <MudCard Width="300px" Height="200px" Elevation="10">
+                <MudCardContent>
+                    <MudText Typo="Typo.h5">Basic Info</MudText>
+                    <MudGrid>
+                        <MudItem>
+                            <span style="color: dimgrey;">Members:</span>
+                            <span class="font-bold">@(_guild?.ApproximateMemberCount.Map(c => c.ToMetric()).OrDefault("Unknown"))</span>
+                        </MudItem>
+                    </MudGrid>
+                    <MudSkeleton Animation="Animation.False" Width="60%" Height="20px"/>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem>
+            <MudPaper Style="height: 200px;" Class="overflow-y-scroll">
+                <MudList>
+                    @foreach (var channel in _channels ?? Array.Empty<IChannel>())
+                    {
+                        <MudListItem>
+                            <MudText Typo="Typo.h6">@channel.Name</MudText>
+                        </MudListItem>
+                    }
+                </MudList>
+            </MudPaper>
+
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    [Parameter]
+    public long GuildID { get; set; }
+
+    [Inject]
+    public DashboardRestClient Discord { get; set; } = null!;
+    
+    private IGuild? _guild;
+    private IReadOnlyList<IChannel>? _channels;
+    private bool _requestFailed;
+    
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (_requestFailed)
+        {
+            await base.OnInitializedAsync();
+            return;
+        }
+        
+        await Task.Delay(4000);
+        
+        // https://learn.microsoft.com/en-us/answers/questions/1160478/how-to-prevent-code-in-oninitializedasync-run-twic
+        // var cacheKey = $"guild-{GuildID}-overview";
+        // if (Cache.GetOrCreate(cacheKey, _ => true))
+        // {
+        //     Cache.Set(cacheKey, false);
+        //     return;
+        // }
+        
+        if (_guild is null)
+        {
+            var guildsResult = await Discord.GetGuildAsync(new Snowflake((ulong)GuildID));
+
+            if (guildsResult.IsSuccess)
+            {
+                _guild = guildsResult.Entity;
+                _channels = (await Discord.GetGuildChannelsAsync(new Snowflake((ulong)GuildID))).Entity;
+
+                
+            }
+            else
+            {
+                _requestFailed = true;
+            }
+        }
+
+        StateHasChanged();
+    }
+}
