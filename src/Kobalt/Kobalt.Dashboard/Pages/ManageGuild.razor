@@ -4,7 +4,7 @@
 @using Humanizer
 @layout DashboardLayout
 
-@if (_requestFailed)
+@if (_guildState is GuildState.Unavailable)
 {
     <ProblemView Message="Oh boy.">
         <MudText Typo="Typo.h5" Align="Align.Center">
@@ -13,7 +13,7 @@
         </MudText>
     </ProblemView>
 }
-else if (_guild is null)
+else if (_guildState is GuildState.Loading)
 {
     <MudContainer Style="align-items: center" MaxWidth="MaxWidth.Medium">
         <MudText Typo="Typo.h4">Loading some additional information...</MudText>
