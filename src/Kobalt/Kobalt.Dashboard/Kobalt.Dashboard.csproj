@@ -18,4 +18,10 @@
     <PackageReference Include="Remora.Discord.Rest" Version="49.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Pages\ManageGuild.razor.cs">
+      <DependentUpon>ManageGuild.razor</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

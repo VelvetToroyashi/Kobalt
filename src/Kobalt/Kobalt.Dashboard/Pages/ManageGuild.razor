@@ -1,8 +1,6 @@
-@page "/manage/{GuildID:long}/overview"
+@page "/manage/{GuildID:long}"
 @using Remora.Discord.API.Abstractions.Objects
 @using Kobalt.Dashboard.Components
-@using Kobalt.Dashboard.Services
-@using Remora.Rest.Core
 @using Humanizer
 @layout DashboardLayout
 
@@ -17,9 +15,9 @@
 }
 else if (_guild is null)
 {
-    <MudContainer>
-        <MudText Typo="Typo.h2">Loading some additional information...</MudText>
-        <MudProgressLinear Indeterminate="true" />
+    <MudContainer Style="align-items: center" MaxWidth="MaxWidth.Medium">
+        <MudText Typo="Typo.h4">Loading some additional information...</MudText>
+        <MudProgressLinear Color="Color.Tertiary" Indeterminate="true" Size="Size.Large" />
     </MudContainer>
 }
 else
@@ -36,8 +34,11 @@ else
                             <span style="color: dimgrey;">Members:</span>
                             <span class="font-bold">@(_guild?.ApproximateMemberCount.Map(c => c.ToMetric()).OrDefault("Unknown"))</span>
                         </MudItem>
+                        <MudItem>
+                            <span style="color: dimgrey;">Channels:</span>
+                            <span class="font-bold">@(_channels?.Count.ToString() ?? "")</span>
+                        </MudItem>
                     </MudGrid>
-                    <MudSkeleton Animation="Animation.False" Width="60%" Height="20px"/>
                 </MudCardContent>
             </MudCard>
         </MudItem>
@@ -54,53 +55,4 @@ else
             </MudPaper>
         </MudItem>
     </MudGrid>
-}
-
-@code {
-    [Parameter]
-    public long GuildID { get; set; }
-
-    [Inject]
-    public DashboardRestClient Discord { get; set; } = null!;
-    
-    private IGuild? _guild;
-    private IReadOnlyList<IChannel>? _channels;
-    private bool _requestFailed;
-    
-
-    protected async override Task OnInitializedAsync()
-    {
-        if (_requestFailed)
-        {
-            await base.OnInitializedAsync();
-            return;
-        }
-        
-        // https://learn.microsoft.com/en-us/answers/questions/1160478/how-to-prevent-code-in-oninitializedasync-run-twic
-        // var cacheKey = $"guild-{GuildID}-overview";
-        // if (Cache.GetOrCreate(cacheKey, _ => true))
-        // {
-        //     Cache.Set(cacheKey, false);
-        //     return;
-        // }
-        
-        if (_guild is null)
-        {
-            var guildsResult = await Discord.GetGuildAsync(new Snowflake((ulong)GuildID));
-
-            if (guildsResult.IsSuccess)
-            {
-                _guild = guildsResult.Entity;
-                _channels = (await Discord.GetGuildChannelsAsync(new Snowflake((ulong)GuildID))).Entity;
-
-                
-            }
-            else
-            {
-                _requestFailed = true;
-            }
-        }
-
-        StateHasChanged();
-    }
 }
