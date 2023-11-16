@@ -8,8 +8,8 @@
 <MudContainer MaxWidth="MaxWidth.Small">
     @if (_guilds is not {} result)
     {
-        <MudText Typo="Typo.h4">Loading your guilds. Hold tight...</MudText>
         <div style="display: flex; flex-direction: column; align-items: center;">
+            <MudText Typo="Typo.h4">Loading your guilds. Hold tight...</MudText>
             <MudProgressLinear Color="Color.Tertiary" Indeterminate="true" Size="Size.Large"/>
         </div>
     }

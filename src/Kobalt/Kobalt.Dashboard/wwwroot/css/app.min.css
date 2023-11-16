@@ -538,6 +538,11 @@ video {
   position: sticky;
 }
 
+.my-3 {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
 .my-4 {
   margin-top: 1rem;
   margin-bottom: 1rem;
@@ -555,16 +560,8 @@ video {
   width: 100%;
 }
 
-.flex-grow {
-  flex-grow: 1;
-}
-
 .flex-row {
   flex-direction: row;
-}
-
-.items-center {
-  align-items: center;
 }
 
 .justify-center {
@@ -597,6 +594,14 @@ video {
 
 .self-center {
   align-self: center;
+}
+
+.overflow-y-scroll {
+  overflow-y: scroll;
+}
+
+.rounded {
+  border-radius: 0.25rem;
 }
 
 .rounded-md {
