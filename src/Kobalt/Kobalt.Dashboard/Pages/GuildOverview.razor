@@ -52,7 +52,6 @@ else
                     }
                 </MudList>
             </MudPaper>
-
         </MudItem>
     </MudGrid>
 }
@@ -76,8 +75,6 @@ else
             await base.OnInitializedAsync();
             return;
         }
-        
-        await Task.Delay(4000);
         
         // https://learn.microsoft.com/en-us/answers/questions/1160478/how-to-prevent-code-in-oninitializedasync-run-twic
         // var cacheKey = $"guild-{GuildID}-overview";
