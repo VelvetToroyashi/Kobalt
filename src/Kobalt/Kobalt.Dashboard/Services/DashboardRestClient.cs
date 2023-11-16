@@ -10,9 +10,9 @@ using Remora.Results;
 
 namespace Kobalt.Dashboard.Services;
 
-public class DashboardRestClient(ITokenRepository tokens, IRestHttpClient rest, ICacheProvider cache, IAsyncTokenStore tokenStore, IDiscordRestUserAPI users, IDiscordRestGuildAPI guilds)
+public class DashboardRestClient(ITokenRepository tokens, IRestHttpClient rest, ICacheProvider cache, IAsyncTokenStore tokenStore, IDiscordRestGuildAPI guilds)
 {
-    public async Task<Result<IReadOnlyList<IPartialGuild>>> GetCurrentUserGuilds(CancellationToken ct = default)
+    public async Task<Result<IReadOnlyList<IPartialGuild>>> GetCurrentUserGuildsAsync(CancellationToken ct = default)
     {
         // Safe: Calls "GetCurrentToken" internally.
         var token = await tokens.GetTokenAsync(ct);
@@ -33,18 +33,7 @@ public class DashboardRestClient(ITokenRepository tokens, IRestHttpClient rest, 
 
     public async Task<Result<bool>> IsSelfInGuildAsync(Snowflake guildID, CancellationToken ct = default)
     {
-        var token = await tokens.GetTokenAsync(ct);
-        var self = new Snowflake(ulong.Parse(Convert.FromBase64String((await tokenStore.GetTokenAsync(ct)).Split('.')[0])));
-
-        var getGuildResult = await rest.GetAsync<IUser>
-        (
-            $"guilds/{guildID}/members/{self}",
-            b => b.WithRateLimitContext(cache)
-            .SkipAuthorization()
-            .With(d => d.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token)),
-            ct: ct
-        );
-
+        var getGuildResult = await GetSelfMemberAsync(guildID, ct);
         return getGuildResult.MapOr(_ => true, false);
     }
     
@@ -55,10 +44,5 @@ public class DashboardRestClient(ITokenRepository tokens, IRestHttpClient rest, 
         => guilds.GetGuildRolesAsync(guildID, ct: ct);
     
     public async Task<Result<IGuildMember>> GetSelfMemberAsync(Snowflake guildID, CancellationToken ct = default)
-        => await guilds.GetGuildMemberAsync(guildID, new Snowflake(ulong.Parse(Convert.FromBase64String((await tokenStore.GetTokenAsync(ct)).Split('.')[0]))), ct: ct);
-    
-    public Task<Result<IReadOnlyList<IPartialGuild>>> GetCurrentUserGuildsAsync()
-        => users.GetCurrentUserGuildsAsync();
-    
-    
+        => await guilds.GetGuildMemberAsync(guildID, new Snowflake(ulong.Parse(Convert.FromBase64String((await tokenStore.GetTokenAsync(ct)).Split('.')[0] + "=="))), ct: ct);
 }
