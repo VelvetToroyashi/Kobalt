@@ -17,7 +17,6 @@ using Kobalt.Infrastructure.Types;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Services;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -58,25 +57,16 @@ ConfigureKobaltBotServices(builder.Configuration, builder.Services);
 builder.WebHost.ConfigureKestrel(c => c.ListenLocalhost(builder.Configuration.GetKobaltConfig().ApiPort));
 builder.Host.AddStartupTaskSupport();
 
-builder.Services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
-builder.Services.AddScoped<IAuthorizationHandler, DiscordAuthorizationHandler>();
 
-builder.Services.AddAuthentication();
+builder.Services.AddAuthentication(DiscordAuthenticationSchemeOptions.SchemeName)
+       .AddScheme<DiscordAuthenticationSchemeOptions, DiscordAuthenticationHandler>(DiscordAuthenticationSchemeOptions.SchemeName, null);
 
-builder.Services.AddAuthorization
-(
-    auth =>
-    {
-        auth.AddPolicy("Discord", policy =>
-            {
-                policy.RequireAuthenticatedUser();
-                policy.Requirements.Add(new DiscordAuthorizationRequirement());
-            }
-        );
-    }
-);
+builder.Services.AddAuthorization();
 
 var host = builder.Build();
+
+host.UseAuthentication();
+host.UseAuthorization();
 
 host.MapGet
 (
@@ -85,9 +75,13 @@ host.MapGet
     {
         var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
         var getGuildResult = await mediator.Send(new GetGuild.Request(new Snowflake(guildID)));
-
+        
         if (getGuildResult is { Entity: {} guild })
         {
+            guild.AutoModConfig.Guild = null;
+            guild.PhishingConfig.Guild = null;
+            guild.AntiRaidConfig.Guild = null;
+            
             return Results.Json(guild, jsonSerializer);
         }
         else
