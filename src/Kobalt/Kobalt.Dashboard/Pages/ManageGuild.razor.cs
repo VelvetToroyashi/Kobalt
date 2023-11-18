@@ -1,10 +1,11 @@
-using Kobalt.Bot.Data.Entities;
-using Kobalt.Bot.Data.MediatR.Guilds;
+using System.Text.Json;
 using Kobalt.Dashboard.Services;
-using MediatR;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Options;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Rest.Core;
+using Remora.Results;
+using Guild = Kobalt.Bot.Data.Entities.Guild;
 
 namespace Kobalt.Dashboard.Pages;
 
@@ -19,12 +20,17 @@ public partial class ManageGuild
     
     [Parameter]
     public long GuildID { get; set; }
+    
+    [Inject]
+    public required IHttpClientFactory Http { get; set; }
+    
+    [Inject]
+    public required IOptionsMonitor<JsonSerializerOptions> JsonOptions { get; set; }
+    
 
     [Inject]
     public required DashboardRestClient Discord { get; set; }
 
-    [Inject]
-    public required IMediator Mediator { get; set; }
 
     private IGuild? _guild;
     private Guild? _kobaltGuild;
@@ -48,9 +54,17 @@ public partial class ManageGuild
             {
                 _guild = guildsResult.Entity;
                 _channels = (await Discord.GetGuildChannelsAsync(new Snowflake((ulong)GuildID))).Entity;
+
+                var kobaltGuildResult = await GetGuildAsync();
                 
-                //var kobaltGuildResult = await Mediator.Send(new GetGuild. ((ulong)GuildID)));
+                if (!kobaltGuildResult.IsSuccess)
+                {
+                    _guildState = GuildState.Unavailable;
+                    StateHasChanged();
+                    return;
+                }
                 
+                _kobaltGuild = kobaltGuildResult.Entity;
                 _guildState = GuildState.Ready;
             }
             else
@@ -60,5 +74,23 @@ public partial class ManageGuild
         }
 
         StateHasChanged();
+    }
+
+    private async Task<Result<Guild>> GetGuildAsync()
+    {
+        using var client = Http.CreateClient("Kobalt");
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"api/guilds/{GuildID}");
+        
+        using var response = await client.SendAsync(request);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            var jsonSerializer = JsonOptions.Get("Discord");
+            return Result<Guild>.FromSuccess(await response.Content.ReadFromJsonAsync<Guild>(jsonSerializer));
+        }
+        else
+        {
+            return Result<Guild>.FromError(new NotFoundError("Failed to retrieve guild."));
+        }
     }
 }

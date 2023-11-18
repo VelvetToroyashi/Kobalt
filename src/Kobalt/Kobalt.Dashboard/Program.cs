@@ -95,6 +95,21 @@ builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 builder.Services.AddDiscordRest(s => (s.GetRequiredService<IConfiguration>()["Discord:Token"]!, DiscordTokenType.Bot));
 
+builder.Services
+       .AddTransient<KobaltHttpAuthHandler>()
+       .AddHttpClient("Kobalt")
+       .ConfigureHttpClient
+       (
+           (services, client) =>
+           {
+               var baseUri = services.GetRequiredService<IConfiguration>().GetConnectionString("KobaltAPI") ??
+                             throw new InvalidOperationException("Kobalt API connection string is required.");
+               
+               client.BaseAddress = new Uri(baseUri);
+           }
+       )
+       .AddHttpMessageHandler<KobaltHttpAuthHandler>();
+
 builder.Services.AddDiscordCaching()
 .Configure<CacheSettings>(c => c.SetDefaultAbsoluteExpiration(null).SetDefaultSlidingExpiration(null).SetAbsoluteExpiration<IReadOnlyList<IPartialGuild>>(TimeSpan.FromMinutes(10)));
 
