@@ -32,6 +32,4 @@ public static class GetRoleMenu
             return roleMenu;
         }
     }
-    
-    
 }

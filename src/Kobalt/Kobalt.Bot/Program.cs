@@ -1,8 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using Kobalt.Bot.Auth;
 using Kobalt.Bot.Autocomplete;
 using Kobalt.Bot.Data;
+using Kobalt.Bot.Data.MediatR.Guilds;
 using Kobalt.Bot.Handlers;
 using Kobalt.Bot.Services;
 using Kobalt.Bot.Services.Discord;
@@ -13,6 +16,7 @@ using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Services;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -32,6 +36,7 @@ using Remora.Discord.Extensions.Extensions;
 using Remora.Discord.Gateway;
 using Remora.Discord.Gateway.Extensions;
 using Remora.Discord.Interactivity.Extensions;
+using Remora.Rest.Core;
 using RemoraDelegateDispatch.Extensions;
 using RemoraHTTPInteractions.Extensions;
 using RemoraHTTPInteractions.Services;
@@ -52,7 +57,39 @@ ConfigureKobaltBotServices(builder.Configuration, builder.Services);
 builder.WebHost.ConfigureKestrel(c => c.ListenLocalhost(builder.Configuration.GetKobaltConfig().ApiPort));
 builder.Host.AddStartupTaskSupport();
 
+
+builder.Services.AddAuthentication(DiscordAuthenticationSchemeOptions.SchemeName)
+       .AddScheme<DiscordAuthenticationSchemeOptions, DiscordAuthenticationHandler>(DiscordAuthenticationSchemeOptions.SchemeName, null);
+
+builder.Services.AddAuthorization();
+
 var host = builder.Build();
+
+host.UseAuthentication();
+host.UseAuthorization();
+
+host.MapGet
+(
+    "/api/guilds/{guildID}",
+    async (HttpContext ctx, IMediator mediator, ulong guildID) =>
+    {
+        var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
+        var getGuildResult = await mediator.Send(new GetGuild.Request(new Snowflake(guildID)));
+        
+        if (getGuildResult is { Entity: {} guild })
+        {
+            guild.AutoModConfig.Guild = null;
+            guild.PhishingConfig.Guild = null;
+            guild.AntiRaidConfig.Guild = null;
+            
+            return Results.Json(guild, jsonSerializer);
+        }
+        else
+        {
+            return Results.NotFound();
+        }
+    }
+).RequireAuthorization();
 
 host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper handler, IOptions<KobaltConfig> config) =>
     {
