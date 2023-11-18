@@ -38,7 +38,7 @@ public class DiscordAuthenticationHandler
 {
     protected async override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var token = Context.Request.Headers.Authorization.FirstOrDefault();
+        var token = Context.Request.Headers.Authorization.FirstOrDefault()?.Split(' ').LastOrDefault();
 
         if (token is null)
         {
