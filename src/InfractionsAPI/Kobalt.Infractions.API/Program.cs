@@ -65,6 +65,20 @@ app.MapPut("/infractions/guilds/{guildID}", async (ulong guildID, [FromBody] Inf
         : Results.Created($"/infractions/guilds/{guildID}/{created.Id}", created);
 });
 
+app.MapGet("/infractions/guilds/{guildID}", async (ulong guildID, IMediator mediator, [FromQuery] int? page = 1, [FromQuery] int? pageSize = 10) =>
+{
+    var result = await mediator.Send(new GetGuildInfractionsPaginated.Request(guildID, page ?? 1, pageSize ?? 10));
+
+    var infractions = result.ToArray();
+
+    if (!infractions.Any())
+    {
+        return Results.NoContent();
+    }
+
+    return Results.Ok(infractions);
+});
+
 app.MapPost("/infractions/guilds/{guildID}/rules/evaluate/{userID}", async (IInfractionService infractions, ulong guildID, ulong userID) =>
 {
     var result = await infractions.EvaluateInfractionsAsync(guildID, userID);

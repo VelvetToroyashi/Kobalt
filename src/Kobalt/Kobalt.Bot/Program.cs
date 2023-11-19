@@ -150,7 +150,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddOffsetServices();
     services.AddDiscordGateway(_ => token);
     services.AddInteractivity();
-    services.AddHTTPInteractionAPIs();
+    //services.AddHTTPInteractionAPIs();
     services.AddDiscordCommands(true);
     services.AddPostExecutionEvent<PostExecutionHandler>();
     services.AddHostedService<KobaltDiscordGatewayService>();
