@@ -17,6 +17,7 @@ public static class GetGuildInfractionsPaginated
 
             var infractions = await db.Infractions
                 .Where(x => x.GuildID == request.GuildID)
+                .OrderByDescending(x => x.CreatedAt)
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .ToArrayAsync(cancellationToken);
