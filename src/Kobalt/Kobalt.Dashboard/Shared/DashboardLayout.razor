@@ -1,6 +1,8 @@
 @inherits LayoutComponentBase
 @layout MainLayout
 
+@* TODO: This is really unfriendly for mobile, but perhaps the fault of the main layout. This should be investigated. *@
+
 <MudContainer>
     <CascadingValue TValue="Action<string>" Value="UpdateValue">
         <MudDrawer Open="true" Color="Color.Secondary" Elevation="0">
@@ -18,7 +20,9 @@
                 <MudNavLink Match="NavLinkMatch.All" Disabled="true" Icon="@Icons.Material.Outlined.HowToReg">Artist Verification (Coming soon!)</MudNavLink>
             </MudNavMenu>
         </MudDrawer>
-        @Body
+        <MudMainContent>
+            @Body
+        </MudMainContent>
     </CascadingValue>
 </MudContainer>
 
