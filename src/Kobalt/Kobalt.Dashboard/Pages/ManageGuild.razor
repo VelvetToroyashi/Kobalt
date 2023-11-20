@@ -26,10 +26,11 @@ else
     <div style="margin-top: 20px"></div>
     <MudGrid>
         <MudItem>
-            <MudCard Width="300px" Height="200px" Elevation="10">
+            <MudCard Width="240px" Height="240px" Elevation="10" Square="true">
                 <MudCardContent>
                     <MudText Typo="Typo.h5">Basic Info</MudText>
-                    <MudGrid>
+                    
+                    <MudGrid Class="mt-3">
                         <MudItem>
                             <span style="color: dimgrey;">Members:</span>
                             <span class="font-bold">@(_guild?.ApproximateMemberCount.Map(c => c.ToMetric()).OrDefault("Unknown"))</span>
@@ -38,21 +39,55 @@ else
                             <span style="color: dimgrey;">Channels:</span>
                             <span class="font-bold">@(_channels?.Count.ToString() ?? "")</span>
                         </MudItem>
+                        <MudItem>
+                            <span style="color: dimgray">Logging channels:</span>
+                            <span class="font-bold">@(_kobaltGuild?.LogChannels.Count ?? 0)</span>
+                        </MudItem>
                     </MudGrid>
                 </MudCardContent>
             </MudCard>
         </MudItem>
         <MudItem>
-            <MudPaper Style="height: 200px;" Class="overflow-y-scroll">
-                <MudList>
-                    @foreach (var channel in _channels ?? Array.Empty<IChannel>())
+            <MudCard>
+                <MudCardContent>
+                    <MudText Typo="Typo.h5" GutterBottom="true">Recent Actions</MudText>
+                    
+                    
+                    @if (!_infractions?.IsSuccess ?? false)
                     {
-                        <MudListItem>
-                            <MudText Typo="Typo.h6">@channel.Name</MudText>
-                        </MudListItem>
+                        <MudAlert Severity="Severity.Warning" ContentAlignment="HorizontalAlignment.Center">
+                            Failed to fetch recent actions.
+                        </MudAlert>
                     }
-                </MudList>
-            </MudPaper>
+                    else if (_infractions is { IsSuccess: true, Entity: [] })
+                    {
+                        <MudAlert Severity="Severity.Success" ContentAlignment="HorizontalAlignment.Center">
+                            No recent actions.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudTable T="InfractionView" ReadOnly="true" Items="@(_infractions?.Entity ?? Array.Empty<InfractionView>())" Loading="@(_infractions is null)">
+                            <HeaderContent>
+                                <MudTh>Type</MudTh>
+                                <MudTh>Enforcer</MudTh>
+                                <MudTh>Target</MudTh>
+                                <MudTh>Created</MudTh>
+                                <MudTh>Expires</MudTh>
+                                <MudTh>Reason</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Type">@context.Type</MudTd>
+                                <MudTd DataLabel="Enforcer">@context.Enforcer</MudTd>
+                                <MudTd DataLabel="Target">@context.Target</MudTd>
+                                <MudTd DataLabel="Created">@context.When.Humanize()</MudTd>
+                                <MudTd DataLabel="Expires">@(@context.Expiration?.Humanize() ?? "Never")</MudTd>
+                                <MudTd DataLabel="Reason">@context.Reason</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                </MudCardContent>
+            </MudCard>
         </MudItem>
     </MudGrid>
 }

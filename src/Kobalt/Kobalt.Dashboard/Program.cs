@@ -110,6 +110,19 @@ builder.Services
        )
        .AddHttpMessageHandler<KobaltHttpAuthHandler>();
 
+builder.Services
+       .AddHttpClient("Infractions")
+       .ConfigureHttpClient
+       (
+           (services, client) =>
+           {
+               var baseUri = services.GetRequiredService<IConfiguration>().GetConnectionString("InfractionsAPI") ??
+                             throw new InvalidOperationException("Kobalt Infraction API connection string is required.");
+               
+               client.BaseAddress = new Uri(baseUri);
+           }
+       );
+
 builder.Services.AddDiscordCaching()
 .Configure<CacheSettings>(c => c.SetDefaultAbsoluteExpiration(null).SetDefaultSlidingExpiration(null).SetAbsoluteExpiration<IReadOnlyList<IPartialGuild>>(TimeSpan.FromMinutes(10)));
 

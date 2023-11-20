@@ -10,7 +10,7 @@ using Remora.Results;
 
 namespace Kobalt.Dashboard.Services;
 
-public class DashboardRestClient(ITokenRepository tokens, IRestHttpClient rest, ICacheProvider cache, IAsyncTokenStore tokenStore, IDiscordRestGuildAPI guilds)
+public class DashboardRestClient(ITokenRepository tokens, IRestHttpClient rest, ICacheProvider cache, IAsyncTokenStore tokenStore, IDiscordRestGuildAPI guilds, IDiscordRestUserAPI users)
 {
     public async Task<Result<IReadOnlyList<IPartialGuild>>> GetCurrentUserGuildsAsync(CancellationToken ct = default)
     {
@@ -45,4 +45,7 @@ public class DashboardRestClient(ITokenRepository tokens, IRestHttpClient rest, 
     
     public async Task<Result<IGuildMember>> GetSelfMemberAsync(Snowflake guildID, CancellationToken ct = default)
         => await guilds.GetGuildMemberAsync(guildID, new Snowflake(ulong.Parse(Convert.FromBase64String((await tokenStore.GetTokenAsync(ct)).Split('.')[0] + "=="))), ct: ct);
+
+    public Task<Result<IUser>> ResolveUserAsync(ulong userId, CancellationToken ct = default)
+        => users.GetUserAsync(new Snowflake(userId), ct);
 }

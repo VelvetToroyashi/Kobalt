@@ -1,5 +1,9 @@
 using System.Text.Json;
+using Humanizer;
+using Kobalt.Dashboard.Extensions;
 using Kobalt.Dashboard.Services;
+using Kobalt.Infractions.Shared;
+using Kobalt.Infractions.Shared.DTOs;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Remora.Discord.API.Abstractions.Objects;
@@ -27,7 +31,6 @@ public partial class ManageGuild
     [Inject]
     public required IOptionsMonitor<JsonSerializerOptions> JsonOptions { get; set; }
     
-
     [Inject]
     public required DashboardRestClient Discord { get; set; }
 
@@ -35,6 +38,7 @@ public partial class ManageGuild
     private IGuild? _guild;
     private Guild? _kobaltGuild;
     private IReadOnlyList<IChannel>? _channels;
+    private Result<IReadOnlyList<InfractionView>>? _infractions;
 
     private GuildState _guildState = GuildState.Loading;
     
@@ -66,6 +70,8 @@ public partial class ManageGuild
                 
                 _kobaltGuild = kobaltGuildResult.Entity;
                 _guildState = GuildState.Ready;
+
+                InvokeAsync(GetInfractionsAsync);
             }
             else
             {
@@ -76,6 +82,54 @@ public partial class ManageGuild
         StateHasChanged();
     }
 
+    private async Task GetInfractionsAsync()
+    {
+        using var client = Http.CreateClient("Infractions");
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"infractions/guilds/{GuildID}");
+        
+        using var response = await client.SendAsync(request);
+        
+        try
+        {
+            if (!response.IsSuccessStatusCode)
+            {
+                _infractions = Result<IReadOnlyList<InfractionView>>.FromError(new NotFoundError("Failed to retrieve infractions."));
+            }
+            else
+            {
+                var jsonSerializer = JsonOptions.Get("Discord");
+                var content = await response.Content.ReadFromJsonAsync<IReadOnlyList<InfractionDTO>>(jsonSerializer);
+
+                var list = new List<InfractionView>();
+
+                foreach (var infraction in content!)
+                {
+                    var enforcer = await Discord.ResolveUserAsync(infraction.ModeratorID);
+                    var target = await Discord.ResolveUserAsync(infraction.UserID);
+
+                    list.Add
+                    (
+                        new InfractionView
+                        (
+                            infraction.Type,
+                            enforcer.Entity.GetFormattedUsername(),
+                            target.Entity.GetFormattedUsername(),
+                            infraction.CreatedAt,
+                            infraction.Reason.Truncate(40, "[...]"),
+                            infraction.ExpiresAt
+                        )
+                    );
+                }
+
+                _infractions = Result<IReadOnlyList<InfractionView>>.FromSuccess(list);
+            }
+        }
+        finally
+        {
+            StateHasChanged();   
+        }
+    }
+    
     private async Task<Result<Guild>> GetGuildAsync()
     {
         using var client = Http.CreateClient("Kobalt");
@@ -93,4 +147,15 @@ public partial class ManageGuild
             return Result<Guild>.FromError(new NotFoundError("Failed to retrieve guild."));
         }
     }
+
+    private record InfractionView
+    (
+        InfractionType Type,
+        string Enforcer,
+        string Target,
+        DateTimeOffset When,
+        string Reason,
+        DateTimeOffset? Expiration
+    ); 
 }
+
