@@ -13,9 +13,9 @@ services:
       - CONNECTIONSTRINGS__REDIS=kobalt_redis:6379
       - CONNECTIONSTRINGS__KOBALT=Server=kobalt_postgres;Database=kobalt;Username=kobalt;Password=kobalt;
       - CONNECTIONSTRINGS__RABBITMQ=rabbitmq://kobalt:kobalt@kobalt_rabbitmq:5672/
-      - KOBALT__REMINDERSAPIURL=http://kobalt_reminders:5010
-      - KOBALT__INFRACTIONSAPIURL=http://kobalt_infractions:5020
-      - KOBALT__PHISHINGAPIURL=http://kobalt_phishing:5030
+      - KOBALT__REMINDERSAPIURL=http://kobalt_reminders:8080
+      - KOBALT__INFRACTIONSAPIURL=http://kobalt_infractions:8080
+      - KOBALT__PHISHINGAPIURL=http://kobalt_phishing:8080
     depends_on:
       - postgres
       - redis
