@@ -9,13 +9,13 @@ services:
     environment:
       - DISCORD__TOKEN=${KOBALT_DISCORD_TOKEN}
       - DISCORD__PUBLICKEY=${KOBALT_DISCORD_PUBLICKEY}
-      - DISCORD__SHARDCOUNT=1,
-      - CONNECTIONSTRINGS__REDIS="redis:6379"
-      - CONNECTIONSTRINGS__KOBALT="Host=postgres;Port=5432;Database=kobalt;Username=kobalt;Password=kobalt"
-      - CONNECTIONSTRINGS__RABBITMQ="rabbitmq://kobalt:kobalt@rabbitmq:5672/"
-      - KOBALT__REMINDERSAPIURL="http://reminders:5010"
-      - KOBALT__INFRACTIONSAPIURL="http://infractions:5020"
-      - KOBALT__PHISHINGAPIURL="http://phishing:5030"
+      - DISCORD__SHARDCOUNT=1
+      - CONNECTIONSTRINGS__REDIS=kobalt_redis:6379
+      - CONNECTIONSTRINGS__KOBALT=Server=kobalt_postgres;Database=kobalt;Username=kobalt;Password=kobalt;
+      - CONNECTIONSTRINGS__RABBITMQ=rabbitmq://kobalt:kobalt@kobalt_rabbitmq:5672/
+      - KOBALT__REMINDERSAPIURL=http://kobalt_reminders:5010
+      - KOBALT__INFRACTIONSAPIURL=http://kobalt_infractions:5020
+      - KOBALT__PHISHINGAPIURL=http://kobalt_phishing:5030
     depends_on:
       - postgres
       - redis
@@ -61,8 +61,8 @@ services:
     ports:
       - "5010:5000"
     environment:
-      - CONNECTIONSTRINGS__REMINDERS="Host=postgres;Port=5432;Database=kobalt;Username=kobalt;Password=kobalt"
-      - CONNECTIONSTRINGS__RABBITMQ="rabbitmq://kobalt:kobalt@rabbitmq:5672/"
+      - CONNECTIONSTRINGS__REMINDERS=Server=kobalt_postgres;Database=kobalt;Username=kobalt;Password=kobalt;
+      - CONNECTIONSTRINGS__RABBITMQ=rabbitmq://kobalt:kobalt@kobalt_rabbitmq:5672/
     depends_on:
       - rabbit-mq
   
@@ -72,9 +72,8 @@ services:
     ports:
       - "5020:5000"
     environment:
-      - CONNECTIONSTRINGS__INFRACTIONS="Host=postgres;Port=5432;Database=kobalt;Username=kobalt;Password=kobalt"
-      - CONNECTIONSTRINGS__INFRACTIONS="Host=postgres;Port=5432;Database=kobalt;Username=kobalt;Password=kobalt"
-      - CONNECTIONSTRINGS__RABBITMQ="rabbitmq://kobalt:kobalt@rabbitmq:5672/"
+      - CONNECTIONSTRINGS__INFRACTIONS=Server=kobalt_postgres;Database=kobalt;Username=kobalt;Password=kobalt;
+      - CONNECTIONSTRINGS__RABBITMQ=rabbitmq://kobalt:kobalt@kobalt_rabbitmq:5672/
     depends_on:
       - rabbit-mq
       - postgres
