@@ -54,7 +54,6 @@ builder.Services.AddSerilogLogging();
 
 ConfigureKobaltBotServices(builder.Configuration, builder.Services);
 
-builder.WebHost.ConfigureKestrel(c => c.ListenLocalhost(builder.Configuration.GetKobaltConfig().ApiPort));
 builder.Host.AddStartupTaskSupport();
 
 
