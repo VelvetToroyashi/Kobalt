@@ -22,28 +22,18 @@ else if (_guildState is GuildState.Loading)
 }
 else
 {
-    <MudText Typo="Typo.h3">Overview of @(_guild!.Name)</MudText>
+    <MudText Typo="Typo.h3" GutterBottom="true">Overview of @(_guild!.Name)</MudText>
     <div style="margin-top: 20px"></div>
     <MudGrid>
         <MudItem>
-            <MudCard Width="240px" Height="240px" Elevation="10" Square="true">
+            <MudCard Elevation="10" Square="true">
                 <MudCardContent>
-                    <MudText Typo="Typo.h5">Basic Info</MudText>
+                    <MudText Typo="Typo.h3" GutterBottom="true">Welcome to Kobalt</MudText>
                     
-                    <MudGrid Class="mt-3">
-                        <MudItem>
-                            <span style="color: dimgrey;">Members:</span>
-                            <span class="font-bold">@(_guild?.ApproximateMemberCount.Map(c => c.ToMetric()).OrDefault("Unknown"))</span>
-                        </MudItem>
-                        <MudItem>
-                            <span style="color: dimgrey;">Channels:</span>
-                            <span class="font-bold">@(_channels?.Count.ToString() ?? "")</span>
-                        </MudItem>
-                        <MudItem>
-                            <span style="color: dimgray">Logging channels:</span>
-                            <span class="font-bold">@(_kobaltGuild?.LogChannels.Count ?? 0)</span>
-                        </MudItem>
-                    </MudGrid>
+                    <MudText Typo="Typo.subtitle1">
+                        Kobalt is a moderation bot that aims to be a one-stop shop for all your moderation needs. <br/>
+                        It's currently in a very early stage of development, so expect bugs and missing features!
+                    </MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>

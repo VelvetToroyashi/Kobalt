@@ -1,18 +1,16 @@
 ﻿@inherits LayoutComponentBase
 <MudThemeProvider IsDarkMode="true" Theme="KobaltTheme"/>
-<MudDialogProvider/>
-<MudSnackbarProvider/>
 
 <MudLayout>
     <NavMenu/>
-    <div>
+    <MudMainContent>
       @Body  
-    </div>
+    </MudMainContent>
 </MudLayout>
 
 
 @code {
-    MudTheme KobaltTheme = new MudTheme()
+    public static MudTheme KobaltTheme = new MudTheme()
     {
         PaletteDark = new PaletteDark()
         {

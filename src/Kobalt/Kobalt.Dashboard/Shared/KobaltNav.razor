@@ -1,0 +1,124 @@
+@using Kobalt.Dashboard.Extensions
+@using Microsoft.Extensions.Options
+@using AspNet.Security.OAuth.Discord
+@using Microsoft.AspNetCore.Components.Forms
+@using Kobalt.Dashboard.Extensions
+@using MudBlazor
+@using MudBlazor.Utilities
+@inject IOptions<IConfiguration> Config
+@inject NavigationManager NavigationManager
+
+
+<CascadingAuthenticationState>
+    <MudAppBar>
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudContainer Class="d-flex flex-row justify-space-around" MaxWidth="MaxWidth.Small">
+                <MudText>Kobalt</MudText>
+                <MudText>Dashboard</MudText>
+                <MudText>About</MudText>
+                <MudText>Features</MudText>
+                <MudText>Source</MudText>
+                <MudText>Support</MudText>
+            </MudContainer>
+            
+            <MudSpacer/>
+            <MudButton Variant="Variant.Filled" Color="Color.Dark" Size="Size.Large" Class="cta-button bg-gray-500 rounded-md">Add to Server</MudButton>
+            <AuthorizeView>
+                <Authorized>
+                    <MudMenu Color="Color.Primary" Dense="true" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                        <ActivatorContent>
+                            <MudAvatar Rounded="true" Size="Size.Medium">
+                                <MudImage Src="@context.User.GetAvatarUrl()"></MudImage>
+                            </MudAvatar>                    
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudText Class="px-2">
+                                Signed in as <br/>
+                                <span class="font-bold">@context.User.GetUsername()</span>
+                            </MudText>
+                            <MudDivider/>
+                            <MudMenuItem Class="px-2">Lorem</MudMenuItem>
+                            <MudMenuItem Class="px-2">Ipsum</MudMenuItem>
+                            <MudDivider/>
+                            <form action="api/auth/logout" method="post">
+                                <button type="submit">
+                                    <MudMenuItem Class="px-2">Not you? Sign out</MudMenuItem>
+                                </button>
+                                <input type="hidden" name="returnUrl" value="@NavigationManager.BaseUri"/>
+                            </form>
+                        </ChildContent>
+                    </MudMenu>
+                </Authorized>
+                <NotAuthorized>
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Href="@NavigationManager.GetDiscordLoginUrl()" ButtonType="ButtonType.Submit" Size="Size.Large" Class="cta-button bg-green-500 rounded-md">Login with Discord</MudButton>
+                </NotAuthorized>
+            </AuthorizeView>
+        </MudHidden>
+        <MudText>Kobalt</MudText>
+        <MudSpacer/>
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="Toggle"/>
+    </MudAppBar>
+        
+    <MudHidden Breakpoint="Breakpoint.MdAndUp">
+        <MudDrawer @bind-Open="_open" Variant="DrawerVariant.Temporary" Anchor="Anchor.Right" ClipMode="DrawerClipMode.Always">
+            <MudList>
+                <MudItem>
+                    <AuthorizeView>
+                        <MudText Class="px-4">
+                            Signed in as <br/>
+                            <span class="font-bold">@context.User.GetUsername()</span>
+                        </MudText>
+                    </AuthorizeView>
+                </MudItem>
+                <MudNavLink Match="NavLinkMatch.All">Dashboard</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All">About</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All">Features</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All">Source</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All">Support</MudNavLink>
+                <AuthorizeView>
+                    <Authorized>
+                        <form action="api/auth/logout" method="post">
+                            <button type="submit">
+                                <MudMenuItem Class="px-4">Not you? Sign out</MudMenuItem>
+                            </button>
+                            <input type="hidden" name="returnUrl" value="@NavigationManager.BaseUri"/>
+                        </form>
+                    </Authorized>
+                    <NotAuthorized>
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" Href="@NavigationManager.GetDiscordLoginUrl()" ButtonType="ButtonType.Submit" Size="Size.Large" Class="cta-button bg-green-500 rounded-md">Login with Discord</MudButton>
+                    </NotAuthorized>
+                </AuthorizeView>
+                
+                @if (ChildContent is not null)
+                {
+                    <MudDivider/>
+                    <div class="mt-5"></div>
+                    @ChildContent
+                }
+            </MudList>
+        </MudDrawer>
+    </MudHidden>
+</CascadingAuthenticationState>
+
+<style>
+    .mud-popover-open {
+        margin-top: 4px !important;
+    }
+    
+    .mud-list.mud-list-padding {
+        padding-bottom: 0;
+    }
+    
+    .cta-button {
+        text-transform: none !important;
+    }
+</style>
+
+@code {
+
+    private bool _open;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private void Toggle() => _open = !_open;
+
+}

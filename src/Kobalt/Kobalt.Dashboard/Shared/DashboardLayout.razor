@@ -1,33 +1,49 @@
 @inherits LayoutComponentBase
-@layout MainLayout
+
+<MudThemeProvider IsDarkMode="true" Theme="MainLayout.KobaltTheme"/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
 
 @* TODO: This is really unfriendly for mobile, but perhaps the fault of the main layout. This should be investigated. *@
 
-<MudContainer>
+<MudLayout>
     <CascadingValue TValue="Action<string>" Value="UpdateValue">
-        <MudDrawer Open="true" Color="Color.Secondary" Elevation="0">
-            <MudDrawerHeader>
-                <MudText Align="Align.Center" Typo="Typo.h6">Manage</MudText>
-            </MudDrawerHeader>
-            <MudNavMenu>
-                <MudNavGroup Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.ClearAll" Title="Guilds">
-                    <MudNavLink Href="@GetHref("logging")" Match="NavLinkMatch.All">Logging</MudNavLink>
-                    <MudNavLink Href="@GetHref("role-menus")" Match="NavLinkMatch.All">Role Menus</MudNavLink>
-                    <MudNavLink Href="@GetHref("infractions")" Match="NavLinkMatch.All">Infraction Rules</MudNavLink>
-                    <MudNavLink Href="@GetHref("security")" Match="NavLinkMatch.All">Security & Antiraid</MudNavLink>
-                </MudNavGroup>
-                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Feedback">Reminders</MudNavLink>
-                <MudNavLink Match="NavLinkMatch.All" Disabled="true" Icon="@Icons.Material.Outlined.HowToReg">Artist Verification (Coming soon!)</MudNavLink>
-            </MudNavMenu>
-        </MudDrawer>
-        <MudMainContent>
-            @Body
-        </MudMainContent>
+        <KobaltNav>
+            <ChildContent>
+                <MudNavMenu>
+                    <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Dns">Servers</MudNavLink>
+                    <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Feedback">Reminders</MudNavLink>
+                    <MudNavLink Match="NavLinkMatch.All" Disabled="true" Icon="@Icons.Material.Outlined.HowToReg">Artist Verification (Coming soon!)</MudNavLink>
+                </MudNavMenu>
+            </ChildContent>
+        </KobaltNav>
+        
+        <MudDrawerContainer>
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                <MudDrawer @bind-Open="_drawerOpen" Class="mud-height-full" Anchor="Anchor.Left" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" ClipMode="DrawerClipMode.Always" Color="Color.Secondary">
+                    <MudDrawerHeader>
+                        <MudText Align="Align.Center" Typo="Typo.h6">Manage</MudText>
+                    </MudDrawerHeader>
+                    <MudNavMenu>
+                        <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Dns">Servers</MudNavLink>
+                        <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Feedback">Reminders</MudNavLink>
+                        <MudNavLink Match="NavLinkMatch.All" Disabled="true" Icon="@Icons.Material.Outlined.HowToReg">Artist Verification (Coming soon!)</MudNavLink>
+                    </MudNavMenu>
+                </MudDrawer>
+            </MudHidden>
+
+            <MudMainContent>
+                <MudContainer Class="mt-5" MaxWidth="MaxWidth.Large">
+                    @Body
+                </MudContainer>
+            </MudMainContent>
+        </MudDrawerContainer>
     </CascadingValue>
-</MudContainer>
+</MudLayout>
 
 @code
 {
+    private bool _drawerOpen = true;
     private string? _value = null;
     
     public string? GetHref(string route) => _value is null ? null : $"/manage/{route}/{_value}";
