@@ -5,7 +5,7 @@ services:
     container_name: "kobalt_bot"
     image: kobalt/bot:latest
     ports:
-      - "5000:3140"
+      - "8080:8080"
     environment:
       - DISCORD__TOKEN=${KOBALT_DISCORD_TOKEN}
       - DISCORD__PUBLICKEY=${KOBALT_DISCORD_PUBLICKEY}
@@ -59,7 +59,7 @@ services:
     container_name: "kobalt_reminders"
     image: kobalt/reminders:latest
     ports:
-      - "5010:5000"
+      - "5010:8080"
     environment:
       - CONNECTIONSTRINGS__REMINDERS=Server=kobalt_postgres;Database=kobalt;Username=kobalt;Password=kobalt;
       - CONNECTIONSTRINGS__RABBITMQ=rabbitmq://kobalt:kobalt@kobalt_rabbitmq:5672/
@@ -70,7 +70,7 @@ services:
     container_name: "kobalt_infractions"
     image: kobalt/infractions:latest
     ports:
-      - "5020:5000"
+      - "5020:8080"
     environment:
       - CONNECTIONSTRINGS__INFRACTIONS=Server=kobalt_postgres;Database=kobalt;Username=kobalt;Password=kobalt;
       - CONNECTIONSTRINGS__RABBITMQ=rabbitmq://kobalt:kobalt@kobalt_rabbitmq:5672/
