@@ -1,12 +1,10 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
-COPY ["./InfractionsAPI/Kobalt.Infractions.API/Kobalt.Infractions.API.csproj", "src/InfractionsAPI/Kobalt.Infractions.API/"]
-COPY ["../../Kobalt/Kobalt.Shared/Kobalt.Shared.csproj", "src/Kobalt/Kobalt.Shared/"]
+COPY ["src/InfractionsAPI/Kobalt.Infractions.API/Kobalt.Infractions.API.csproj", "src/InfractionsAPI/Kobalt.Infractions.API/"]
+COPY ["src/Kobalt/Kobalt.Shared/Kobalt.Shared.csproj", "src/Kobalt/Kobalt.Shared/"]
 COPY ["src/InfractionsAPI/Kobalt.Infractions.Data/Kobalt.Infractions.Data.csproj", "src/InfractionsAPI/Kobalt.Infractions.Data/"]
 COPY ["src/InfractionsAPI/Kobalt.Infractions.Shared/Kobalt.Infractions.Shared.csproj", "src/InfractionsAPI/Kobalt.Infractions.Shared/"]
 RUN dotnet restore "src/InfractionsAPI/Kobalt.Infractions.API/Kobalt.Infractions.API.csproj"

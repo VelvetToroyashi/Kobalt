@@ -1,0 +1,81 @@
+version: "3"
+
+services:
+  kobalt:
+    container_name: "kobalt_bot"
+    image: kobalt/bot:latest
+    ports:
+      - "5000:3140"
+    environment:
+      - DISCORD__TOKEN=${KOBALT_DISCORD_TOKEN}
+      - DISCORD__PUBLICKEY=${KOBALT_DISCORD_PUBLICKEY}
+      - DISCORD__SHARDCOUNT=1,
+      - CONNECTIONSTRINGS__REDIS="redis:6379"
+      - CONNECTIONSTRINGS__KOBALT="Host=postgres;Port=5432;Database=kobalt;Username=kobalt;Password=kobalt"
+      - CONNECTIONSTRINGS__RABBITMQ="rabbitmq://kobalt:kobalt@rabbitmq:5672/"
+      - KOBALT__REMINDERSAPIURL="http://reminders:5010"
+      - KOBALT__INFRACTIONSAPIURL="http://infractions:5020"
+      - KOBALT__PHISHINGAPIURL="http://phishing:5030"
+    depends_on:
+      - postgres
+      - redis
+      - rabbit-mq
+
+  rabbit-mq:
+    container_name: "kobalt_rabbitmq"
+    image: rabbitmq:3.12.1-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=kobalt
+      - RABBITMQ_DEFAULT_PASS=kobalt
+    ports:
+      # AMQP protocol port
+      - '5672:5672'
+      # HTTP management UI
+      - '15672:15672'
+    volumes:
+      - ./rabbitmq/data/:/var/lib/rabbitmq/mnesia
+  
+  postgres:
+    container_name: "kobalt_postgres"
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+      #volumes:
+      #- ./postgres/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=kobalt
+      - POSTGRES_PASSWORD=kobalt
+      - POSTGRES_DB=kobalt
+
+  redis:
+    container_name: "kobalt_redis"
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/data:/data
+
+  reminders:
+    container_name: "kobalt_reminders"
+    image: kobalt/reminders:latest
+    ports:
+      - "5010:5000"
+    environment:
+      - CONNECTIONSTRINGS__REMINDERS="Host=postgres;Port=5432;Database=kobalt;Username=kobalt;Password=kobalt"
+      - CONNECTIONSTRINGS__RABBITMQ="rabbitmq://kobalt:kobalt@rabbitmq:5672/"
+    depends_on:
+      - rabbit-mq
+  
+  infractions:
+    container_name: "kobalt_infractions"
+    image: kobalt/infractions:latest
+    ports:
+      - "5020:5000"
+    environment:
+      - CONNECTIONSTRINGS__INFRACTIONS="Host=postgres;Port=5432;Database=kobalt;Username=kobalt;Password=kobalt"
+      - CONNECTIONSTRINGS__INFRACTIONS="Host=postgres;Port=5432;Database=kobalt;Username=kobalt;Password=kobalt"
+      - CONNECTIONSTRINGS__RABBITMQ="rabbitmq://kobalt:kobalt@rabbitmq:5672/"
+    depends_on:
+      - rabbit-mq
+      - postgres
+    

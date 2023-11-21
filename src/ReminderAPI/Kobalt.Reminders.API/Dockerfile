@@ -1,14 +1,16 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
-COPY ["Kobalt.Reminders.API/Kobalt.Reminders.API.csproj", "Kobalt.Reminders.API/"]
-RUN dotnet restore "Kobalt.Reminders.API/Kobalt.Reminders.API.csproj"
+COPY ["src/ReminderAPI/Kobalt.Reminders.API/Kobalt.Reminders.API.csproj", "src/ReminderAPI/Kobalt.Reminders.API/"]
+COPY ["src/ReminderAPI/Kobalt.Reminders.Data/Kobalt.Reminders.Data.csproj", "src/ReminderAPI/Kobalt.Reminders.Data/"]
+COPY ["src/Kobalt/Kobalt.Shared/Kobalt.Shared.csproj", "src/Kobalt/Kobalt.Shared/"]
+RUN dotnet restore "src/ReminderAPI/Kobalt.Reminders.API/Kobalt.Reminders.API.csproj"
 COPY . .
-WORKDIR "/src/Kobalt.Reminders.API"
+WORKDIR "/src/src/ReminderAPI/Kobalt.Reminders.API"
 RUN dotnet build "Kobalt.Reminders.API.csproj" -c Release -o /app/build
 
 FROM build AS publish

@@ -1,11 +1,12 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 COPY ["src/PhishingAPI/Kobalt.Phishing.API/Kobalt.Phishing.API.csproj", "src/PhishingAPI/Kobalt.Phishing.API/"]
+COPY ["src/Kobalt/Kobalt.Shared/Kobalt.Shared.csproj", "src/Kobalt/Kobalt.Shared/"]
+COPY ["src/PhishingAPI/Kobalt.Phishing.Data/Kobalt.Phishing.Data.csproj", "src/PhishingAPI/Kobalt.Phishing.Data/"]
+COPY ["src/PhishingAPI/Kobalt.Phishing.Shared/Kobalt.Phishing.Shared.csproj", "src/PhishingAPI/Kobalt.Phishing.Shared/"]
 RUN dotnet restore "src/PhishingAPI/Kobalt.Phishing.API/Kobalt.Phishing.API.csproj"
 COPY . .
 WORKDIR "/src/src/PhishingAPI/Kobalt.Phishing.API"

@@ -2,7 +2,7 @@
 
 services:
   rabbit-mq:
-    container_name: "rabbitmq"
+    container_name: "kobalt_rabbitmq"
     image: rabbitmq:3.12.1-management-alpine
     environment:
       - RABBITMQ_DEFAULT_USER=kobalt
@@ -16,6 +16,7 @@ services:
       - ./rabbitmq/data/:/var/lib/rabbitmq/mnesia
         
   postgres:
+    container_name: "kobalt_postgres"
     image: postgres:15-alpine
     ports:
       - "5432:5432"
@@ -27,6 +28,7 @@ services:
       - POSTGRES_DB=kobalt
 
   redis:
+    container_name: "kobalt_redis"
     image: redis:alpine
     ports:
       - "6379:6379"
