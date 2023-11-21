@@ -5,7 +5,7 @@ services:
     container_name: "kobalt_bot"
     image: kobalt/bot:latest
     ports:
-      - "8080:8080"
+      - "5040:8080"
     environment:
       - DISCORD__TOKEN=${KOBALT_DISCORD_TOKEN}
       - DISCORD__PUBLICKEY=${KOBALT_DISCORD_PUBLICKEY}
@@ -76,5 +76,15 @@ services:
       - CONNECTIONSTRINGS__RABBITMQ=rabbitmq://kobalt:kobalt@kobalt_rabbitmq:5672/
     depends_on:
       - rabbit-mq
+      - postgres
+  
+  phishing:
+    container_name: "kobalt_phishing"
+    image: kobalt/phishing:latest
+    ports:
+      - "5030:8080"
+    environment:
+      - CONNECTIONSTRINGS__PHISHING=Server=kobalt_postgres;Database=kobalt;Username=kobalt;Password=kobalt;
+    depends_on:
       - postgres
     
