@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using Humanizer;
 using Kobalt.Dashboard.Extensions;
@@ -97,6 +98,12 @@ public partial class ManageGuild
             }
             else
             {
+                if (response.StatusCode is HttpStatusCode.NoContent)
+                {
+                    _infractions = Result<IReadOnlyList<InfractionView>>.FromSuccess(Array.Empty<InfractionView>());
+                    return;
+                }
+                
                 var jsonSerializer = JsonOptions.Get("Discord");
                 var content = await response.Content.ReadFromJsonAsync<IReadOnlyList<InfractionDTO>>(jsonSerializer);
 
