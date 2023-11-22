@@ -30,7 +30,7 @@ public static class GetLoggingChannels
 
             var channels = await context.LogChannels
                 .Where(l => l.GuildID == request.GuildID && l.Type == request.Type)
-                .Select(l => new LogChannelDTO(l.ChannelID, l.WebhookID, l.WebhookToken))
+                .Select(l => new LogChannelDTO(l.Id, l.ChannelID, l.WebhookID, l.WebhookToken, l.Type))
                 .ToListAsync(cancellationToken);
 
             return channels;

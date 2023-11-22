@@ -41,7 +41,7 @@ public static class AddLoggingChannel
             context.LogChannels.Add(channel);
             await context.SaveChangesAsync(cancellationToken);
 
-            return new LogChannelDTO(channel.ChannelID, channel.WebhookID, channel.WebhookToken);
+            return new LogChannelDTO(channel.Id, channel.ChannelID, channel.WebhookID, channel.WebhookToken, channel.Type);
         }
     }
 }
