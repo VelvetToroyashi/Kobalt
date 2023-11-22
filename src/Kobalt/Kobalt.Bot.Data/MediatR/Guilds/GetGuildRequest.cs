@@ -8,11 +8,11 @@ namespace Kobalt.Bot.Data.MediatR.Guilds;
 
 public static partial class GetGuild
 {
-    public record Request(Snowflake GuildID) : IRequest<Result<Guild>>;
+    public record Request(Snowflake GuildID) : IRequest<Result<KobaltGuild>>;
     
-    internal class GetGuildHandler(IDbContextFactory<KobaltContext> context) : IRequestHandler<Request, Result<Guild>>
+    internal class GetGuildHandler(IDbContextFactory<KobaltContext> context) : IRequestHandler<Request, Result<KobaltGuild>>
     {
-        public async Task<Result<Guild>> Handle(Request request, CancellationToken cancellationToken)
+        public async Task<Result<KobaltGuild>> Handle(Request request, CancellationToken cancellationToken)
         {
             await using var db = await context.CreateDbContextAsync(cancellationToken);
 

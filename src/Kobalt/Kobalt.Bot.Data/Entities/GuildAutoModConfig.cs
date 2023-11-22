@@ -20,7 +20,7 @@ public class GuildAutoModConfig
     public int? PushToTalkThreshold { get; set; }
 
     [NotNull]
-    public Guild? Guild { get; set; }
+    public KobaltGuild? Guild { get; set; }
 }
 
 public class GuildAutoModConfigConfiguration : IEntityTypeConfiguration<GuildAutoModConfig>

@@ -15,7 +15,7 @@ public class GuildPhishingConfig
     public required Snowflake GuildID { get; set; }
 
     [NotNull]
-    public Guild? Guild { get; set; }
+    public KobaltGuild? Guild { get; set; }
 
     public bool ScanLinks { get; set; }
     public bool ScanUsers { get; set; }

@@ -18,7 +18,7 @@ public class KobaltContext : DbContext
     public DbSet<RoleMenuEntity> RoleMenus { get; set; }
     
     public DbSet<User> Users { get; set; } = default!;
-    public DbSet<Guild> Guilds { get; set; } = default!;
+    public DbSet<KobaltGuild> Guilds { get; set; } = default!;
     public DbSet<LogChannel> LogChannels { get; set; } = default!;
 
 

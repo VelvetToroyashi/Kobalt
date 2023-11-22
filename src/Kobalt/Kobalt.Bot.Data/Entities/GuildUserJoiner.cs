@@ -15,7 +15,7 @@ public class GuildUserJoiner
     public User? User { get; set; }
 
     [NotNull]
-    public Guild? Guild { get; set; }
+    public KobaltGuild? Guild { get; set; }
 }
 
 public class GuildUserJoinerConfiguration : IEntityTypeConfiguration<GuildUserJoiner>
