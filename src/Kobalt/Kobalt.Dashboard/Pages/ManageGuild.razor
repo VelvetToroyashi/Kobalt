@@ -26,9 +26,9 @@ else
     <div style="margin-top: 20px"></div>
     <MudGrid>
         <MudItem Style="min-width: 250px; display: flex; flex-shrink: 2; flex-grow: 1; flex-basis: min-content;">
-            <MudCard Elevation="10" Square="true" >
+            <MudCard Elevation="0" Square="true" >
                 <MudCardContent >
-                    <MudText Typo="Typo.h3" GutterBottom="true">Welcome to Kobalt</MudText>
+                    <MudText Typo="Typo.h4" GutterBottom="true">Welcome to Kobalt</MudText>
                     
                     <MudText Typo="Typo.subtitle1">
                         Kobalt is a moderation bot that aims to one-size fits most, without compromise. <br/> <br/>
@@ -78,5 +78,39 @@ else
                 </MudCardContent>
             </MudCard>
         </MudItem>
+        <MudItem>
+            <MudTabs >
+                <MudTabPanel Text="Auto-Moderation" Icon="@Icons.Material.Filled.Security">
+                    <MudContainer>
+                        <MudTooltip Delay="250" Text="How many users are allowed to be in a channel before it's switched to Push-To-Talk.">
+                            <MudNumericField T="int?" bind-Value="_kobaltGuild.AutoModConfig.PushToTalkThreshold" Variant="Variant.Text" Min="0" Label="Push To Talk Threshold"/>
+                        </MudTooltip>
+                    </MudContainer>
+                </MudTabPanel>
+                
+                <MudTabPanel Text="Anti-Raid" Icon="@Icons.Material.Filled.PersonAddDisabled">
+                    <MudContainer>
+                        <MudCheckBox bind-Checked="_kobaltGuild.AntiRaidConfig.IsEnabled">Enabled</MudCheckBox>
+                        <MudDatePicker Disabled="!_kobaltGuild.AntiRaidConfig.IsEnabled" bind ></MudDatePicker>
+                    </MudContainer>
+                </MudTabPanel>
+                <MudTabPanel Text="Anti-Phishing" Icon="@Icons.Material.Filled.ManageSearch"></MudTabPanel>
+                
+                <MudTabPanel Text="Logging" Icon="@Icons.Material.Filled.Notes"></MudTabPanel>
+            </MudTabs>
+            
+            <MudButton Color="Color.Info" Disabled="_isBusy" Class="mt-7" Variant="Variant.Filled">
+                @if (_isBusy)
+                {
+                    <MudProgressCircular Size="Size.Small" />
+                    <MudText>Updating...</MudText>
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Save" />
+                    <MudText>Save Changes</MudText>
+                }
+            </MudButton>
+        </MudItem> 
     </MudGrid>
 }

@@ -34,12 +34,13 @@ public partial class ManageGuild
     
     [Inject]
     public required DashboardRestClient Discord { get; set; }
-
-
+    
     private IGuild? _guild;
     private Guild? _kobaltGuild;
     private IReadOnlyList<IChannel>? _channels;
     private Result<IReadOnlyList<InfractionView>>? _infractions;
+
+    private bool _isBusy;
 
     private GuildState _guildState = GuildState.Loading;
     
