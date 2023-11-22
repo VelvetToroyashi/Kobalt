@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Humanizer;
+using Kobalt.Bot.Data.DTOs;
 using Kobalt.Dashboard.Extensions;
 using Kobalt.Dashboard.Services;
 using Kobalt.Infractions.Shared;
@@ -10,7 +11,6 @@ using Microsoft.Extensions.Options;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Rest.Core;
 using Remora.Results;
-using Guild = Kobalt.Bot.Data.Entities.Guild;
 
 namespace Kobalt.Dashboard.Pages;
 
@@ -36,7 +36,7 @@ public partial class ManageGuild
     public required DashboardRestClient Discord { get; set; }
     
     private IGuild? _guild;
-    private Guild? _kobaltGuild;
+    private KobaltGuildDTO? _kobaltGuild;
     private IReadOnlyList<IChannel>? _channels;
     private Result<IReadOnlyList<InfractionView>>? _infractions;
 
@@ -138,7 +138,7 @@ public partial class ManageGuild
         }
     }
     
-    private async Task<Result<Guild>> GetGuildAsync()
+    private async Task<Result<KobaltGuildDTO>> GetGuildAsync()
     {
         using var client = Http.CreateClient("Kobalt");
         using var request = new HttpRequestMessage(HttpMethod.Get, $"api/guilds/{GuildID}");
@@ -148,11 +148,11 @@ public partial class ManageGuild
         if (response.IsSuccessStatusCode)
         {
             var jsonSerializer = JsonOptions.Get("Discord");
-            return Result<Guild>.FromSuccess(await response.Content.ReadFromJsonAsync<Guild>(jsonSerializer));
+            return Result<KobaltGuildDTO>.FromSuccess(await response.Content.ReadFromJsonAsync<KobaltGuildDTO>(jsonSerializer));
         }
         else
         {
-            return Result<Guild>.FromError(new NotFoundError("Failed to retrieve guild."));
+            return Result<KobaltGuildDTO>.FromError(new NotFoundError("Failed to retrieve guild."));
         }
     }
 
