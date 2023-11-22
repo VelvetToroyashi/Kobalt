@@ -4,8 +4,8 @@ namespace Kobalt.Bot.Data.DTOs;
 
 public class GuildAntiPhishingConfigDTO(int Id, bool ScanLinks, bool ScanUsers, InfractionType DetectionAction)
 {
-    public int Id { get; init; } = Id;
-    public bool ScanLinks { get; init; } = ScanLinks;
-    public bool ScanUsers { get; init; } = ScanUsers;
-    public InfractionType DetectionAction { get; init; } = DetectionAction;
+    public int Id { get; set; } = Id;
+    public bool ScanLinks { get; set; } = ScanLinks;
+    public bool ScanUsers { get; set; } = ScanUsers;
+    public InfractionType DetectionAction { get; set; } = DetectionAction;
 }
