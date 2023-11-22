@@ -15,7 +15,7 @@ public class GuildAntiRaidConfig
     public required Snowflake GuildID { get; set; }
 
     [NotNull]
-    public Guild? Guild { get; set; }
+    public KobaltGuild? Guild { get; set; }
 
     /// <summary>
     /// Whether or not anti-raid is enabled.

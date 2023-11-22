@@ -5,7 +5,7 @@ using Remora.Rest.Core;
 
 namespace Kobalt.Bot.Data.Entities;
 
-public class Guild
+public class KobaltGuild
 {
     /// <summary>
     /// The ID of the guild.
@@ -33,9 +33,9 @@ public class Guild
     // TODO: Configurations
 }
 
-public class GuildEntityConfiguration : IEntityTypeConfiguration<Guild>
+public class GuildEntityConfiguration : IEntityTypeConfiguration<KobaltGuild>
 {
-    public void Configure(EntityTypeBuilder<Guild> builder)
+    public void Configure(EntityTypeBuilder<KobaltGuild> builder)
     {
         builder.ToTable("guilds");
     }

@@ -14,7 +14,7 @@ public class RoleMenuEntity
     public Snowflake MessageID { get; set; }
 
     [NotNull]
-    public Guild? Guild { get; set; }
+    public KobaltGuild? Guild { get; set; }
 
     public string Name { get; set; }
 

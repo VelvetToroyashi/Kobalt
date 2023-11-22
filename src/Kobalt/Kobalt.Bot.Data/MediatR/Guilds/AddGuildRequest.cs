@@ -31,7 +31,7 @@ public static class AddGuild
 
             db.Guilds.Add
             (
-                new Guild
+                new KobaltGuild
                 {
                     ID = request.GuildID,
                     AutoModConfig  = new GuildAutoModConfig { GuildID = request.GuildID },
