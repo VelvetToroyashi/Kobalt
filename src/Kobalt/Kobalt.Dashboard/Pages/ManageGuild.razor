@@ -22,26 +22,25 @@ else if (_guildState is GuildState.Loading)
 }
 else
 {
-    <MudText Typo="Typo.h3" GutterBottom="true">Overview of @(_guild!.Name)</MudText>
+    <MudText Typo="Typo.h3" GutterBottom="true">Currently viewing @(_guild!.Name)</MudText>
     <div style="margin-top: 20px"></div>
     <MudGrid>
-        <MudItem>
-            <MudCard Elevation="10" Square="true">
-                <MudCardContent>
+        <MudItem Style="min-width: 250px; display: flex; flex-shrink: 2; flex-grow: 1; flex-basis: min-content;">
+            <MudCard Elevation="10" Square="true" >
+                <MudCardContent >
                     <MudText Typo="Typo.h3" GutterBottom="true">Welcome to Kobalt</MudText>
                     
                     <MudText Typo="Typo.subtitle1">
-                        Kobalt is a moderation bot that aims to be a one-stop shop for all your moderation needs. <br/>
+                        Kobalt is a moderation bot that aims to one-size fits most, without compromise. <br/> <br/>
                         It's currently in a very early stage of development, so expect bugs and missing features!
                     </MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
-        <MudItem>
-            <MudCard>
+        <MudItem Style="display: flex; flex-grow: 3">
+            <MudCard Style="flex-grow: 1;">
                 <MudCardContent>
                     <MudText Typo="Typo.h5" GutterBottom="true">Recent Actions</MudText>
-                    
                     
                     @if (!_infractions?.IsSuccess ?? false)
                     {

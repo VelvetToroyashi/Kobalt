@@ -572,6 +572,14 @@ video {
   width: 100%;
 }
 
+.flex-shrink {
+  flex-shrink: 1;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
 .flex-row {
   flex-direction: row;
 }

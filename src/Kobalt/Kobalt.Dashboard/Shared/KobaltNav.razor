@@ -54,11 +54,15 @@
                 </NotAuthorized>
             </AuthorizeView>
         </MudHidden>
-        <MudText>Kobalt</MudText>
-        <MudSpacer/>
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="Toggle"/>
-    </MudAppBar>
         
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudText>Kobalt</MudText>
+            <MudSpacer/>
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="Toggle"/>
+        </MudHidden>
+    </MudAppBar>
+    
+    @* Mobile UI *@
     <MudHidden Breakpoint="Breakpoint.MdAndUp">
         <MudDrawer @bind-Open="_open" Variant="DrawerVariant.Temporary" Anchor="Anchor.Right" ClipMode="DrawerClipMode.Always">
             <MudList>
@@ -85,7 +89,7 @@
                         </form>
                     </Authorized>
                     <NotAuthorized>
-                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" Href="@NavigationManager.GetDiscordLoginUrl()" ButtonType="ButtonType.Submit" Size="Size.Large" Class="cta-button bg-green-500 rounded-md">Login with Discord</MudButton>
+                        <MudNavLink Match="NavLinkMatch.All" Href="@NavigationManager.GetDiscordLoginUrl()">Login with Discord</MudNavLink>
                     </NotAuthorized>
                 </AuthorizeView>
                 
