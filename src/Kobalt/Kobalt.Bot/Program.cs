@@ -5,6 +5,7 @@ using System.Text.Json;
 using Kobalt.Bot.Auth;
 using Kobalt.Bot.Autocomplete;
 using Kobalt.Bot.Data;
+using Kobalt.Bot.Data.DTOs;
 using Kobalt.Bot.Data.MediatR.Guilds;
 using Kobalt.Bot.Handlers;
 using Kobalt.Bot.Services;
@@ -77,11 +78,7 @@ host.MapGet
         
         if (getGuildResult is { Entity: {} guild })
         {
-            guild.AutoModConfig.Guild = null;
-            guild.PhishingConfig.Guild = null;
-            guild.AntiRaidConfig.Guild = null;
-            
-            return Results.Json(guild, jsonSerializer);
+            return Results.Json(KobaltGuildDTO.FromEntity(guild), jsonSerializer);
         }
         else
         {
