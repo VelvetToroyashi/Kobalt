@@ -1,3 +1,6 @@
 namespace Kobalt.Bot.Data.DTOs;
 
-public record GuildAutoModConfigDTO(int? PushToTalkThreshold);
+public class GuildAutoModConfigDTO(int? PushToTalkThreshold)
+{
+    public int? PushToTalkThreshold { get; init; } = PushToTalkThreshold;
+}
