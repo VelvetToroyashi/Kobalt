@@ -10,7 +10,7 @@ public class KobaltLoggingConfigView(LogChannelDTO channel)
     public Snowflake ChannelID { get; init; } = channel.ChannelID;
     public Snowflake? WebhookID { get; init; } = channel.WebhookID;
     public string? WebhookToken { get; init; } = channel.WebhookToken;
-    public List<LogChannelType> Types { get; set; } = channel.Type.SplitFlags().ToList();
+    public IEnumerable<LogChannelType> Types { get; set; } = channel.Type.SplitFlags();
 
     public LogChannelDTO ToDTO() 
         => new(ChannelID, WebhookID, WebhookToken, default(LogChannelType).SetFlags(Types));
