@@ -1,4 +1,5 @@
-﻿using Kobalt.Shared.Types;
+﻿using System.Diagnostics.CodeAnalysis;
+using Kobalt.Shared.Types;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Remora.Rest.Core;
@@ -15,6 +16,9 @@ public class LogChannel
     public string? WebhookToken { get; set; }
 
     public LogChannelType Type { get; set; }
+    
+    [NotNull]
+    public KobaltGuild? Guild { get; set; }
 }
 
 public class GuildLogChannelConfiguration : IEntityTypeConfiguration<LogChannel>
