@@ -38,7 +38,7 @@ public record KobaltGuildDTO
             entity.PhishingConfig.DetectionAction
         );
         
-        var logChannels = entity.LogChannels.Select(l => new LogChannelDTO(l.Id, l.ChannelID, l.WebhookID, l.WebhookToken, l.Type)).ToArray();
+        var logChannels = entity.LogChannels.Select(l => new LogChannelDTO(l.ChannelID, l.WebhookID, l.WebhookToken, l.Type)).ToArray();
         
         return new KobaltGuildDTO(automodConfig, antiRaidConfig, antiPhishingConfig, logChannels);
     }

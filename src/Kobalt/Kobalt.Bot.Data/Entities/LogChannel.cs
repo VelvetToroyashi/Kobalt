@@ -7,8 +7,6 @@ using Remora.Rest.Core;
 namespace Kobalt.Bot.Data.Entities;
 public class LogChannel
 {
-    public int Id { get; set; }
-
     public Snowflake GuildID { get; set; }
     public Snowflake ChannelID { get; set; }
 
@@ -25,6 +23,7 @@ public class GuildLogChannelConfiguration : IEntityTypeConfiguration<LogChannel>
 {
     public void Configure(EntityTypeBuilder<LogChannel> builder)
     {
+        builder.HasKey(l => l.ChannelID);
         builder.ToTable("log_channels");
         builder.HasIndex(l => l.GuildID);
     }
