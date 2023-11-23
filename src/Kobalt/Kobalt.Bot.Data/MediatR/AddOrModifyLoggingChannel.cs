@@ -11,7 +11,7 @@ namespace Kobalt.Bot.Data.MediatR;
 /// <summary>
 /// Represents a request to add a logging channel.
 /// </summary>
-public static class AddLoggingChannel
+public static class AddOrModifyLoggingChannel
 {
     /// <summary>
     /// Requests to add a logging channel.
@@ -30,7 +30,21 @@ public static class AddLoggingChannel
         public async Task<Result<LogChannelDTO>> Handle(Request request, CancellationToken cancellationToken)
         {
             await using var context = await _context.CreateDbContextAsync(cancellationToken);
+            
+            var existing = await context.LogChannels.FirstOrDefaultAsync(l => l.ChannelID == request.ChannelID, cancellationToken);
 
+            if (existing is not null)
+            {
+                if ((existing.Type & request.Type) == request.Type)
+                {
+                    return new LogChannelDTO(existing.ChannelID, existing.WebhookID, existing.WebhookToken, existing.Type);
+                }
+                
+                existing.Type |= request.Type;
+                await context.SaveChangesAsync(cancellationToken);
+                return new LogChannelDTO(existing.ChannelID, existing.WebhookID, existing.WebhookToken, existing.Type);
+            }
+            
             var channel = new LogChannel
             {
                 GuildID = request.GuildID,
@@ -41,7 +55,7 @@ public static class AddLoggingChannel
             context.LogChannels.Add(channel);
             await context.SaveChangesAsync(cancellationToken);
 
-            return new LogChannelDTO(channel.Id, channel.ChannelID, channel.WebhookID, channel.WebhookToken, channel.Type);
+            return new LogChannelDTO(channel.ChannelID, channel.WebhookID, channel.WebhookToken, channel.Type);
         }
     }
 }
