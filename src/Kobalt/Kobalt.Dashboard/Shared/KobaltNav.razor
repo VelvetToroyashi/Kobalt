@@ -14,11 +14,11 @@
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudContainer Class="d-flex flex-row justify-space-around" MaxWidth="MaxWidth.Small">
                 <MudText>Kobalt</MudText>
-                <MudText>Dashboard</MudText>
-                <MudText>About</MudText>
-                <MudText>Features</MudText>
-                <MudText>Source</MudText>
-                <MudText>Support</MudText>
+                <MudText><a href="/dashboard">Dashboard</a></MudText>
+                <MudText><a href="#">About</a></MudText>
+                <MudText><a href="#">Features</a></MudText>
+                <MudText><a href="https://github.com/VelvetToroyashi/Kobalt" Target="_blank">Source</a></MudText>
+                <MudText><a>Support</a></MudText>
             </MudContainer>
             
             <MudSpacer/>
@@ -74,10 +74,10 @@
                         </MudText>
                     </AuthorizeView>
                 </MudItem>
-                <MudNavLink Match="NavLinkMatch.All">Dashboard</MudNavLink>
-                <MudNavLink Match="NavLinkMatch.All">About</MudNavLink>
-                <MudNavLink Match="NavLinkMatch.All">Features</MudNavLink>
-                <MudNavLink Match="NavLinkMatch.All">Source</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Href="/dashboard">Dashboard</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Href="#">About</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Href="#">Features</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Href="https://github.com/VelvetToroyashi/Kobalt" Target="_blank">Source</MudNavLink>
                 <MudNavLink Match="NavLinkMatch.All">Support</MudNavLink>
                 <AuthorizeView>
                     <Authorized>
