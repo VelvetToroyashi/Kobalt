@@ -1,7 +1,9 @@
 @page "/manage/{GuildID:long}"
-@using Remora.Discord.API.Abstractions.Objects
 @using Kobalt.Dashboard.Components
 @using Humanizer
+@using Kobalt.Dashboard.Views
+@using Kobalt.Infractions.Shared
+@using Kobalt.Shared.Types
 @layout DashboardLayout
 
 @if (_guildState is GuildState.Unavailable)
@@ -79,25 +81,179 @@ else
             </MudCard>
         </MudItem>
         <MudItem>
-            <MudTabs >
-                <MudTabPanel Text="Auto-Moderation" Icon="@Icons.Material.Filled.Security">
-                    <MudContainer>
-                        <MudTooltip Delay="250" Text="How many users are allowed to be in a channel before it's switched to Push-To-Talk.">
-                            <MudNumericField T="int?" bind-Value="_kobaltGuild.AutoModConfig.PushToTalkThreshold" Variant="Variant.Text" Min="0" Label="Push To Talk Threshold"/>
-                        </MudTooltip>
-                    </MudContainer>
-                </MudTabPanel>
+            <MudExpansionPanels MultiExpansion="true">
                 
-                <MudTabPanel Text="Anti-Raid" Icon="@Icons.Material.Filled.PersonAddDisabled">
-                    <MudContainer>
-                        <MudCheckBox bind-Checked="_kobaltGuild.AntiRaidConfig.IsEnabled">Enabled</MudCheckBox>
-                        <MudDatePicker Disabled="!_kobaltGuild.AntiRaidConfig.IsEnabled" bind ></MudDatePicker>
-                    </MudContainer>
-                </MudTabPanel>
-                <MudTabPanel Text="Anti-Phishing" Icon="@Icons.Material.Filled.ManageSearch"></MudTabPanel>
+                @* Auto-Mod *@
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.Security"/> Auto-Moderation
+                        </MudText>
+                    </TitleContent>
+                    <ChildContent>
+                        <MudContainer>
+                            <MudTooltip Delay="250" Text="How many users are allowed to be in a channel before it's switched to Push-To-Talk.">
+                                <MudNumericField T="int?" bind-Value="_kobaltGuild.AutoMod.PushToTalkThreshold" Variant="Variant.Text" Min="0" Label="Push To Talk Threshold"/>
+                            </MudTooltip>
+                        </MudContainer>
+                    </ChildContent>
+                </MudExpansionPanel>
                 
-                <MudTabPanel Text="Logging" Icon="@Icons.Material.Filled.Notes"></MudTabPanel>
-            </MudTabs>
+                @* Anti-Raid *@
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.PersonAddDisabled"/> Anti-Raid
+                        </MudText>
+                    </TitleContent>
+                    <ChildContent>
+                        <MudContainer>
+                            <MudGrid Spacing="3">
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="_kobaltGuild.AntiRaid.IsEnabled">Enabled</MudCheckBox>
+                                </MudItem>
+
+                                <MudItem>
+                                    <MudTextField T="TimeSpan" Converter="_timespanConverter" Disabled="!_kobaltGuild.AntiRaid.IsEnabled" Required="true" Label="Minimum Account Age"></MudTextField>
+                                </MudItem>
+                                <MudItem>
+                                    <MudNumericField T="int"
+                                                     Disabled="!_kobaltGuild.AntiRaid.IsEnabled"
+                                                     Immediate="false"
+                                                     Min="0"
+                                                     Max="_kobaltGuild.AntiRaid.ThreatScoreThreshold"
+                                                     Label="Base Threat Score"
+                                                     Variant="Variant.Text"
+                                                     @bind-Value="_kobaltGuild.AntiRaid.BaseJoinScore"/>
+                                </MudItem>
+
+                                <MudItem>
+                                    <MudNumericField T="int"
+                                                     Disabled="!_kobaltGuild.AntiRaid.IsEnabled"
+                                                     Immediate="false"
+                                                     Min="0"
+                                                     Max="_kobaltGuild.AntiRaid.ThreatScoreThreshold"
+                                                     Label="Join Wave Score"
+                                                     Variant="Variant.Text"
+                                                     @bind-Value="_kobaltGuild.AntiRaid.JoinVelocityScore"/>
+                                </MudItem>
+                                <MudItem>
+                                    <MudNumericField T="int"
+                                                     Disabled="!_kobaltGuild.AntiRaid.IsEnabled"
+                                                     Immediate="false"
+                                                     Min="0"
+                                                     Max="_kobaltGuild.AntiRaid.ThreatScoreThreshold"
+                                                     Label="Minimium Account Age Score"
+                                                     Variant="Variant.Text"
+                                                     @bind-Value="_kobaltGuild.AntiRaid.MinimumAgeScore"/>
+                                </MudItem>
+                                <MudItem>
+                                    <MudNumericField T="int"
+                                                     Disabled="!_kobaltGuild.AntiRaid.IsEnabled"
+                                                     Immediate="false"
+                                                     Min="0"
+                                                     Max="_kobaltGuild.AntiRaid.ThreatScoreThreshold"
+                                                     Label="No Avatar Score"
+                                                     Variant="Variant.Text"
+                                                     @bind-Value="_kobaltGuild.AntiRaid.NoAvatarScore"/>
+                                </MudItem>
+                                <MudItem>
+                                    <MudNumericField T="int"
+                                                     Disabled="true"
+                                                     Immediate="false"
+                                                     Min="0"
+                                                     Max="_kobaltGuild.AntiRaid.ThreatScoreThreshold"
+                                                     Label="Suspicious Invite Score (Coming Soon!)"
+                                                     Variant="Variant.Text"
+                                                     @bind-Value="_kobaltGuild.AntiRaid.SuspiciousInviteScore"/>
+                                </MudItem>
+                                <MudItem>
+                                    <MudNumericField T="int"
+                                                     Disabled="!_kobaltGuild.AntiRaid.IsEnabled"
+                                                     Immediate="false"
+                                                     Min="0"
+                                                     Max="_kobaltGuild.AntiRaid.ThreatScoreThreshold"
+                                                     Label=""
+                                                     Variant="Variant.Text"
+                                                     @bind-Value="_kobaltGuild.AntiRaid.ThreatScoreThreshold"/>
+                                </MudItem>
+                            </MudGrid>
+                        </MudContainer>
+                    </ChildContent>
+                </MudExpansionPanel>
+                
+                @* Anti-Phishing *@
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.ManageSearch"/> Anti-Phishing
+                        </MudText>
+                    </TitleContent>
+                    <ChildContent>
+                        <MudContainer>
+                            <MudCheckBox @bind-Checked="_kobaltGuild.AntiPhishing.ScanUsers" Label="Scan Users"/>
+                            <MudCheckBox @bind-Checked="_kobaltGuild.AntiPhishing.ScanLinks" Label="Scan Links"/>
+                            <MudSelect @bind-Value="_kobaltGuild.AntiPhishing.DetectionAction" Label="Detection Action">
+                                <MudSelectItem Value="InfractionType.Ban">Ban</MudSelectItem>
+                                <MudSelectItem Value="InfractionType.Kick">Kick</MudSelectItem>
+                                <MudSelectItem Value="InfractionType.Mute">Mute</MudSelectItem>
+                                <MudSelectItem Value="InfractionType.Warning">Warn</MudSelectItem>
+                            </MudSelect>
+                        </MudContainer>
+                    </ChildContent>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.Notes"/> Logging (@("channel".ToQuantity(_kobaltGuild.Logging.Count)))
+                        </MudText>
+                    </TitleContent>
+                    
+                    <ChildContent>
+                        <MudContainer MaxWidth="MaxWidth.Medium">
+                            <MudTable EditTrigger="TableEditTrigger.EditButton" T="KobaltLoggingConfigView" Items="_kobaltGuild.Logging">
+                                <ToolBarContent>
+                                    <MudText Typo="Typo.h5">Logging Channels</MudText>
+                                    <MudSpacer/>
+                                    <div style="height: min-content; align-items: center" class="flex flex-row space-x-2">
+                                        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                                            <MudTextField Margin="Margin.Dense" Style="max-width: 210px;" FullWidth="false" Placeholder="Search" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" @bind-Value="_currentSearch"/>
+                                        </MudHidden>
+                                        <MudButton Style="width: fit-content; height: 40px;" Color="Color.Primary" Variant="Variant.Filled">Add A Channel</MudButton>
+                                    </div>
+                                </ToolBarContent>
+                                <HeaderContent>
+                                    <MudTh>Channel</MudTh>
+                                    <MudTh>Logging Types</MudTh>
+                                    <MudTh>Remove</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name">@(_channels.TryGetValue(@context.ChannelID, out var chn) ? $"#{chn.Name}" : "Unknown Channel")</MudTd>
+                                    <MudTd DataLabel="Types">@context.Types.Humanize(static t => t.Humanize())</MudTd>
+                                    <MudTd DataLabel="Remove">
+                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Size="Size.Small" Color="@Color.Error"/>
+                                    </MudTd>
+                                </RowTemplate>
+                                <RowEditingTemplate>
+                                    <MudTd DataLabel="Name">@(_channels.TryGetValue(@context.ChannelID, out var chn) ? $"#{chn.Name}" : "Unknown Channel")</MudTd>
+                                    <MudTd>
+                                        <MudSelect Required MultiSelection @bind-SelectedValues="@context.Types">
+                                            @foreach (var type in Enum.GetValues<LogChannelType>())
+                                            {
+                                                <MudSelectItem Value="@type">@type.Humanize()</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </MudTd>
+                                </RowEditingTemplate>
+                                <EditButtonContent Context="button">
+                                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@button.ButtonAction" Disabled="@button.ButtonDisabled"/>
+                                </EditButtonContent>
+                            </MudTable>
+                        </MudContainer>
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
             
             <MudButton Color="Color.Info" Disabled="_isBusy" Class="mt-7" Variant="Variant.Filled">
                 @if (_isBusy)

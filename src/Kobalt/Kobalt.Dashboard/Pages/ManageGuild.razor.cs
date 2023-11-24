@@ -1,16 +1,26 @@
+using System.Collections.Frozen;
 using System.Net;
+using System.Text;
 using System.Text.Json;
 using Humanizer;
+using Humanizer.Localisation;
 using Kobalt.Bot.Data.DTOs;
 using Kobalt.Dashboard.Extensions;
 using Kobalt.Dashboard.Services;
+using Kobalt.Dashboard.Views;
 using Kobalt.Infractions.Shared;
 using Kobalt.Infractions.Shared.DTOs;
+using Kobalt.Shared.Types;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
+using MudBlazor;
+using Recognizers.Text.DateTime.Wrapper;
+using Recognizers.Text.DateTime.Wrapper.Models.BclDateTime;
+using Recognizers.Text.DateTime.Wrapper.Models.Enums;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Rest.Core;
 using Remora.Results;
+using Singulink.Enums;
 
 namespace Kobalt.Dashboard.Pages;
 
@@ -36,13 +46,27 @@ public partial class ManageGuild
     public required DashboardRestClient Discord { get; set; }
     
     private IGuild? _guild;
-    private KobaltGuildDTO? _kobaltGuild;
-    private IReadOnlyList<IChannel>? _channels;
+    private KobaltGuildView? _kobaltGuild;
+    private IReadOnlyDictionary<Snowflake, IChannel>? _channels;
     private Result<IReadOnlyList<InfractionView>>? _infractions;
 
+    private string _currentSearch;
+    private readonly Func<KobaltLoggingConfigView, bool> _searchFilter = (config) => true;
+    
     private bool _isBusy;
-
     private GuildState _guildState = GuildState.Loading;
+
+    private static readonly ISet<DateTimeV2Type> TypeFilter = new[] { DateTimeV2Type.Duration }.ToFrozenSet();
+
+    private Converter<TimeSpan> _timespanConverter = new()
+    {
+        GetFunc = (s) => DateTimeV2Recognizer.RecognizeDateTimes(s, "en-us", null, TypeFilter).FirstOrDefault()?.Resolution.Values.FirstOrDefault() is DateTimeV2Duration duration
+        ? duration.Value
+        : throw new(),
+        SetFunc = (s) => s.Humanize(3, minUnit: TimeUnit.Minute)
+    };
+    
+    private void UpdateLogChannel(IEnumerable<LogChannelType> selectedChannelTypes) {}
     
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {
@@ -59,8 +83,11 @@ public partial class ManageGuild
             if (guildsResult.IsSuccess)
             {
                 _guild = guildsResult.Entity;
-                _channels = (await Discord.GetGuildChannelsAsync(new Snowflake((ulong)GuildID))).Entity;
+                var channels = (await Discord.GetGuildChannelsAsync(new Snowflake((ulong)GuildID))).Entity;
 
+                _channels = channels.ToDictionary(c => c.ID, c => c);
+                
+                
                 var kobaltGuildResult = await GetGuildAsync();
                 
                 if (!kobaltGuildResult.IsSuccess)
@@ -70,9 +97,9 @@ public partial class ManageGuild
                     return;
                 }
                 
-                _kobaltGuild = kobaltGuildResult.Entity;
+                _kobaltGuild = new KobaltGuildView(kobaltGuildResult.Entity);
                 _guildState = GuildState.Ready;
-
+                
                 InvokeAsync(GetInfractionsAsync);
             }
             else
@@ -82,6 +109,16 @@ public partial class ManageGuild
         }
 
         StateHasChanged();
+    }
+    
+    private void UpdateDate(DateTime? date, Action<TimeSpan?> setTime)
+    {
+        setTime(date - DateTimeOffset.UtcNow);
+    }
+    
+    private void UpdateDate(DateTime? date, Action<TimeSpan> setTime)
+    {
+        setTime(date - DateTimeOffset.UtcNow ?? TimeSpan.Zero);
     }
 
     private async Task GetInfractionsAsync()
@@ -148,7 +185,9 @@ public partial class ManageGuild
         if (response.IsSuccessStatusCode)
         {
             var jsonSerializer = JsonOptions.Get("Discord");
-            return Result<KobaltGuildDTO>.FromSuccess(await response.Content.ReadFromJsonAsync<KobaltGuildDTO>(jsonSerializer));
+            var jsonData = await response.Content.ReadAsByteArrayAsync();
+
+            return Result<KobaltGuildDTO>.FromSuccess(JsonSerializer.Deserialize<KobaltGuildDTO>(jsonData, jsonSerializer));
         }
         else
         {
