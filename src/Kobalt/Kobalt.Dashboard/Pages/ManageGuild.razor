@@ -91,7 +91,7 @@ else
                         </MudText>
                     </TitleContent>
                     <ChildContent>
-                        <MudContainer>
+                        <MudContainer Style="margin-top: -16px;">
                             <MudTooltip Delay="250" Text="How many users are allowed to be in a channel before it's switched to Push-To-Talk.">
                                 <MudNumericField T="int?" bind-Value="_kobaltGuild.AutoMod.PushToTalkThreshold" Variant="Variant.Text" Min="0" Label="Push To Talk Threshold"/>
                             </MudTooltip>
@@ -107,7 +107,7 @@ else
                         </MudText>
                     </TitleContent>
                     <ChildContent>
-                        <MudContainer>
+                        <MudContainer Style="margin-top: -16px;">
                             <MudGrid Spacing="3">
                                 <MudItem xs="12">
                                     <MudCheckBox @bind-Checked="_kobaltGuild.AntiRaid.IsEnabled">Enabled</MudCheckBox>
@@ -190,7 +190,7 @@ else
                         </MudText>
                     </TitleContent>
                     <ChildContent>
-                        <MudContainer>
+                        <MudContainer Style="margin-top: -16px;">
                             <MudCheckBox @bind-Checked="_kobaltGuild.AntiPhishing.ScanUsers" Label="Scan Users"/>
                             <MudCheckBox @bind-Checked="_kobaltGuild.AntiPhishing.ScanLinks" Label="Scan Links"/>
                             <MudSelect @bind-Value="_kobaltGuild.AntiPhishing.DetectionAction" Label="Detection Action">
@@ -203,24 +203,24 @@ else
                     </ChildContent>
                 </MudExpansionPanel>
 
-                <MudExpansionPanel>
+                <MudExpansionPanel DisableGutters>
                     <TitleContent>
                         <MudText Typo="Typo.h6">
-                            <MudIcon Icon="@Icons.Material.Filled.Notes"/> Logging (@("channel".ToQuantity(_kobaltGuild.Logging.Count)))
+                            <MudIcon Icon="@Icons.Material.Filled.Notes"/> Logging
                         </MudText>
                     </TitleContent>
                     
                     <ChildContent>
-                        <MudContainer MaxWidth="MaxWidth.Medium">
+                        <MudContainer MaxWidth="MaxWidth.Medium" Style="margin-top: -16px;">
                             <MudTable EditTrigger="TableEditTrigger.EditButton" T="KobaltLoggingConfigView" Items="_kobaltGuild.Logging">
                                 <ToolBarContent>
-                                    <MudText Typo="Typo.h5">Logging Channels</MudText>
+                                    <MudText Typo="Typo.h6">@("Channel".ToQuantity(_kobaltGuild.Logging.Count))</MudText>
                                     <MudSpacer/>
                                     <div style="height: min-content; align-items: center" class="flex flex-row space-x-2">
                                         <MudHidden Breakpoint="Breakpoint.SmAndDown">
                                             <MudTextField Margin="Margin.Dense" Style="max-width: 210px;" FullWidth="false" Placeholder="Search" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" @bind-Value="_currentSearch"/>
                                         </MudHidden>
-                                        <MudButton Style="width: fit-content; height: 40px;" Color="Color.Primary" Variant="Variant.Filled">Add A Channel</MudButton>
+                                        <MudButton Class="k-log-button" Style="width: fit-content; height: 40px;" Color="Color.Primary" Variant="Variant.Filled">Add A Channel</MudButton>
                                     </div>
                                 </ToolBarContent>
                                 <HeaderContent>
