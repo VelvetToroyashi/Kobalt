@@ -17,6 +17,7 @@
     <PackageReference Include="Remora.Discord.API.Abstractions" Version="80.0.0" />
     <PackageReference Include="Remora.Discord.Caching" Version="38.0.0" />
     <PackageReference Include="Remora.Discord.Rest" Version="49.0.0" />
+    <PackageReference Include="Singulink.Enums" Version="1.2.1" />
   </ItemGroup>
 
   <ItemGroup>
