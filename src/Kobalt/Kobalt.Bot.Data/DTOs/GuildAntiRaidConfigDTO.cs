@@ -21,7 +21,7 @@ public record GuildAntiRaidConfigDTO
 (
     bool IsEnabled,
     int BaseJoinScore,
-    TimeSpan? MiniumAccountAgeBypass,
+    TimeSpan? MinimumAccountAgeBypass,
     UserFlags? AccountFlagsBypass,
     int JoinVelocityScore,
     int MinimumAgeScore,
