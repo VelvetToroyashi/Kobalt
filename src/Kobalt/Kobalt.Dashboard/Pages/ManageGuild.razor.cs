@@ -50,7 +50,7 @@ public partial class ManageGuild
     private IReadOnlyDictionary<Snowflake, IChannel>? _channels;
     private Result<IReadOnlyList<InfractionView>>? _infractions;
 
-    private string _currentSearch;
+    private string? _currentSearch;
     private readonly Func<KobaltLoggingConfigView, bool> _searchFilter = (config) => true;
     
     private bool _isBusy;
@@ -58,9 +58,9 @@ public partial class ManageGuild
 
     private static readonly ISet<DateTimeV2Type> TypeFilter = new[] { DateTimeV2Type.Duration }.ToFrozenSet();
 
-    private Converter<TimeSpan> _timespanConverter = new()
+    private readonly Converter<TimeSpan> _timespanConverter = new()
     {
-        GetFunc = (s) => DateTimeV2Recognizer.RecognizeDateTimes(s, "en-us", null, TypeFilter).FirstOrDefault()?.Resolution.Values.FirstOrDefault() is DateTimeV2Duration duration
+        GetFunc = (s) => DateTimeV2Recognizer.RecognizeDateTimes(s!, "en-us", null, TypeFilter).FirstOrDefault()?.Resolution.Values.FirstOrDefault() is DateTimeV2Duration duration
         ? duration.Value
         : throw new(),
         SetFunc = (s) => s.Humanize(3, minUnit: TimeUnit.Minute)
@@ -100,7 +100,7 @@ public partial class ManageGuild
                 _kobaltGuild = new KobaltGuildView(kobaltGuildResult.Entity);
                 _guildState = GuildState.Ready;
                 
-                InvokeAsync(GetInfractionsAsync);
+                _ = InvokeAsync(GetInfractionsAsync);
             }
             else
             {
@@ -187,7 +187,7 @@ public partial class ManageGuild
             var jsonSerializer = JsonOptions.Get("Discord");
             var jsonData = await response.Content.ReadAsByteArrayAsync();
 
-            return Result<KobaltGuildDTO>.FromSuccess(JsonSerializer.Deserialize<KobaltGuildDTO>(jsonData, jsonSerializer));
+            return Result<KobaltGuildDTO>.FromSuccess(JsonSerializer.Deserialize<KobaltGuildDTO>(jsonData, jsonSerializer)!);
         }
         else
         {

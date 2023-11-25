@@ -9,7 +9,7 @@ public class KobaltAntiRaidConfigView(GuildAntiRaidConfigDTO dto)
     public bool IsEnabled { get; set; } = dto.IsEnabled;
     public int BaseJoinScore { get; set; } = dto.BaseJoinScore;
     public TimeSpan? MiniumAccountAgeBypass { get; set; } = dto.MiniumAccountAgeBypass;
-    public List<UserFlags> AccountFlagsBypass { get; set; } = dto.AccountFlagsBypass?.SplitFlags().ToList();
+    public List<UserFlags> AccountFlagsBypass { get; set; } = dto.AccountFlagsBypass?.SplitFlags().ToList() ?? new();
     public int JoinVelocityScore { get; set; } = dto.JoinVelocityScore;
     public int MinimumAgeScore { get; set; } = dto.MinimumAgeScore;
     public int NoAvatarScore { get; set; } = dto.NoAvatarScore;

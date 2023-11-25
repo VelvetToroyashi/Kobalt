@@ -41,12 +41,9 @@
 
 @* ReSharper disable once FieldCanBeMadeReadOnly.Local *@
 @code {
-    #pragma disable CS0414 // Blazor injects this at runtime
-    private IPartialGuild? _selectedGuild = null;
-    #pragma enable CS0414
-    
-    [SupplyParameterFromForm(Name = "guild_id", FormName = "guild_id")]
-    public IFormCollection? DiscordData { get; set; }
+#pragma warning disable CS0414 // Blazor injects this at runtime
+    private IPartialGuild? _selectedGuild;
+#pragma warning restore CS0414
         
     private const long PermissionBits = 1100317010950;
     
