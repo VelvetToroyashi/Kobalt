@@ -1,12 +1,15 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Kobalt.Bot.Auth;
 using Kobalt.Bot.Autocomplete;
 using Kobalt.Bot.Data;
 using Kobalt.Bot.Data.DTOs;
+using Kobalt.Bot.Data.MediatR;
 using Kobalt.Bot.Data.MediatR.Guilds;
+using Kobalt.Bot.Data.Migrations;
 using Kobalt.Bot.Handlers;
 using Kobalt.Bot.Services;
 using Kobalt.Bot.Services.Discord;
@@ -29,6 +32,7 @@ using Remora.Discord.API.Abstractions.Gateway.Events;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Gateway.Commands;
+using Remora.Discord.API.Objects;
 using Remora.Discord.Caching.Extensions;
 using Remora.Discord.Caching.Redis.Extensions;
 using Remora.Discord.Commands.Extensions;
@@ -84,6 +88,56 @@ host.MapGet
         {
             return Results.NotFound();
         }
+    }
+).RequireAuthorization();
+
+host.MapPatch
+(
+    "/api/guilds/{guildID",
+    async (HttpContext ctx, IMediator mediator, IDiscordRestGuildAPI guilds, ulong guildID) =>
+    {
+        var user = ulong.Parse(ctx.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
+        
+        var getGuildMemberResult = await guilds.GetGuildMemberAsync(new Snowflake(guildID), new Snowflake(user));
+        
+        if (!getGuildMemberResult.IsSuccess)
+        {
+            return Results.Unauthorized();
+        }
+        
+        var guildMember = getGuildMemberResult.Entity;
+        
+        if (!guildMember.Permissions.OrDefault(DiscordPermissionSet.Empty).HasPermission(DiscordPermission.ManageGuild))
+        {
+            return Results.Forbid();
+        }
+        
+        var guildResult = await mediator.Send(new GetGuild.Request(new Snowflake(guildID)));
+        
+        if (guildResult is not { Entity: {} guild })
+        {
+            // 5xx, this should be impossible.
+            return Results.StatusCode(500);
+        }
+        
+        var json = await ctx.Request.ReadFromJsonAsync<KobaltGuildDTO>(jsonSerializer);
+        
+        if (json is null)
+        {
+            return Results.BadRequest();
+        }
+        
+        await mediator.Send(new UpdateGuild.AntiPhishing.Request(guild.ID, json.AntiPhishingConfig.ScanUsers, json.AntiPhishingConfig.ScanLinks, json.AntiPhishingConfig.DetectionAction));
+        await mediator.Send(new UpdateGuild.AntiRaid.Request(guild.ID, json.AntiRaidConfig.IsEnabled, json.AntiRaidConfig.MinimumAccountAgeBypass, json.AntiRaidConfig.AccountFlagsBypass, json.AntiRaidConfig.BaseJoinScore, json.AntiRaidConfig.JoinVelocityScore, json.AntiRaidConfig.MinimumAgeScore, json.AntiRaidConfig.NoAvatarScore, json.AntiRaidConfig.SuspiciousInviteScore, json.AntiRaidConfig.ThreatScoreThreshold, json.AntiRaidConfig.AntiRaidCooldownPeriod, json.AntiRaidConfig.LastJoinBufferPeriod, json.AntiRaidConfig.MinimumAccountAge));
+        
+        // TODO: Bulk update
+        foreach (var channel in json.LogChannels)
+        {
+            await mediator.Send(new AddOrModifyLoggingChannel.Request(guild.ID, channel.ChannelID, channel.Type));
+        }
+        
+        return Results.NoContent();
     }
 ).RequireAuthorization();
 
