@@ -36,4 +36,13 @@
       <ProjectReference Include="..\Kobalt.Shared\Kobalt.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Update="MediatR\Guilds\UpdateGuild.AntiPhishing.cs">
+        <DependentUpon>UpdateGuildRequest.cs</DependentUpon>
+      </Compile>
+      <Compile Update="MediatR\Guilds\UpdateGuildRequest.AntiRaid.cs">
+        <DependentUpon>UpdateGuildRequest.cs</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
 </Project>
