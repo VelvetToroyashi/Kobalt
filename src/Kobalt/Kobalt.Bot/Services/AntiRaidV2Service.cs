@@ -100,7 +100,7 @@ internal class RaidState
             threatScore += config.NoAvatarScore;
         }
 
-        if (accountAge > config.MiniumAccountAgeBypass)
+        if (accountAge > config.MinimumAccountAgeBypass)
         {
             threatScore = config.BaseJoinScore;
         }
