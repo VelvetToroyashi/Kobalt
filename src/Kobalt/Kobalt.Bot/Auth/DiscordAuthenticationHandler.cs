@@ -3,7 +3,6 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Remora.Discord.API;
@@ -50,7 +49,7 @@ public class DiscordAuthenticationHandler
 
         if (tokenResult.IsSuccess)
         {
-            return AuthenticateResult.Success(CreateTicket(DiscordSnowflake.New(ulong.Parse(tokenResult.Entity))));
+            return AuthenticateResult.Success(CreateTicket(DiscordSnowflake.New(ulong.Parse(tokenResult.Entity)), token));
         }
         
         var tokenValidationResult = await rest.GetAsync<OAuth2Information>
@@ -71,15 +70,15 @@ public class DiscordAuthenticationHandler
         if (app.ID.Value == self.ID)
         {
             await cache.CacheAsync(cacheKey, token, new CacheEntryOptions { AbsoluteExpiration = tokenValidationResult.Entity.Expires });
-            return AuthenticateResult.Success(CreateTicket(tokenValidationResult.Entity.User.ID));
+            return AuthenticateResult.Success(CreateTicket(tokenValidationResult.Entity.User.ID, token));
         }
         
         return AuthenticateResult.Fail("Invalid token.");
     }
 
-    private AuthenticationTicket CreateTicket(Snowflake userID)
+    private AuthenticationTicket CreateTicket(Snowflake userID, string token)
     {
-        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userID.ToString()) };
+        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userID.ToString()), new Claim("kobalt:user:token", token) };
         var identity = new ClaimsIdentity(claims, Scheme.Name);
         var principal = new ClaimsPrincipal(identity);
         
