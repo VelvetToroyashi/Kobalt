@@ -21,6 +21,7 @@ using Kobalt.Infrastructure.Types;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Services;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -61,11 +62,12 @@ ConfigureKobaltBotServices(builder.Configuration, builder.Services);
 
 builder.Host.AddStartupTaskSupport();
 
+builder.Services.AddSingleton<IAuthorizationHandler, DiscordAuthorizationHandler>();
 
 builder.Services.AddAuthentication(DiscordAuthenticationSchemeOptions.SchemeName)
        .AddScheme<DiscordAuthenticationSchemeOptions, DiscordAuthenticationHandler>(DiscordAuthenticationSchemeOptions.SchemeName, null);
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(auth => auth.AddPolicy(DiscordAuthorizationHandler.PolicyName, policy => policy.Requirements.Add(new MustManageGuildRequirement())));
 
 var host = builder.Build();
 
@@ -93,22 +95,13 @@ host.MapGet
 
 host.MapPatch
 (
-    "/api/guilds/{guildID",
-    async (HttpContext ctx, IMediator mediator, IDiscordRestGuildAPI guilds, ulong guildID) =>
+    "/api/guilds/{guildID}",
+    async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, ulong guildID) =>
     {
-        var user = ulong.Parse(ctx.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
         
-        var getGuildMemberResult = await guilds.GetGuildMemberAsync(new Snowflake(guildID), new Snowflake(user));
-        
-        if (!getGuildMemberResult.IsSuccess)
-        {
-            return Results.Unauthorized();
-        }
-        
-        var guildMember = getGuildMemberResult.Entity;
-        
-        if (!guildMember.Permissions.OrDefault(DiscordPermissionSet.Empty).HasPermission(DiscordPermission.ManageGuild))
+        if (!authorization.Succeeded)
         {
             return Results.Forbid();
         }
