@@ -6,8 +6,10 @@ using Kobalt.Bot.Auth;
 using Kobalt.Bot.Autocomplete;
 using Kobalt.Bot.Data;
 using Kobalt.Bot.Data.DTOs;
+using Kobalt.Bot.Data.Entities.RoleMenus;
 using Kobalt.Bot.Data.MediatR;
 using Kobalt.Bot.Data.MediatR.Guilds;
+using Kobalt.Bot.Data.MediatR.RoleMenus;
 using Kobalt.Bot.Handlers;
 using Kobalt.Bot.Services;
 using Kobalt.Bot.Services.Discord;
@@ -127,6 +129,130 @@ host.MapPatch
         }
         
         return Results.NoContent();
+    }
+).RequireAuthorization();
+
+host.MapGet
+(
+    "/api/guilds/{guildID}/rolemenus",
+    async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, ulong guildID) =>
+    {
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+        
+        if (!authorization.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
+        var getRoleMenusResult = await mediator.Send(new GetAllRoleMenus.Request(new Snowflake(guildID)));
+        
+        if (getRoleMenusResult is { Entity: {} roleMenus })
+        {
+            return Results.Json(roleMenus.Select(RoleMenuDTO.FromEntity), jsonSerializer);
+        }
+        else
+        {
+            return Results.NotFound();
+        }
+    }
+    
+).RequireAuthorization();
+
+host.MapPost
+(
+    "/api/guilds/{guildID}/rolemenus",
+    async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, RoleMenuService roleMenus, ulong guildID) =>
+    {
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+        
+        if (!authorization.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
+        var data = await ctx.Request.ReadFromJsonAsync<RoleMenuDTO>(jsonSerializer);
+        
+        if (data is null)
+        {
+            return Results.BadRequest();
+        }
+
+        var request = new CreateRoleMenu.Request
+        (
+            data.Name,
+            data.Description,
+            data.ChannelID,
+            data.GuildID,
+            data.MaxSelections,
+            new Optional<IReadOnlyList<RoleMenuOptionEntity>>
+            (
+                data.Options.Select
+                (
+                    o => new RoleMenuOptionEntity
+                    {
+                        Name = data.Name,
+                        RoleID = o.RoleID,
+                        Description = data.Description,
+                        MutuallyExclusiveRoles = o.MutuallyExclusiveRoleIDs.ToList(),
+                        MutuallyInclusiveRoles = o.MutuallyInclusiveRoleIDs.ToList(),
+                    } 
+                ).ToList()
+            )
+        );
+
+        var result = await mediator.Send(request);        
+        return Results.Json(RoleMenuDTO.FromEntity(result), jsonSerializer);
+    }
+).RequireAuthorization();
+
+host.MapPatch
+(
+    "/api/guilds/{guildID}/rolemenus/{roleMenuID}",
+    async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, RoleMenuService roleMenus, ulong guildID, int roleMenuID) =>
+    {
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+            
+        if (!authorization.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
+        var data = await ctx.Request.ReadFromJsonAsync<RoleMenuDTO>(jsonSerializer);
+        
+        if (data is null)
+        {
+            return Results.BadRequest();
+        }
+
+        var request = new UpdateRoleMenu.Request
+        (
+            roleMenuID,
+            new(guildID),
+            data.Name,
+            data.Description,
+            data.MaxSelections,
+            default,
+            new Optional<IReadOnlyList<RoleMenuOptionEntity>>
+            (
+                data.Options.Select
+                (
+                    o => new RoleMenuOptionEntity
+                    {
+                        Name = data.Name,
+                        RoleID = o.RoleID,
+                        Description = data.Description,
+                        MutuallyExclusiveRoles = o.MutuallyExclusiveRoleIDs.ToList(),
+                        MutuallyInclusiveRoles = o.MutuallyInclusiveRoleIDs.ToList(),
+                    } 
+                ).ToList()
+            )
+        );
+
+        var result = await mediator.Send(request);        
+        return Results.Json(result, jsonSerializer);
     }
 ).RequireAuthorization();
 

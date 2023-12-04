@@ -15,7 +15,8 @@ public static class UpdateRoleMenu
         Optional<string> Name = default,
         Optional<string> Description = default,
         Optional<int> MaxSelections = default,
-        Optional<Snowflake> MessageID = default
+        Optional<Snowflake> MessageID = default,
+        Optional<IReadOnlyList<RoleMenuOptionEntity>> Options = default
     ) : IRequest<Result<RoleMenuEntity>>;
     
     internal class Handler(IDbContextFactory<KobaltContext> dbFactory) : IRequestHandler<Request, Result<RoleMenuEntity>>
