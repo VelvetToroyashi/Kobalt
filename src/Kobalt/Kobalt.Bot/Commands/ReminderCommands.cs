@@ -5,22 +5,62 @@ using Kobalt.Shared.DTOs.Reminders;
 using NodaTime;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
+using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
+using Remora.Discord.Builders;
 using Remora.Discord.Commands.Attributes;
 using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Commands.Feedback.Services;
+using Remora.Discord.Interactivity;
 using Remora.Discord.Pagination.Extensions;
 using Remora.Rest.Core;
 using Remora.Results;
 using Color = System.Drawing.Color;
+using IResult = Remora.Results.IResult;
 
 namespace Kobalt.Bot.Commands;
+
+public class ReminderContextCommands(IDiscordRestInteractionAPI interactions, IInteractionContext context) : CommandGroup
+{
+    public const string ReminderModalID = "reminder-modal";
+
+    [Command("Remind me about...")]
+    [SuppressInteractionResponse(true)]
+    [CommandType(ApplicationCommandType.Message)]
+    // TODO: Let this be user installable // [DiscordInstallContext(ApplicationIntegrationType.UserInstallable, ApplicationIntegrationType.GuildInstallable)]
+    public async Task<Result> RemindContextMenuAsync(IMessage message)
+    {
+        return await interactions.CreateInteractionResponseAsync
+        (
+            context.Interaction.ID,
+            context.Interaction.Token,
+            new InteractionResponse
+            (
+                InteractionCallbackType.Modal,
+                new
+                (
+                    new InteractionModalCallbackData
+                    (
+                        CustomIDHelpers.CreateModalIDWithState(ReminderModalID, message.ID.ToString()),
+                        "Set a reminder",
+                        new IMessageComponent[] 
+                        { 
+                            new ActionRowComponent(new[] { new TextInputComponent("reminderTime", TextInputStyle.Short, "In (when) [e.g. In 10 minutes]...", default, 100, true, default, "10 minutes, 10m, tomorrow at 5pm, etc.") }),
+                            new ActionRowComponent(new[] { new TextInputComponent("reminderContent", TextInputStyle.Paragraph, "About (what)...", default, 1800, false, default, "What do you want me to remind you about?") }),
+                        }
+                    )
+                )
+            )
+        );
+    }
+}
 
 [Group("reminder")]
 public class ReminderCommands : CommandGroup
 {
+    
     private readonly FeedbackService _feedback;
     private readonly IInteractionContext _context;
     private readonly ReminderAPIService _reminders;
