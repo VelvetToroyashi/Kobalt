@@ -137,9 +137,5 @@ public class ReminderAPIService : IConsumer<ReminderDTO>
         _ = sendResult;
     }
 
-    public async Task Consume(ConsumeContext<ReminderDTO> context)
-    {
-        Console.WriteLine("Received reminder");
-        await DispatchAsync(context.Message, context.CancellationToken);
-    }
+    public Task Consume(ConsumeContext<ReminderDTO> context) => DispatchAsync(context.Message, context.CancellationToken);
 }
