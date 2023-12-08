@@ -103,6 +103,7 @@ public static class ServiceCollectionExtensions
                      .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
                      .MinimumLevel.Override("System.Net", LogEventLevel.Error)
                      .MinimumLevel.Override("Remora", LogEventLevel.Warning)
+                     .MinimumLevel.Override("MassTransit", LogEventLevel.Information)
                      .WriteTo.Console(new ExpressionTemplate(LogFormat))
                      .CreateLogger();
 
