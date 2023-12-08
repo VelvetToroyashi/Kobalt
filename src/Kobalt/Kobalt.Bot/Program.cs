@@ -20,6 +20,7 @@ using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Services;
+using MassTransit.Configuration;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -311,7 +312,6 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
     var token = config.Discord.Token;
 
-    services.AddOffsetServices();
     services.AddDiscordGateway(_ => token);
     services.AddInteractivity();
     //services.AddHTTPInteractionAPIs();
@@ -319,6 +319,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddPostExecutionEvent<PostExecutionHandler>();
     services.AddHostedService<KobaltDiscordGatewayService>();
     services.Configure<InteractionResponderOptions>(s => s.UseEphemeralResponses = true);
+    services.AddOffsetServices();
 
     services.AddTransient<IChannelLoggerService, ChannelLoggerService>();
     services.AddTransient<ImageOverlayService>();
@@ -358,7 +359,9 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddSingleton<RoleMenuService>();
 
     services.AddRabbitMQ();
+    
     services.AddSingleton<ReminderAPIService>();
+    services.RegisterConsumer<ReminderAPIService>();
 
     AddPhishingServices(services);
     AddInfractionServices(services);
@@ -469,6 +472,7 @@ void AddInfractionServices(IServiceCollection services)
     );
 
     services.AddSingleton<InfractionAPIService>();
+    services.RegisterConsumer<InfractionAPIService>();
 }
 
 void AddPhishingServices(IServiceCollection services)
