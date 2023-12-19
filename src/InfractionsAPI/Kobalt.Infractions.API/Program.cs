@@ -184,7 +184,7 @@ app.Run();
 void AddInfractionServices(IServiceCollection services)
 {
     services.AddSingleton<InfractionService>();
-    services.AddHostedService<InfractionService>();
+    services.AddHostedService(s => (BackgroundService)s.GetRequiredService<IInfractionService>());
     services.AddSingleton<IInfractionService>(x => x.GetRequiredService<InfractionService>());
 
     services.AddMediatR(s => s.RegisterServicesFromAssemblyContaining<InfractionContext>());
