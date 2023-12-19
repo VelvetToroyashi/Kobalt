@@ -203,11 +203,6 @@ public class InfractionService : BackgroundService, IInfractionService
             var dto = await _dispatcherChannel.Reader.ReadAsync(CancellationToken.None);
 
             await _bus.Publish(dto, _cancellationToken);
-
-            if (dto.Type is InfractionType.Ban or InfractionType.Mute)
-            {
-                await _mediator.Send(new UpdateInfractionRequest(dto.Id, dto.GuildID, default, default, default, false));
-            }
         }
     }
 }
