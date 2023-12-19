@@ -1,4 +1,5 @@
 ﻿using Kobalt.Bot.Data.DTOs;
+using Kobalt.Bot.Data.Entities;
 using Kobalt.Shared.Types;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,13 @@ namespace Kobalt.Bot.Data.MediatR;
 /// </summary>
 public static class GetLoggingChannels
 {
+    private const string GetLogChannelSql = 
+    """
+    SELECT channel_id, webhook_id, webhook_token, type
+    FROM kobalt_core.log_channels
+    WHERE guild_id = @guild_id AND ((type::bigint)::bit(64) & (@type::bigint)::bit(64) = (@type::bigint)::bit(64))
+    """;
+    
     /// <summary>
     /// Requests logging channels of a given type for a given guild.
     /// </summary>
@@ -28,10 +36,11 @@ public static class GetLoggingChannels
         {
             await using var context = await _context.CreateDbContextAsync(cancellationToken);
 
-            var channels = await context.LogChannels
-                .Where(l => l.GuildID == request.GuildID && (l.Type & request.Type) == request.Type)
-                .Select(l => new LogChannelDTO(l.ChannelID, l.WebhookID, l.WebhookToken, l.Type))
-                .ToListAsync(cancellationToken);
+            var channels = await context
+                                 .LogChannels
+                                 .FromSqlRaw(GetLogChannelSql, request.GuildID.Value, request.Type)
+                                 .Select(l => new LogChannelDTO(l.ChannelID, l.WebhookID, l.WebhookToken, l.Type))
+                                 .ToListAsync(CancellationToken.None);
 
             return channels;
         }
