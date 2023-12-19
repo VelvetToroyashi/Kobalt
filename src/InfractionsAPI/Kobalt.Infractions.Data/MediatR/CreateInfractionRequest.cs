@@ -72,14 +72,14 @@ public class CreateInfractionHandler : IRequestHandler<CreateInfractionRequest, 
                                       (
                                           inf => inf.GuildID == request.GuildID &&
                                               inf.IsProcessable &&
-                                              inf.Type == request.Type &&
+                                              inf.Type == request.Type - 4 &&
                                               inf.UserID == request.UserID
                                       )
                                      .FirstOrDefaultAsync(cancellationToken);
 
             if (lastMuteOrBan is null)
             {
-                return new InvalidOperationError($"The user is not {request.Type.ToString().ToLower().Replace("e", null)}ed.");
+                return new InvalidOperationError($"The user is not {(request.Type - 4).ToString().ToLower().Replace("e", null)}ed.");
             }
         }
 
