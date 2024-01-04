@@ -98,6 +98,7 @@
         if (!selfResult.Entity)
         {
             _promptToAddBot = true;
+            return;
         }
         
         Navigation.NavigateTo($"/manage/{guild.ID}", true);
