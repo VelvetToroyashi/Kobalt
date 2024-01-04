@@ -24,7 +24,8 @@ public static class CreateRoleMenu
         string Description,
         Snowflake GuildID,
         Snowflake ChannelID,
-        int MaxSelections
+        int MaxSelections,
+        Optional<IReadOnlyList<RoleMenuOptionEntity>> Options = default
     ) : IRequest<RoleMenuEntity>;
 
     internal class Handler(IDbContextFactory<KobaltContext> dbFactory) : IRequestHandler<Request, RoleMenuEntity>
@@ -40,6 +41,7 @@ public static class CreateRoleMenu
                 ChannelID = request.ChannelID,
                 Description = request.Description,
                 MaxSelections = request.MaxSelections,
+                Options = request.Options.OrDefault(new List<RoleMenuOptionEntity>()).ToList(),
             };
 
             db.RoleMenus.Add(roleMenu);

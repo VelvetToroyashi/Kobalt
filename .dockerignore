@@ -1,5 +1,4 @@
-﻿**/artifacts
-**/.dockerignore
+﻿**/.dockerignore
 **/.env
 **/.git
 **/.gitignore
@@ -14,7 +13,6 @@
 **/*.jfm
 **/azds.yaml
 **/bin
-**/build
 **/charts
 **/docker-compose*
 **/Dockerfile*

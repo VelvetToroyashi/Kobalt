@@ -6,7 +6,10 @@ using Kobalt.Bot.Auth;
 using Kobalt.Bot.Autocomplete;
 using Kobalt.Bot.Data;
 using Kobalt.Bot.Data.DTOs;
+using Kobalt.Bot.Data.Entities.RoleMenus;
+using Kobalt.Bot.Data.MediatR;
 using Kobalt.Bot.Data.MediatR.Guilds;
+using Kobalt.Bot.Data.MediatR.RoleMenus;
 using Kobalt.Bot.Handlers;
 using Kobalt.Bot.Services;
 using Kobalt.Bot.Services.Discord;
@@ -17,7 +20,9 @@ using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Services;
+using MassTransit.Configuration;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -39,7 +44,6 @@ using Remora.Discord.Gateway.Extensions;
 using Remora.Discord.Interactivity.Extensions;
 using Remora.Rest.Core;
 using RemoraDelegateDispatch.Extensions;
-using RemoraHTTPInteractions.Extensions;
 using RemoraHTTPInteractions.Services;
 using Serilog;
 using StackExchange.Redis;
@@ -57,11 +61,12 @@ ConfigureKobaltBotServices(builder.Configuration, builder.Services);
 
 builder.Host.AddStartupTaskSupport();
 
+builder.Services.AddSingleton<IAuthorizationHandler, DiscordAuthorizationHandler>();
 
 builder.Services.AddAuthentication(DiscordAuthenticationSchemeOptions.SchemeName)
        .AddScheme<DiscordAuthenticationSchemeOptions, DiscordAuthenticationHandler>(DiscordAuthenticationSchemeOptions.SchemeName, null);
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(auth => auth.AddPolicy(DiscordAuthorizationHandler.PolicyName, policy => policy.Requirements.Add(new MustManageGuildRequirement())));
 
 var host = builder.Build();
 
@@ -84,6 +89,171 @@ host.MapGet
         {
             return Results.NotFound();
         }
+    }
+).RequireAuthorization();
+
+host.MapPatch
+(
+    "/api/guilds/{guildID}",
+    async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, ulong guildID) =>
+    {
+        var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+        
+        if (!authorization.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var guildResult = await mediator.Send(new GetGuild.Request(new Snowflake(guildID)));
+        
+        if (guildResult is not { Entity: {} guild })
+        {
+            // 5xx, this should be impossible.
+            return Results.StatusCode(500);
+        }
+        
+        var json = await ctx.Request.ReadFromJsonAsync<KobaltGuildDTO>(jsonSerializer);
+        
+        if (json is null)
+        {
+            return Results.BadRequest();
+        }
+        
+        await mediator.Send(new UpdateGuild.AntiPhishing.Request(guild.ID, json.AntiPhishingConfig.ScanUsers, json.AntiPhishingConfig.ScanLinks, json.AntiPhishingConfig.DetectionAction));
+        await mediator.Send(new UpdateGuild.AntiRaid.Request(guild.ID, json.AntiRaidConfig.IsEnabled, json.AntiRaidConfig.MinimumAccountAgeBypass, json.AntiRaidConfig.AccountFlagsBypass, json.AntiRaidConfig.BaseJoinScore, json.AntiRaidConfig.JoinVelocityScore, json.AntiRaidConfig.MinimumAgeScore, json.AntiRaidConfig.NoAvatarScore, json.AntiRaidConfig.SuspiciousInviteScore, json.AntiRaidConfig.ThreatScoreThreshold, json.AntiRaidConfig.AntiRaidCooldownPeriod, json.AntiRaidConfig.LastJoinBufferPeriod, json.AntiRaidConfig.MinimumAccountAge));
+        
+        // TODO: Bulk update
+        foreach (var channel in json.LogChannels)
+        {
+            await mediator.Send(new AddOrModifyLoggingChannel.Request(guild.ID, channel.ChannelID, channel.Type));
+        }
+        
+        return Results.NoContent();
+    }
+).RequireAuthorization();
+
+host.MapGet
+(
+    "/api/guilds/{guildID}/rolemenus",
+    async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, ulong guildID) =>
+    {
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+        
+        if (!authorization.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
+        var getRoleMenusResult = await mediator.Send(new GetAllRoleMenus.Request(new Snowflake(guildID)));
+        
+        if (getRoleMenusResult is { Entity: {} roleMenus })
+        {
+            return Results.Json(roleMenus.Select(RoleMenuDTO.FromEntity), jsonSerializer);
+        }
+        else
+        {
+            return Results.NotFound();
+        }
+    }
+    
+).RequireAuthorization();
+
+host.MapPost
+(
+    "/api/guilds/{guildID}/rolemenus",
+    async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, RoleMenuService roleMenus, ulong guildID) =>
+    {
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+        
+        if (!authorization.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
+        var data = await ctx.Request.ReadFromJsonAsync<RoleMenuDTO>(jsonSerializer);
+        
+        if (data is null)
+        {
+            return Results.BadRequest();
+        }
+
+        var request = new CreateRoleMenu.Request
+        (
+            data.Name,
+            data.Description,
+            data.ChannelID,
+            data.GuildID,
+            data.MaxSelections,
+            new Optional<IReadOnlyList<RoleMenuOptionEntity>>
+            (
+                data.Options.Select
+                (
+                    o => new RoleMenuOptionEntity
+                    {
+                        Name = data.Name,
+                        RoleID = o.RoleID,
+                        Description = data.Description,
+                        MutuallyExclusiveRoles = o.MutuallyExclusiveRoleIDs.ToList(),
+                        MutuallyInclusiveRoles = o.MutuallyInclusiveRoleIDs.ToList(),
+                    } 
+                ).ToList()
+            )
+        );
+
+        var result = await mediator.Send(request);        
+        return Results.Json(RoleMenuDTO.FromEntity(result), jsonSerializer);
+    }
+).RequireAuthorization();
+
+host.MapPatch
+(
+    "/api/guilds/{guildID}/rolemenus/{roleMenuID}",
+    async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, RoleMenuService roleMenus, ulong guildID, int roleMenuID) =>
+    {
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+            
+        if (!authorization.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
+        var data = await ctx.Request.ReadFromJsonAsync<RoleMenuDTO>(jsonSerializer);
+        
+        if (data is null)
+        {
+            return Results.BadRequest();
+        }
+
+        var request = new UpdateRoleMenu.Request
+        (
+            roleMenuID,
+            new(guildID),
+            data.Name,
+            data.Description,
+            data.MaxSelections,
+            default,
+            new Optional<IReadOnlyList<RoleMenuOptionEntity>>
+            (
+                data.Options.Select
+                (
+                    o => new RoleMenuOptionEntity
+                    {
+                        Name = data.Name,
+                        RoleID = o.RoleID,
+                        Description = data.Description,
+                        MutuallyExclusiveRoles = o.MutuallyExclusiveRoleIDs.ToList(),
+                        MutuallyInclusiveRoles = o.MutuallyInclusiveRoleIDs.ToList(),
+                    } 
+                ).ToList()
+            )
+        );
+
+        var result = await mediator.Send(request);        
+        return Results.Json(result, jsonSerializer);
     }
 ).RequireAuthorization();
 
@@ -143,7 +313,6 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
     var token = config.Discord.Token;
 
-    services.AddOffsetServices();
     services.AddDiscordGateway(_ => token);
     services.AddInteractivity();
     //services.AddHTTPInteractionAPIs();
@@ -151,6 +320,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddPostExecutionEvent<PostExecutionHandler>();
     services.AddHostedService<KobaltDiscordGatewayService>();
     services.Configure<InteractionResponderOptions>(s => s.UseEphemeralResponses = true);
+    services.AddOffsetServices();
 
     services.AddTransient<IChannelLoggerService, ChannelLoggerService>();
     services.AddTransient<ImageOverlayService>();
@@ -190,7 +360,9 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddSingleton<RoleMenuService>();
 
     services.AddRabbitMQ();
+    
     services.AddSingleton<ReminderAPIService>();
+    services.RegisterConsumer<ReminderAPIService>();
 
     AddPhishingServices(services);
     AddInfractionServices(services);
@@ -301,6 +473,7 @@ void AddInfractionServices(IServiceCollection services)
     );
 
     services.AddSingleton<InfractionAPIService>();
+    services.RegisterConsumer<InfractionAPIService>();
 }
 
 void AddPhishingServices(IServiceCollection services)

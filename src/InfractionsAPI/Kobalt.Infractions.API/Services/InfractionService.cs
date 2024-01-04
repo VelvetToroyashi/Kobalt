@@ -190,6 +190,30 @@ public class InfractionService : BackgroundService, IInfractionService
                 }
 
                 _infractions.Remove(infraction.Id, out _);
+
+                if (infraction.Type is InfractionType.Mute or InfractionType.Ban)
+                {
+                    var expiredInfraction = await _mediator.Send
+                    (
+                        new CreateInfractionRequest
+                        (
+                            "The associated infraction expired.",
+                            infraction.UserID,
+                            infraction.GuildID, 
+                            infraction.ModeratorID,
+                            infraction.Type + 4,
+                            DateTimeOffset.UtcNow,
+                            null
+                        )
+                    );
+                    
+                    await _mediator.Send(new UpdateInfractionRequest(infraction.Id, infraction.GuildID, default, default, default, false));
+                    
+                    await _dispatcherChannel.Writer.WriteAsync(expiredInfraction.Entity, _cancellationToken);
+
+                    continue;
+                }
+
                 await _dispatcherChannel.Writer.WriteAsync(infraction, _cancellationToken);
             }
         }
@@ -203,11 +227,6 @@ public class InfractionService : BackgroundService, IInfractionService
             var dto = await _dispatcherChannel.Reader.ReadAsync(CancellationToken.None);
 
             await _bus.Publish(dto, _cancellationToken);
-
-            if (dto.Type is InfractionType.Ban or InfractionType.Mute)
-            {
-                await _mediator.Send(new UpdateInfractionRequest(dto.Id, dto.GuildID, default, default, default, false));
-            }
         }
     }
 }

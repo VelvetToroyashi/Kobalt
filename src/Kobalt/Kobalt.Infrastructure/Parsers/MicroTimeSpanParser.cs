@@ -28,6 +28,7 @@ public partial class MicroTimeSpanParser : AbstractTypeParser<TimeSpan>
             'd' => TimeSpan.FromDays(quantity),
             'h' => TimeSpan.FromHours(quantity),
             'm' => TimeSpan.FromMinutes(quantity),
+            's' => TimeSpan.FromSeconds(quantity),
             _ => throw new ArgumentOutOfRangeException()
         };
 

@@ -87,4 +87,3 @@ services:
       - CONNECTIONSTRINGS__PHISHING=Server=kobalt_postgres;Database=kobalt;Username=kobalt;Password=kobalt;
     depends_on:
       - postgres
-    

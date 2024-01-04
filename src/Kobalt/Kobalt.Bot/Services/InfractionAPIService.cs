@@ -478,7 +478,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             return;
         }
 
-        var embed = GenerateEmbedForInfraction(new InfractionResult(context.Message, InfractionState.Created), getModeratorResult.Entity, getUserResult.Entity);
+        var embed = GenerateEmbedForInfraction(new InfractionResult(context.Message, InfractionState.Created), getUserResult.Entity, getModeratorResult.Entity);
 
         await _channelLogger.LogAsync(new Snowflake(message.GuildID), LogChannelType.CaseCreate, default, new[] { embed });
     }
