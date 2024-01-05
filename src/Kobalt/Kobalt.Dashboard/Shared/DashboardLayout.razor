@@ -19,7 +19,7 @@
             </KobaltNav>
             
             <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                <MudDrawer @bind-Open="_drawerOpen" Width="200" Anchor="Anchor.Left" Height="250px" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" ClipMode="DrawerClipMode.Always" Color="Color.Surface">
+                <MudDrawer Style="border-bottom-right-radius: 5px" @bind-Open="_drawerOpen" Width="200" Anchor="Anchor.Left" Height="250px" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" ClipMode="DrawerClipMode.Always" Color="Color.Surface">
                     <MudNavMenu>
                         <MudNavLink Class="mt-8" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Dns">Servers</MudNavLink>
                         <MudNavLink Class="mt-8" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Feedback">Reminders</MudNavLink>
