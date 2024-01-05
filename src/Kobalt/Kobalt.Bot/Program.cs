@@ -428,7 +428,8 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
                     new Activity
                     (
                         Name: "Code being written",
-                        Type: ActivityType.Watching
+                        State: "Perhaps there will be a random quote here from time to time.\n Who knows?",
+                        Type: ActivityType.Custom
                     )
                 }
             );
