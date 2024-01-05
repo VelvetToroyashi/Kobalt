@@ -10,7 +10,7 @@
 @namespace Kobalt.Dashboard.Shared
 
 <CascadingAuthenticationState>
-    <MudAppBar>
+    <MudAppBar Color="Color.Surface">
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
             <MudContainer Class="d-flex flex-row justify-space-around" MaxWidth="MaxWidth.Small">
                 <MudText>Kobalt</MudText>
@@ -22,10 +22,10 @@
             </MudContainer>
             
             <MudSpacer/>
-            <MudButton Variant="Variant.Filled" Color="Color.Dark" Size="Size.Large" Class="cta-button bg-gray-500 rounded-md">Add to Server</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Tertiary" Size="Size.Large" Style=@($"background: {MainLayout.KobaltTheme.PaletteDark.Surface}") Class="cta-button bg-gray-500 rounded-md mr-4">Add to Server</MudButton>
             <AuthorizeView>
                 <Authorized>
-                    <MudMenu Color="Color.Primary" Dense="true" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                    <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                         <ActivatorContent>
                             <MudAvatar Rounded="true" Size="Size.Medium">
                                 <MudImage Src="@context.User.GetAvatarUrl()"></MudImage>
@@ -115,6 +115,7 @@
     
     .cta-button {
         text-transform: none !important;
+        padding: 13px 13px 12px;
     }
 </style>
 
