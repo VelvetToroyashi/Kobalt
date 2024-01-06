@@ -1,7 +1,53 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
+<MudLayout>
+    <MudContainer Class="mt-5" MaxWidth="MaxWidth.ExtraLarge">
+        <MudText Align="Align.Center" Typo="Typo.h2">Kobalt.</MudText>
+        <MudDivider/>
+        <MudText Align="Align.Center" Typo="Typo.h6">The Discord bot to serve <span style="text-decoration: underline;">you.</span></MudText>
+    
+        <div class="mt-6"/>
+        
+        <MudGrid Justify="Justify.SpaceAround" Spacing="8">
+            <MudItem xs="12" sm="8" md="6" Class="feature-card">
+                <MudPaper Class="pb-4">
+                    <MudImage Src="img/mute_example.png" Height="150"/>
+                    <div class="mt-4"/>
+                    <MudText Class="ml-6" Typo="Typo.h4">Comprehensive logging.</MudText>
 
-<h1>Hello, world!</h1>
+                    <MudText Class="ml-6" Typo="Typo.body2">Logging should be expressive, yet concise.</MudText>
+                    <MudText Class="ml-6" Typo="Typo.body2">Kobalt tells you what's important, by default.</MudText>
+                </MudPaper>
+            </MudItem>
 
-Welcome to your new app.
+            <MudItem xs="12" sm="8" md="6" Class="feature-card">
+                <MudPaper Class="pb-4">
+                    <MudImage Src="img/artist_verification_example.png" Height="150"/>
+                    <div class="mt-4"/>
+
+                    <MudText Class="ml-6" Typo="Typo.h4">Artist Verification</MudText>
+
+                    <MudText Class="ml-6" Typo="Typo.body2">Coming soon™️, Kobalt will be able to verify artists.</MudText>
+                    <MudText Class="ml-6" Typo="Typo.body2">Kobalt can automatically verify the identity of artists who</MudText>
+                    <MudText Class="ml-6" Typo="Typo.body2">opt-in to verification, or you can manually look up and verify artists by submitting images.</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" Style="max-width: 40vw">
+                <MudPaper Class="pb-4">
+                    <MudText Typo="Typo.h4">Lorem Ipsum</MudText>
+                </MudPaper>
+            </MudItem>
+
+        </MudGrid>
+    
+    </MudContainer>
+</MudLayout>
+
+<MudHidden Breakpoint="Breakpoint.MdAndDown">
+    <style>
+        .feature-card {
+            max-width: calc(max(35vw, 400px));
+        }
+    </style>
+</MudHidden>
