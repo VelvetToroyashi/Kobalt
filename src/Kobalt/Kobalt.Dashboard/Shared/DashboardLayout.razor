@@ -8,31 +8,31 @@
 
 <MudLayout>
     <CascadingValue TValue="Action<string>" Value="UpdateValue">
-            <KobaltNav>
-                <ChildContent>
-                    <MudNavMenu>
-                        <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Dns">Servers</MudNavLink>
-                        <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Feedback">Reminders</MudNavLink>
-                        <MudNavLink Match="NavLinkMatch.All" Disabled="true" Icon="@Icons.Material.Outlined.HowToReg">Artist Verification (Coming soon!)</MudNavLink>
-                    </MudNavMenu>
-                </ChildContent>
-            </KobaltNav>
-            
-            <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                <MudDrawer Color="Color.Surface" Style="border-bottom-right-radius: 5px;" @bind-Open="_drawerOpen" Width="200" Anchor="Anchor.Left" Height="250px" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" ClipMode="DrawerClipMode.Always">
-                    <MudNavMenu>
-                        <MudNavLink Class="mt-8" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Dns">Servers</MudNavLink>
-                        <MudNavLink Class="mt-8" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Feedback">Reminders</MudNavLink>
-                        <MudNavLink Class="mt-8" Match="NavLinkMatch.All" Disabled="true" Icon="@Icons.Material.Outlined.HowToReg">Artist Verification (Coming soon!)</MudNavLink>
-                    </MudNavMenu>
-                </MudDrawer>
-            </MudHidden>
+        <KobaltNav>
+            <ChildContent>
+                <MudNavMenu>
+                    <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Dns">Servers</MudNavLink>
+                    <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Feedback">Reminders</MudNavLink>
+                    <MudNavLink Match="NavLinkMatch.All" Disabled="true" Icon="@Icons.Material.Outlined.HowToReg">Artist Verification (Coming soon!)</MudNavLink>
+                </MudNavMenu>
+            </ChildContent>
+        </KobaltNav>
+        
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudDrawer Color="Color.Surface" Style="border-bottom-right-radius: 5px;" @bind-Open="_drawerOpen" Width="200" Anchor="Anchor.Left" Height="250px" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" ClipMode="DrawerClipMode.Always">
+                <MudNavMenu>
+                    <MudNavLink Class="mt-8" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Dns">Servers</MudNavLink>
+                    <MudNavLink Class="mt-8" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Feedback">Reminders</MudNavLink>
+                    <MudNavLink Class="mt-8" Match="NavLinkMatch.All" Disabled="true" Icon="@Icons.Material.Outlined.HowToReg">Artist Verification (Coming soon!)</MudNavLink>
+                </MudNavMenu>
+            </MudDrawer>
+        </MudHidden>
 
-            <MudMainContent>
-                <MudContainer Class="mt-5" MaxWidth="MaxWidth.Large">
-                    @Body
-                </MudContainer>
-            </MudMainContent>
+        <MudMainContent>
+            <MudContainer Class="mt-5" MaxWidth="MaxWidth.Large">
+                @Body
+            </MudContainer>
+        </MudMainContent>
     </CascadingValue>
 </MudLayout>
 

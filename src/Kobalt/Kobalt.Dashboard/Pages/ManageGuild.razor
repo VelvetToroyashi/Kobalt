@@ -109,13 +109,22 @@ else
                 <ChildContent>
                     <MudContainer Style="margin-top: -16px;">
                         <MudGrid Spacing="3">
+                            <MudSpacer/>
                             <MudItem xs="12">
                                 <MudCheckBox @bind-Checked="_kobaltGuild!.AntiRaid.IsEnabled">Enabled</MudCheckBox>
                             </MudItem>
 
-                            <MudItem>
-                                <MudTextField T="TimeSpan" Converter="_timespanConverter" Disabled="!_kobaltGuild!.AntiRaid.IsEnabled" Required="true" Label="Minimum Account Age"></MudTextField>
+                            <MudItem xs="3">
+                                <MudSelect T="TimeSpan" @bind-Value="_kobaltGuild.AntiRaid.MinimumAccountAge" AdornmentIcon=@Icons.Material.Outlined.DateRange Disabled="!_kobaltGuild.AntiRaid.IsEnabled" Converter="_timespanConverter">
+                                    <MudSelectItem Value=@(TimeSpan.FromDays(7))>1 Week</MudSelectItem>
+                                    <MudSelectItem Value=@(TimeSpan.FromDays(14))>2 Weeks</MudSelectItem>
+                                    <MudSelectItem Value=@(TimeSpan.FromDays(30))>1 Month</MudSelectItem>
+                                    <MudSelectItem Value=@(TimeSpan.FromDays(90))>3 Months</MudSelectItem>
+                                    <MudSelectItem Value=@(TimeSpan.FromDays(180))>6 Months</MudSelectItem>
+                                    <MudSelectItem Value=@(TimeSpan.FromDays(365))>1 Year</MudSelectItem>
+                                </MudSelect>
                             </MudItem>
+
                             <MudItem>
                                 <MudNumericField T="int"
                                                  Disabled="!_kobaltGuild!.AntiRaid.IsEnabled"
