@@ -12,21 +12,29 @@
             <div class="mt-6"/>
         </MudHidden>
         
-        <MudGrid Justify="Justify.SpaceBetween" Spacing="8" Class="feature-grid">
-            <MudItem xs="12" sm="8" md="6" Class="feature-card">
+        @* 
+            TODO: I hate mud grid :gone:, this probably needs to be flexbox'd so 
+            we can assign `gap` instead of relying on space-between, but in theory
+            `Spacing` on the MudGrid does exactly this? More testing required.        
+        *@
+        
+        <MudGrid Justify="Justify.SpaceBetween" Class="feature-grid gap-4" Style="min-width: fit-content;">
+            <MudItem xs="12" sm="6"  Class="feature-card flex flex-shrink flex-col">
                 <MudPaper Class="pb-4">
                     <MudImage Src="img/mute_example.png" Height="150"/>
                     <div class="mt-3"/>
                     <MudContainer>
                         <MudText Class="mb-3" Typo="Typo.h5">Comprehensive logging.</MudText>
                         
-                        <MudText Typo="Typo.body2">Logging should be expressive, yet concise.</MudText>
-                        <MudText Typo="Typo.body2">Kobalt tells you what's important, by default.</MudText>
+                        <MudText Typo="Typo.body2">
+                            Logging should be expressive, yet concise.
+                            Kobalt tells you what's important, by default.
+                        </MudText>
                     </MudContainer>
                 </MudPaper>
             </MudItem>
 
-            <MudItem xs="12" sm="8" md="6" Class="feature-card">
+            <MudItem xs="12" sm="5" Class="feature-card flex flex-shrink flex-col">
                 <MudPaper Class="pb-4">
                     <MudImage Src="img/artist_verification_example.png" Height="150"/>
                     <div class="mt-3"/>
@@ -34,47 +42,52 @@
                     <MudContainer>
                         <MudText Class="mb-3" Typo="Typo.h5">Artist Verification</MudText>
 
-                        <MudText Typo="Typo.body2">Coming soon&trade;, Kobalt will be able to verify artists.</MudText>
-                        <MudText Typo="Typo.body2">
-                            Artists must opt-in for automatic verification, but <br class="d-md-none"/>
+                        <MudText Typo="Typo.body2" Style="text-wrap: pretty;">Coming soon&trade;, Kobalt will be able to verify artists.</MudText>
+                        <MudText Typo="Typo.body2" Style="text-wrap: pretty;">
+                            Artists must opt-in for automatic verification, but
                             Kobalt also offers a robust lookup system to use.
                         </MudText>
                     </MudContainer>
                 </MudPaper>
             </MudItem>
 
-            <MudItem xs="12" sm="6" Style="max-width: 40vw">
+            <MudItem xs="12" Class="feature-card">
                 <MudPaper Class="pb-4">
-                    <MudText Typo="Typo.h4">Lorem Ipsum</MudText>
+                    <MudContainer>
+                        <MudText Class="mb-3" Typo="Typo.h5">Dynamic auto-moderation.</MudText>
+                        
+                        <MudText Typo="Typo.body2" Style="text-wrap: pretty;">
+                            Running a server is tricky business. Kobalt can take some of the work
+                            off your hands by providing automated tooling to deal with repeat-offenders,
+                            compromised/spam accounts, raiders, and more.
+                        </MudText>
+                    </MudContainer>
                 </MudPaper>
             </MudItem>
-
         </MudGrid>
-    
     </MudContainer>
 </MudLayout>
 
 <MudHidden Breakpoint="Breakpoint.MdAndDown">
     <style>
         .feature-card {
-            max-width: calc(max(35vw, 400px));
+            max-width: calc(min(500px, 45vw)) !important;
         }
     </style>
 </MudHidden>
-<MudHidden Breakpoint="Breakpoint.LgAndUp">
-        <style>
-            .feature-card {
-                padding: 16px 0 !important;
-            }
-            
-            .feature-grid {
-                width: 100%;
-                margin: 0;
-                padding: 0;
-            }
-            
-        </style>
-</MudHidden>
+
+<style>
+    .feature-grid {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .feature-card {
+        padding: 16px 0 !important;
+        max-width: 550px;
+    }
+</style>
 
 @code
 {
