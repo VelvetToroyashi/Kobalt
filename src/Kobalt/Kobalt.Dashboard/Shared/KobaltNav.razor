@@ -18,7 +18,7 @@
                 <MudText><a href="#">About</a></MudText>
                 <MudText><a href="#">Features</a></MudText>
                 <MudText><a href="https://github.com/VelvetToroyashi/Kobalt" Target="_blank">Source</a></MudText>
-                <MudText><a>Support</a></MudText>
+                <MudText><a href=@InviteLink target="_blank">Support</a></MudText>
             </MudContainer>
             
             <MudSpacer/>
@@ -58,7 +58,7 @@
         <MudHidden Breakpoint="Breakpoint.MdAndUp">
             <MudText>Kobalt</MudText>
             <MudSpacer/>
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="Toggle"/>
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick=@Toggle/>
         </MudHidden>
     </MudAppBar>
     
@@ -78,7 +78,7 @@
                 <MudNavLink Match="NavLinkMatch.All" Href="#">About</MudNavLink>
                 <MudNavLink Match="NavLinkMatch.All" Href="#">Features</MudNavLink>
                 <MudNavLink Match="NavLinkMatch.All" Href="https://github.com/VelvetToroyashi/Kobalt" Target="_blank">Source</MudNavLink>
-                <MudNavLink Match="NavLinkMatch.All">Support</MudNavLink>
+                <MudNavLink                          Href=@InviteLink Target="_blank">Support</MudNavLink>
                 <AuthorizeView>
                     <Authorized>
                         <form action="api/auth/logout" method="post">
@@ -120,7 +120,8 @@
 </style>
 
 @code {
-
+    private const string InviteLink = "https://discord.gg/TVSRUDW7Aa";
+    
     private bool _open;
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
