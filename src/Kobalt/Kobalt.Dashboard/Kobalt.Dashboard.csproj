@@ -10,10 +10,11 @@
 
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OAuth.Discord" Version="7.0.4" />
+    <PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="6.8.0" />
     <PackageReference Include="Humanizer.Core" Version="2.14.1" />
     <PackageReference Include="MediatR" Version="12.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0-rc.2.23479.6" />
-    <PackageReference Include="MudBlazor" Version="6.11.0" />
+    <PackageReference Include="MudBlazor" Version="6.12.0" />
     <PackageReference Include="Remora.Discord.API.Abstractions" Version="80.0.0" />
     <PackageReference Include="Remora.Discord.Caching" Version="38.0.0" />
     <PackageReference Include="Remora.Discord.Rest" Version="49.0.0" />
