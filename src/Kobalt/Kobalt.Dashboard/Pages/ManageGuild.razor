@@ -223,6 +223,18 @@ else
                 <MudText>Save Changes</MudText>
             }
         </MudButton>
+        @if (_isBusy)
+        {
+            <MudButton Disabled="true" Class="mt-7 cursor-progress" Style="width: fit-content" Variant="Variant.Filled">
+                <MudProgressCircular Size="Size.Small"/> Updating...
+            </MudButton>
+        }
+        else
+        {
+            <MudButton Color="Color.Info" Class="mt-7" Style="width: fit-content" Variant="Variant.Filled">
+                <MudIcon Icon="@Icons.Material.Filled.Save"/> Save Changes
+            </MudButton>
+        }
     </MudItem> 
     </MudGrid>
     <MudHidden Breakpoint="Breakpoint.MdAndUp">
