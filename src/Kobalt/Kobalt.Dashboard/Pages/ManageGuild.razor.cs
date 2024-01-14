@@ -70,7 +70,7 @@ public partial class ManageGuild
     
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_guildState is GuildState.Unavailable)
+        if (!firstRender && _guildState is not GuildState.Loading)
         {
             await base.OnAfterRenderAsync(firstRender);
             return;
