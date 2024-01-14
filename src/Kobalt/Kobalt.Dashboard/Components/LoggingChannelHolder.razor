@@ -1,0 +1,69 @@
+@using MudExtensions
+@using Kobalt.Shared.Types
+@using Remora.Rest.Core
+
+<MudStack Spacing="2">
+    <div class="flex flex-row">
+        <MudButton Class="flex-shrink" OnClick="() => DeleteHandler?.DynamicInvoke(ChannelID)">
+            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Error"/>
+        </MudButton>
+        <MudButton
+            Class="flex-grow"
+            FullWidth="true"
+            OnClick="() => _isExpanded = !_isExpanded"
+            EndIcon="@(_isExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)">
+            @ChannelName
+        </MudButton>
+    </div>
+    <MudDivider/>
+    <MudCollapse @bind-Expanded="_isExpanded">
+        <MudSelectExtended T=LogChannelType ChipCloseable="true" MultiSelection="true" ChipVariant="Variant.Filled" @bind-SelectedValues="BoundValue">
+            @foreach (var channelType in _channelTypes)
+            {
+                <MudSelectItemExtended Value="channelType"></MudSelectItemExtended>
+            }
+        </MudSelectExtended>
+    </MudCollapse>
+</MudStack>
+
+@code
+{
+    private bool _isExpanded = false;
+    private static readonly LogChannelType[] _channelTypes = Enum.GetValues(typeof(LogChannelType)).Cast<LogChannelType>().ToArray();
+    
+    [Parameter]
+    public required Snowflake ChannelID { get; set; }
+    
+    /// <summary>
+    /// The handler to call when the user clicks the delete button.
+    /// </summary>
+    [Parameter]
+    public Action<Snowflake>? DeleteHandler { get; set; }
+
+    /// <summary>
+    /// The name of the channel to display to the user.
+    /// </summary>
+    [Parameter]
+    public required string ChannelName { get; set; }
+
+    private IEnumerable<LogChannelType> _selectedItems;
+    
+    [Parameter]
+    public IEnumerable<LogChannelType> SelectedItems { get; set; }
+    
+    [Parameter]
+    public EventCallback<IEnumerable<LogChannelType>> SelectedItemsChanged { get; set; }
+    
+    // This is an interesting workaround to chained binding.
+    // See this issue https://github.com/dotnet/AspNetCore.Docs/issues/17921#issuecomment-700125763
+    // However, unlike in their example, we need to set `SelectedValues`. Perhaps this is a regression in blazor?
+    private IEnumerable<LogChannelType> BoundValue
+    {
+        get => SelectedItems;
+        set
+        {
+            SelectedItems = value; 
+            SelectedItemsChanged.InvokeAsync(value); 
+        }
+    }
+}
