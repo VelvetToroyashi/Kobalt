@@ -179,54 +179,26 @@ else
                         </MudHidden>
                         <MudButton Class="k-log-button" Style="width: fit-content; height: 40px;" Color="Color.Primary" Variant="Variant.Filled">Add A Channel</MudButton>
                     </div>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Channel</MudTh>
-                    <MudTh>Logging Types</MudTh>
-                    <MudTh>Remove</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Name">@(_channels!.TryGetValue(@context.ChannelID, out var chn) ? $"#{chn.Name}" : "Unknown Channel")</MudTd>
-                    <MudTd DataLabel="Types">@context.Types.Humanize(static t => t.Humanize())</MudTd>
-                    <MudTd DataLabel="Remove">
-                        <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Size="Size.Small" Color="@Color.Error"/>
-                    </MudTd>
-                </RowTemplate>
-                <RowEditingTemplate>
-                    <MudTd DataLabel="Name">@(_channels!.TryGetValue(@context.ChannelID, out var chn) ? $"#{chn.Name}" : "Unknown Channel")</MudTd>
-                    <MudTd>
-                        <MudSelect Required MultiSelection @bind-SelectedValues="@context.Types">
-                            @foreach (var type in Enum.GetValues<LogChannelType>())
-                            {
-                                <MudSelectItem Value="@type">@type.Humanize()</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudTd>
-                </RowEditingTemplate>
-                <EditButtonContent Context="button">
-                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@button.ButtonAction" Disabled="@button.ButtonDisabled"/>
-                </EditButtonContent>
-            </MudTable>
-        </MudTabPanel>
-    </MudTabs>
-        <MudButton Color="Color.Info" Disabled="_isBusy" Class="mt-7" Variant="Variant.Filled">
-            @if (_isBusy)
-            {
-                <MudProgressCircular Size="Size.Small"/>
-
-                <MudText>Updating...</MudText>
-            }
-            else
-            {
-                <MudIcon Icon="@Icons.Material.Filled.Save"/>
-
-                <MudText>Save Changes</MudText>
-            }
-        </MudButton>
+                </MudToolBar>
+                <MudContainer MaxWidth="MaxWidth.Small">
+                    <MudStack>
+                        @foreach (var channel in _kobaltGuild!.Logging)
+                        {
+                            <LoggingChannelHolder
+                                ChannelID="channel.ChannelID"
+                                DeleteHandler="@((c) => _kobaltGuild.Logging.RemoveAll(x => x.ChannelID == c))"
+                                @bind-SelectedItems="channel.Types"
+                                ChannelName="@(_channels!.TryGetValue(channel.ChannelID, out var cn) ? "#" + cn.Name : "Unknown Channel")"/>
+                        }
+                    </MudStack>
+                </MudContainer>
+            </MudTabPanel>
+        </MudTabs>
+        
         @if (_isBusy)
         {
             <MudButton Disabled="true" Class="mt-7 cursor-progress" Style="width: fit-content" Variant="Variant.Filled">
-                <MudProgressCircular Size="Size.Small"/> Updating...
+                <MudProgressCircular Size="Size.Small" Indeterminate="true"/> Updating...
             </MudButton>
         }
         else
