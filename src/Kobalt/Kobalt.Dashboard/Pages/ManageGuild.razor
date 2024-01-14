@@ -198,13 +198,14 @@ else
         @if (_isBusy)
         {
             <MudButton Disabled="true" Class="mt-7 cursor-progress" Style="width: fit-content" Variant="Variant.Filled">
-                <MudProgressCircular Size="Size.Small" Indeterminate="true"/> Updating...
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2"/> Updating...
             </MudButton>
         }
         else
         {
             <MudButton Color="Color.Info" Class="mt-7" Style="width: fit-content" Variant="Variant.Filled">
                 <MudIcon Icon="@Icons.Material.Filled.Save"/> Save Changes
+                <MudIcon Icon="@Icons.Material.Filled.Save" Class="mr-2"/> Save Changes
             </MudButton>
         }
     </MudItem> 
