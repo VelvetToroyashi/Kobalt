@@ -1,5 +1,6 @@
 @using MudExtensions
 @using Kobalt.Shared.Types
+@using MudExtensions.Enums
 @using Remora.Rest.Core
 
 <MudStack Spacing="2">
@@ -8,16 +9,25 @@
             <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Error"/>
         </MudButton>
         <MudButton
-            Class="flex-grow"
+            Class="flex flex-grow flex-row justify-space-between"
             FullWidth="true"
             OnClick="() => _isExpanded = !_isExpanded"
+            
             EndIcon="@(_isExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)">
-            @ChannelName
+            <MudText Align="Align.Left">
+                @ChannelName
+            </MudText>
         </MudButton>
     </div>
     <MudDivider/>
     <MudCollapse @bind-Expanded="_isExpanded">
-        <MudSelectExtended T=LogChannelType ChipCloseable="true" MultiSelection="true" ChipVariant="Variant.Filled" @bind-SelectedValues="BoundValue">
+        <MudSelectExtended T=LogChannelType ChipCloseable="true"
+                           MultiSelection="true"
+                           ChipVariant="Variant.Filled"
+                           ValuePresenter="ValuePresenter.Chip"
+                           NoWrap="false"
+                           @bind-SelectedValues="BoundValue"
+                           >
             @foreach (var channelType in _channelTypes)
             {
                 <MudSelectItemExtended Value="channelType"></MudSelectItemExtended>

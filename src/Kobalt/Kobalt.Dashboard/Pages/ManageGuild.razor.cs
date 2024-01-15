@@ -65,6 +65,13 @@ public partial class ManageGuild
         : throw new(),
         SetFunc = (s) => s.Humanize(3, minUnit: TimeUnit.Minute)
     };
+
+    // TODO: Add confirmation? Or at least inform the user that this isn't saved until they click save.
+    private void RemoveChannel(Snowflake channelID)
+    {
+        _kobaltGuild!.Logging.RemoveAll(c => c.ChannelID == channelID);
+        StateHasChanged(); // Important, otherwise the changes won't be reflected in the UI.
+    }
     
     private void UpdateLogChannel(IEnumerable<LogChannelType> selectedChannelTypes) {}
     
