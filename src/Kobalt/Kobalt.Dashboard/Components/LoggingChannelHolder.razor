@@ -54,10 +54,10 @@
     [Parameter]
     public required string ChannelName { get; set; }
 
-    private IEnumerable<LogChannelType> _selectedItems;
+    private IEnumerable<LogChannelType> _selectedItems = Array.Empty<LogChannelType>();
     
     [Parameter]
-    public IEnumerable<LogChannelType> SelectedItems { get; set; }
+    public required IEnumerable<LogChannelType> SelectedItems { get; set; }
     
     [Parameter]
     public EventCallback<IEnumerable<LogChannelType>> SelectedItemsChanged { get; set; }

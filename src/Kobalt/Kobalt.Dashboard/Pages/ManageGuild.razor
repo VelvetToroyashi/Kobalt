@@ -85,7 +85,7 @@ else
                  Elevation="4" ApplyEffectsToContainer="true" Class="mt-8" Style="width: 100%">
             <MudTabPanel Icon="@Icons.Material.Filled.Security" Text="AutoMod">
                 <MudTooltip Delay="250" Text="How many users are allowed to be in a channel before it's switched to Push-To-Talk."> 
-                    <MudNumericField T="int?" bind-Value="_kobaltGuild!.AutoMod.PushToTalkThreshold" Variant="Variant.Text" Min="0" Label="Push To Talk Threshold"/> 
+                    <MudNumericField T="int?" bind-Value="_kobaltGuild.AutoMod.PushToTalkThreshold" Variant="Variant.Text" Min="0" Label="Push To Talk Threshold"/> 
                 </MudTooltip> 
             </MudTabPanel>
                     
@@ -103,7 +103,7 @@ else
                         
                     <MudNumericField T="int"
                                      FullWidth="false"
-                                     Disabled="!_kobaltGuild!.AntiRaid.IsEnabled"
+                                     Disabled="!_kobaltGuild.AntiRaid.IsEnabled"
                                      Immediate="false"
                                      Min="0"
                                      Max="_kobaltGuild.AntiRaid.ThreatScoreThreshold"
@@ -112,7 +112,7 @@ else
                                      @bind-Value="_kobaltGuild.AntiRaid.BaseJoinScore"/>
                         
                     <MudNumericField T="int"
-                                     Disabled="!_kobaltGuild!.AntiRaid.IsEnabled"
+                                     Disabled="!_kobaltGuild.AntiRaid.IsEnabled"
                                      Immediate="false"
                                      Min="0"
                                      Max="_kobaltGuild.AntiRaid.ThreatScoreThreshold"
@@ -121,7 +121,7 @@ else
                                      @bind-Value="_kobaltGuild.AntiRaid.JoinVelocityScore"/>
         
                     <MudNumericField T="int"
-                                     Disabled="!_kobaltGuild!.AntiRaid.IsEnabled"
+                                     Disabled="!_kobaltGuild.AntiRaid.IsEnabled"
                                      Immediate="false"
                                      Min="0"
                                      Max="_kobaltGuild.AntiRaid.ThreatScoreThreshold"
@@ -130,7 +130,7 @@ else
                                      @bind-Value="_kobaltGuild.AntiRaid.MinimumAgeScore"/>
         
                     <MudNumericField T="int"
-                                     Disabled="!_kobaltGuild!.AntiRaid.IsEnabled"
+                                     Disabled="!_kobaltGuild.AntiRaid.IsEnabled"
                                      Immediate="false"
                                      Min="0"
                                      Max="_kobaltGuild.AntiRaid.ThreatScoreThreshold"
@@ -142,13 +142,13 @@ else
                                      Disabled="true"
                                      Immediate="false"
                                      Min="0"
-                                     Max="_kobaltGuild!.AntiRaid.ThreatScoreThreshold"
+                                     Max="_kobaltGuild.AntiRaid.ThreatScoreThreshold"
                                      Label="Suspicious Invite Score (Coming Soon!)"
                                      Variant="Variant.Text"
                                      @bind-Value="_kobaltGuild.AntiRaid.SuspiciousInviteScore"/>
         
                     <MudNumericField T="int"
-                                     Disabled="!_kobaltGuild!.AntiRaid.IsEnabled"
+                                     Disabled="!_kobaltGuild.AntiRaid.IsEnabled"
                                      Immediate="false"
                                      Min="0"
                                      Max="_kobaltGuild.AntiRaid.ThreatScoreThreshold"
@@ -159,9 +159,9 @@ else
             </MudTabPanel>
                     
             <MudTabPanel Icon="@Icons.Material.Filled.ManageSearch" Text="Anti-Phishing">
-                <MudCheckBox @bind-Checked="_kobaltGuild!.AntiPhishing.ScanUsers" Label="Scan Users"/>
-                <MudCheckBox @bind-Checked="_kobaltGuild!.AntiPhishing.ScanLinks" Label="Scan Links"/>
-                <MudSelect @bind-Value="_kobaltGuild!.AntiPhishing.DetectionAction" Label="Detection Action">
+                <MudCheckBox @bind-Checked="_kobaltGuild.AntiPhishing.ScanUsers" Label="Scan Users"/>
+                <MudCheckBox @bind-Checked="_kobaltGuild.AntiPhishing.ScanLinks" Label="Scan Links"/>
+                <MudSelect @bind-Value="_kobaltGuild.AntiPhishing.DetectionAction" Label="Detection Action">
                     <MudSelectItem Value="InfractionType.Ban">Ban</MudSelectItem>
                     <MudSelectItem Value="InfractionType.Kick">Kick</MudSelectItem>
                     <MudSelectItem Value="InfractionType.Mute">Mute</MudSelectItem>
@@ -171,7 +171,7 @@ else
                     
             <MudTabPanel Icon="@Icons.Material.Filled.Notes" Text="Logging">
                 <MudToolBar>
-                    <MudText Typo="Typo.h6">@("Channel".ToQuantity(_kobaltGuild!.Logging.Count))</MudText>
+                    <MudText Typo="Typo.h6">@("Channel".ToQuantity(_kobaltGuild.Logging.Count))</MudText>
                     <MudSpacer/>
                     <div style="height: min-content; align-items: center" class="flex flex-row space-x-2">
                         <MudHidden Breakpoint="Breakpoint.SmAndDown">

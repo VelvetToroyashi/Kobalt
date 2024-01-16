@@ -46,30 +46,20 @@ public partial class ManageGuild
     public required DashboardRestClient Discord { get; set; }
     
     private IGuild? _guild;
-    private KobaltGuildView? _kobaltGuild;
+    private KobaltGuildView _kobaltGuild = null!;
     private IReadOnlyDictionary<Snowflake, IChannel>? _channels;
     private Result<IReadOnlyList<InfractionView>>? _infractions;
 
     private string? _currentSearch;
     private readonly Func<KobaltLoggingConfigView, bool> _searchFilter = (config) => true;
     
-    private bool _isBusy;
+    private bool _isBusy = false;
     private GuildState _guildState = GuildState.Loading;
-
-    private static readonly ISet<DateTimeV2Type> TypeFilter = new[] { DateTimeV2Type.Duration }.ToFrozenSet();
-
-    private readonly Converter<TimeSpan> _timespanConverter = new()
-    {
-        GetFunc = (s) => DateTimeV2Recognizer.RecognizeDateTimes(s!, "en-us", null, TypeFilter).FirstOrDefault()?.Resolution.Values.FirstOrDefault() is DateTimeV2Duration duration
-        ? duration.Value
-        : throw new(),
-        SetFunc = (s) => s.Humanize(3, minUnit: TimeUnit.Minute)
-    };
 
     // TODO: Add confirmation? Or at least inform the user that this isn't saved until they click save.
     private void RemoveChannel(Snowflake channelID)
     {
-        _kobaltGuild!.Logging.RemoveAll(c => c.ChannelID == channelID);
+        _kobaltGuild.Logging.RemoveAll(c => c.ChannelID == channelID);
         StateHasChanged(); // Important, otherwise the changes won't be reflected in the UI.
     }
     
@@ -116,16 +106,6 @@ public partial class ManageGuild
         }
 
         StateHasChanged();
-    }
-    
-    private void UpdateDate(DateTime? date, Action<TimeSpan?> setTime)
-    {
-        setTime(date - DateTimeOffset.UtcNow);
-    }
-    
-    private void UpdateDate(DateTime? date, Action<TimeSpan> setTime)
-    {
-        setTime(date - DateTimeOffset.UtcNow ?? TimeSpan.Zero);
     }
 
     private async Task GetInfractionsAsync()
