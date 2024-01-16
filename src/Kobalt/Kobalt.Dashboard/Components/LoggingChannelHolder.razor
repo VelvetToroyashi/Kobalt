@@ -5,9 +5,7 @@
 
 <MudStack Spacing="2">
     <div class="flex flex-row">
-        <MudButton Class="flex-shrink" OnClick="() => DeleteHandler?.DynamicInvoke(ChannelID)">
-            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Error"/>
-        </MudButton>
+        <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Error" Class="flex-shrink" OnClick="() => DeleteHandler?.DynamicInvoke(ChannelID)"/>
         <MudButton
             Class="flex flex-grow flex-row justify-space-between"
             FullWidth="true"
