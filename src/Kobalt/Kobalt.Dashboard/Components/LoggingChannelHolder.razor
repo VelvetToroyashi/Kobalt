@@ -2,6 +2,7 @@
 @using Kobalt.Shared.Types
 @using MudExtensions.Enums
 @using Remora.Rest.Core
+@using Humanizer
 
 <MudStack Spacing="2">
     <div class="flex flex-row">
@@ -19,16 +20,18 @@
     </div>
     <MudDivider/>
     <MudCollapse @bind-Expanded="_isExpanded">
-        <MudSelectExtended T=LogChannelType ChipCloseable="true"
+        <MudSelectExtended Strict="true"
+                           NoWrap="false"
+                           T=LogChannelType 
+                           Label="Logging Types"
+                           ChipCloseable="true"
                            MultiSelection="true"
                            ChipVariant="Variant.Filled"
-                           ValuePresenter="ValuePresenter.Chip"
-                           NoWrap="false"
                            @bind-SelectedValues="BoundValue"
-                           >
+                           ValuePresenter="ValuePresenter.Chip">
             @foreach (var channelType in _channelTypes)
             {
-                <MudSelectItemExtended Value="channelType"></MudSelectItemExtended>
+                <MudSelectItemExtended Value="channelType" Text="@channelType.Humanize(LetterCasing.Title)"/>
             }
         </MudSelectExtended>
     </MudCollapse>
