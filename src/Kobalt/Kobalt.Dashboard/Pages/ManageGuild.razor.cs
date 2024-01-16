@@ -5,6 +5,7 @@ using System.Text.Json;
 using Humanizer;
 using Humanizer.Localisation;
 using Kobalt.Bot.Data.DTOs;
+using Kobalt.Dashboard.Components.Dialogs;
 using Kobalt.Dashboard.Extensions;
 using Kobalt.Dashboard.Services;
 using Kobalt.Dashboard.Views;
@@ -45,6 +46,9 @@ public partial class ManageGuild
     [Inject]
     public required DashboardRestClient Discord { get; set; }
     
+    [Inject]
+    public required IDialogService DialogService { get; set; }
+    
     private IGuild? _guild;
     private KobaltGuildView _kobaltGuild = null!;
     private IReadOnlyDictionary<Snowflake, IChannel>? _channels;
@@ -63,7 +67,21 @@ public partial class ManageGuild
         StateHasChanged(); // Important, otherwise the changes won't be reflected in the UI.
     }
     
-    private void UpdateLogChannel(IEnumerable<LogChannelType> selectedChannelTypes) {}
+    private void ShowAddChannelDialogue()
+    {
+        //TODO: Filter out channels that we don't have access to :v
+        var applicableChannels = _channels!.Values.Where(c => c.Type is ChannelType.GuildText && _kobaltGuild.Logging.All(l => l.ChannelID != c.ID)).ToArray();
+        
+        DialogService.Show<AddLogChannelDialog>("Edit Logging Channel", new DialogParameters
+        {
+            ["AvailableChannels"] = applicableChannels,
+            ["OnSubmit"] = (IChannel c) =>
+            {
+                _kobaltGuild.Logging.Add(new KobaltLoggingConfigView(new LogChannelDTO(c.ID, null, null, default)));
+                InvokeAsync(StateHasChanged);
+            }
+        });
+    }
     
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {

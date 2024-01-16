@@ -1,0 +1,47 @@
+@using Remora.Discord.API.Abstractions.Objects
+@using Kobalt.Bot.Data.DTOs
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h5">Add a logging channel</MudText>
+    </TitleContent>
+    
+    <DialogContent>
+        <MudSelect Label="Channel" Placeholder="Select the channel to log to" @bind-Value="_selectedChannel">
+            @foreach (var channel in AvailableChannels)
+            {
+                <MudSelectItem Value="channel">#@channel.Name</MudSelectItem>
+            }
+        </MudSelect>
+        
+        @* 
+            TODO? Add a second select to allow users to select the channel types from here? 
+            Would have to change return type. 
+        *@
+    </DialogContent>
+    
+    <DialogActions>
+        <MudButton @onclick="Cancel">Cancel</MudButton>
+        <MudButton @onclick="Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="_selectedChannel is null">Add</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    public MudDialogInstance MudDialog { get; set; }
+    
+    [Parameter]
+    public IReadOnlyList<IChannel> AvailableChannels { get; set; }
+    
+    [Parameter]
+    public Action<IChannel> OnSubmit { get; set; }
+    
+    private IChannel? _selectedChannel;
+    
+    void Submit()
+    {
+        OnSubmit(_selectedChannel);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}
