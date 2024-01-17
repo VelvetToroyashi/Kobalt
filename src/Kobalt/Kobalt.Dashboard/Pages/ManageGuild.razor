@@ -41,57 +41,58 @@ else
     </MudItem>
     <MudItem Class="flex-grow flex-col">
         <MudText Typo="Typo.h5" GutterBottom="true">Recent Actions</MudText>
+        
+        <MudTable RowsPerPage="4" T="InfractionView"
+                  ReadOnly="true" Items="@(Array.Empty<InfractionView>())"
+                  Loading="@(_infractions is null)"
+                  Style="border-radius: var(--mud-default-borderradius);">
+            <HeaderContent>
+                <MudTh>Type</MudTh>
+                <MudTh>Enforcer</MudTh>
+                <MudTh>Target</MudTh>
+                <MudTh>Created</MudTh>
+                <MudTh>Expires</MudTh>
+                <MudTh>Reason</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Type">@context.Type</MudTd>
+                <MudTd DataLabel="Enforcer">@context.Enforcer</MudTd>
+                <MudTd DataLabel="Target">@context.Target</MudTd>
+                <MudTd DataLabel="Created">@context.When.Humanize()</MudTd>
+                <MudTd DataLabel="Expires">@(@context.Expiration?.Humanize() ?? "Never")</MudTd>
+                <MudTd DataLabel="Reason">@context.Reason</MudTd>
+            </RowTemplate>
             
-        @if (!_infractions?.IsSuccess ?? false)
-        {
-            <MudAlert Severity="Severity.Warning" ContentAlignment="HorizontalAlignment.Center">
-                Failed to fetch recent actions.
-            </MudAlert>
-        }
-        else if (_infractions is { IsSuccess: true, Entity: [] })
-        {
-            <MudAlert Severity="Severity.Success" ContentAlignment="HorizontalAlignment.Center">
-                No recent actions.
-            </MudAlert>
-        }
-        else
-        {
-            <MudTable RowsPerPage="4" T="InfractionView" 
-                      ReadOnly="true" Items="@(_infractions?.Entity ?? Array.Empty<InfractionView>())"
-                      Loading="@(_infractions is null)"
-                      Style="border-radius: var(--mud-default-borderradius);">
-                <HeaderContent>
-                    <MudTh>Type</MudTh>
-                    <MudTh>Enforcer</MudTh>
-                    <MudTh>Target</MudTh>
-                    <MudTh>Created</MudTh>
-                    <MudTh>Expires</MudTh>
-                    <MudTh>Reason</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Type">@context.Type</MudTd>
-                    <MudTd DataLabel="Enforcer">@context.Enforcer</MudTd>
-                    <MudTd DataLabel="Target">@context.Target</MudTd>
-                    <MudTd DataLabel="Created">@context.When.Humanize()</MudTd>
-                    <MudTd DataLabel="Expires">@(@context.Expiration?.Humanize() ?? "Never")</MudTd>
-                    <MudTd DataLabel="Reason">@context.Reason</MudTd>
-                </RowTemplate>
-                
-                <PagerContent>
-                    <MudContainer>
-                        <MudStack Class="flex flex-wrap" AlignItems="AlignItems.Center" Row="true" Justify="Justify.Center">
-                            <MudSwitch T="bool" Label="Show Expired"/>
-                            <MudSpacer/>
-                            <MudTablePager Class="pr-none"
-                                           PageSizeOptions="[2, 6, 12, 18, 24]"
-                                           RowsPerPageString="Rows:"
-                                           HorizontalAlignment="HorizontalAlignment.Center"/>
-                        </MudStack>
-                    </MudContainer>
-                </PagerContent>
-            </MudTable>
-        }
+            <NoRecordsContent>
+                @if (!_infractions?.IsSuccess ?? false)
+                {
+                    <MudAlert Severity="Severity.Warning" ContentAlignment="HorizontalAlignment.Center">
+                        Failed to fetch recent actions.
+                    </MudAlert>
+                }
+                else if (_infractions is { IsSuccess: true, Entity: [] })
+                {
+                    <MudAlert Severity="Severity.Success" ContentAlignment="HorizontalAlignment.Center">
+                        No recent actions.
+                    </MudAlert>
+                }
+            </NoRecordsContent>
+            
+            <PagerContent>
+                <MudContainer>
+                    <MudStack Class="flex flex-wrap" AlignItems="AlignItems.Center" Row="true" Justify="Justify.Center">
+                        <MudSwitch T="bool" Label="Show Expired"/>
+                        <MudSpacer/>
+                        <MudTablePager Class="pr-none"
+                                       PageSizeOptions="[2, 6, 12, 18, 24]"
+                                       RowsPerPageString="Rows:"
+                                       HorizontalAlignment="HorizontalAlignment.Center"/>
+                    </MudStack>
+                </MudContainer>
+            </PagerContent>
+        </MudTable>
     </MudItem>
+    
     <MudItem Style="max-width: 768px; width: 100%; min-height: 400px;" Class="flex flex-column justify-space-between">
         <MudTabs PanelClass="pb-4" Outlined="true" Rounded="true"
                  Elevation="4" ApplyEffectsToContainer="true" Class="mt-8" Style="width: 100%">
