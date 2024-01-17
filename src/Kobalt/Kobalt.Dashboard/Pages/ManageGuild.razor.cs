@@ -152,7 +152,7 @@ public partial class ManageGuild
 
                 var list = new List<InfractionView>();
 
-                foreach (var infraction in content!.Take(6))
+                foreach (var infraction in content)
                 {
                     var enforcer = await Discord.ResolveUserAsync(infraction.ModeratorID);
                     var target = await Discord.ResolveUserAsync(infraction.UserID);
