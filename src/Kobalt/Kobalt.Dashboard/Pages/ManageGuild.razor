@@ -43,7 +43,7 @@ else
         <MudText Typo="Typo.h5" GutterBottom="true">Recent Actions</MudText>
         
         <MudTable RowsPerPage="4" T="InfractionView"
-                  ReadOnly="true" Items="@(Array.Empty<InfractionView>())"
+                  ReadOnly="true" Items="@(_infractions?.Entity ?? Array.Empty<InfractionView>())"
                   Loading="@(_infractions is null)"
                   Style="border-radius: var(--mud-default-borderradius);">
             <HeaderContent>
