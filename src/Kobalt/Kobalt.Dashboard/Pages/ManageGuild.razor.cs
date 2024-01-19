@@ -56,6 +56,8 @@ public partial class ManageGuild
 
     private string? _currentSearch;
     private readonly Func<KobaltLoggingConfigView, bool> _searchFilter = (config) => true;
+
+    private bool _showExpiredInfractions = true;
     
     private bool _isBusy = false;
     private GuildState _guildState = GuildState.Loading;

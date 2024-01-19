@@ -45,7 +45,8 @@ else
         <MudTable RowsPerPage="4" T="InfractionView"
                   ReadOnly="true" Items="@(_infractions?.Entity ?? Array.Empty<InfractionView>())"
                   Loading="@(_infractions is null)"
-                  Style="border-radius: var(--mud-default-borderradius);">
+                  Style="border-radius: var(--mud-default-borderradius);"
+                  Filter="@((inf) => inf.Expiration is null || inf.Expiration > DateTimeOffset.UtcNow || _showExpiredInfractions)">
             <HeaderContent>
                 <MudTh>Type</MudTh>
                 <MudTh>Enforcer</MudTh>
@@ -81,7 +82,7 @@ else
             <PagerContent>
                 <MudContainer>
                     <MudStack Class="flex flex-wrap" AlignItems="AlignItems.Center" Row="true" Justify="Justify.Center">
-                        <MudSwitch T="bool" Label="Show Expired"/>
+                        <MudSwitch Color="Color.Primary" T="bool" Label="Show Expired" @bind-Value="_showExpiredInfractions" />
                         <MudSpacer/>
                         <MudTablePager Class="pr-none"
                                        PageSizeOptions="[2, 6, 12, 18, 24]"
