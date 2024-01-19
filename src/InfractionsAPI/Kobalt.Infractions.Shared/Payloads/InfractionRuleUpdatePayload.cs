@@ -18,5 +18,8 @@ public record InfractionRuleUpdatePayload
     Optional<InfractionType> MatchType,
     
     [property: JsonPropertyName("action_duration")]
-    Optional<TimeSpan?> ActionDuration
+    Optional<TimeSpan?> ActionDuration,
+
+    [property: JsonPropertyName("rule_name")]
+    Optional<string> RuleName
 );
