@@ -97,9 +97,11 @@ else
         <MudTabs PanelClass="pb-4" Outlined="true" Rounded="true"
                  Elevation="4" ApplyEffectsToContainer="true" Class="mt-8" Style="width: 100%">
             <MudTabPanel Icon="@Icons.Material.Filled.Security" Text="AutoMod">
-                <MudTooltip Delay="250" Text="How many users are allowed to be in a channel before it's switched to Push-To-Talk."> 
-                    <MudNumericField T="int?" bind-Value="_kobaltGuild.AutoMod.PushToTalkThreshold" Variant="Variant.Text" Min="0" Label="Push To Talk Threshold"/> 
-                </MudTooltip> 
+                <MudContainer Class="mt-0">
+                    <MudTooltip Delay="250" Text="How many users are allowed to be in a channel before it's switched to Push-To-Talk."> 
+                        <MudNumericField T="int?" bind-Value="_kobaltGuild.AutoMod.PushToTalkThreshold" Variant="Variant.Text" Min="0" Label="Push To Talk Threshold"/> 
+                    </MudTooltip> 
+                </MudContainer>
             </MudTabPanel>
                     
             <MudTabPanel Icon="@Icons.Material.Filled.PersonAddDisabled" Text="Anti-Raid">
@@ -177,14 +179,16 @@ else
             </MudTabPanel>
                     
             <MudTabPanel Icon="@Icons.Material.Filled.ManageSearch" Text="Anti-Phishing">
-                <MudCheckBox @bind-Checked="_kobaltGuild.AntiPhishing.ScanUsers" Label="Scan Users"/>
-                <MudCheckBox @bind-Checked="_kobaltGuild.AntiPhishing.ScanLinks" Label="Scan Links"/>
-                <MudSelect @bind-Value="_kobaltGuild.AntiPhishing.DetectionAction" Label="Detection Action">
-                    <MudSelectItem Value="InfractionType.Ban">Ban</MudSelectItem>
-                    <MudSelectItem Value="InfractionType.Kick">Kick</MudSelectItem>
-                    <MudSelectItem Value="InfractionType.Mute">Mute</MudSelectItem>
-                    <MudSelectItem Value="InfractionType.Warning">Warn</MudSelectItem>
-                </MudSelect>
+                <MudContainer Class="mt-0">
+                    <MudCheckBox Style="margin: 16px 0 -16px -13px" @bind-Checked="_kobaltGuild.AntiPhishing.ScanUsers" Label="Scan Users"/>
+                    <MudCheckBox Style="margin: 16px 0 auto -13px" @bind-Checked="_kobaltGuild.AntiPhishing.ScanLinks" Label="Scan Links"/>
+                    <MudSelect @bind-Value="_kobaltGuild.AntiPhishing.DetectionAction" Label="Detection Action" Style="max-width: 256px">
+                        <MudSelectItem Value="InfractionType.Ban">Ban</MudSelectItem>
+                        <MudSelectItem Value="InfractionType.Kick">Kick</MudSelectItem>
+                        <MudSelectItem Value="InfractionType.Mute">Mute</MudSelectItem>
+                        <MudSelectItem Value="InfractionType.Warning">Warn</MudSelectItem>
+                    </MudSelect>
+                </MudContainer>
             </MudTabPanel>
                     
             <MudTabPanel Icon="@Icons.Material.Filled.Notes" Text="Logging">
