@@ -115,6 +115,6 @@ public class GetAllInfractionsTests
 
         var res = await handler.Handle(new(), default);
         
-        Assert.IsEmpty(res);
+        Assert.That(res, Is.Empty);
     }
 }
