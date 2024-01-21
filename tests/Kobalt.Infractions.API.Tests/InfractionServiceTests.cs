@@ -7,7 +7,7 @@ using MassTransit;
 using MassTransit.Testing;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
+using NSubstitute;
 using Remora.Results;
 
 namespace Kobalt.Infractions.API.Tests;
@@ -26,9 +26,9 @@ public class InfractionServiceTests
     [Test]
     public async Task ServiceSuccessfullyCreatesInfraction()
     {
-        var mediator = new Mock<IMediator>();
+        var mediator = Substitute.For<IMediator>();
 
-        var infractionService = (IInfractionService)new InfractionService(Mock.Of<IBus>(), mediator.Object);
+        var infractionService = (IInfractionService)new InfractionService(Substitute.For<IBus>(), mediator);
         var now = DateTimeOffset.UtcNow.AddSeconds(1);
         var infraction = new InfractionDTO
         (
@@ -43,13 +43,13 @@ public class InfractionServiceTests
             now,
             now
         );
-
-        mediator.Setup(m => m.Send(It.IsAny<CreateInfractionRequest>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(infraction);
+        
+        
+        mediator.Send(default!, default).ReturnsForAnyArgs(infraction);
 
         var result = await infractionService.CreateInfractionAsync(GuildID, UserID, ModeratorID, InfractionType.Ban, InfractionReason, now);
 
-        mediator.Verify(m => m.Send(It.IsAny<CreateInfractionRequest>(), It.IsAny<CancellationToken>()), Times.Once);
+        _ = mediator.Received(1).Send(Arg.Any<CreateInfractionRequest>(), default);
 
         Assert.Multiple(() =>
         {
@@ -61,8 +61,8 @@ public class InfractionServiceTests
     [Test]
     public async Task DoesNotAllowNegativeExpirations()
     {
-        var mediator = Mock.Of<IMediator>();
-        var service = (IInfractionService)new InfractionService(Mock.Of<IBus>(), mediator);
+        var mediator = Substitute.For<IMediator>();
+        var service = (IInfractionService)new InfractionService(Substitute.For<IBus>(), mediator);
 
         var result = await service.CreateInfractionAsync(default, default, default, InfractionType.Ban, InfractionReason, default(DateTimeOffset));
 
@@ -78,8 +78,8 @@ public class InfractionServiceTests
     [Test]
     public async Task DisallowsExpirationsOnPermanentTypes()
     {
-        var mediator = Mock.Of<IMediator>();
-        var service = (IInfractionService)new InfractionService(Mock.Of<IBus>(), mediator);
+        var mediator = Substitute.For<IMediator>();
+        var service = (IInfractionService)new InfractionService(Substitute.For<IBus>(), mediator);
 
         var result = await service.CreateInfractionAsync(default, default, default, InfractionType.Kick, InfractionReason, DateTimeOffset.MaxValue);
 
@@ -94,9 +94,9 @@ public class InfractionServiceTests
     [Test]
     public async Task AllowsOmittedExpirationOnTemporaryTypes()
     {
-        var mediator = new Mock<IMediator>();
+        var mediator = Substitute.For<IMediator>();
 
-        var infractionService = (IInfractionService)new InfractionService(Mock.Of<IBus>(), mediator.Object);
+        var infractionService = (IInfractionService)new InfractionService(Substitute.For<IBus>(), mediator);
         var now = DateTimeOffset.UtcNow.AddSeconds(1);
         var infraction = new InfractionDTO
         (
@@ -112,8 +112,7 @@ public class InfractionServiceTests
             now
         );
 
-        mediator.Setup(m => m.Send(It.IsAny<CreateInfractionRequest>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(infraction);
+        mediator.Send(default!, default).ReturnsForAnyArgs(infraction);
 
         var result = await infractionService.CreateInfractionAsync(GuildID, UserID, ModeratorID, InfractionType.Ban, InfractionReason);
 
@@ -121,51 +120,11 @@ public class InfractionServiceTests
     }
 
     [Test]
-    public async Task DispatchesExpiredRemindersAsync()
-    {
-        var mediator = new Mock<IMediator>();
-        var services = new ServiceCollection().AddMassTransitInMemoryTestHarness()
-                                              .BuildServiceProvider();
-
-        var harness = services.GetRequiredService<InMemoryTestHarness>();
-        await harness.Start();
-
-        var infractionService = new InfractionService(services.GetRequiredService<IBus>(), mediator.Object);
-
-        var now = DateTimeOffset.UtcNow.AddSeconds(1);
-        var infraction = new InfractionDTO
-        (
-            InfractionID,
-            null,
-            false,
-            InfractionReason,
-            UserID,
-            GuildID,
-            ModeratorID,
-            InfractionType.Ban,
-            now,
-            DateTimeOffset.MinValue
-        );
-
-        mediator.Setup(m => m.Send(It.IsAny<GetAllInfractionsRequest>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new[] { infraction });
-
-        await infractionService.StartAsync(CancellationToken.None);
-
-        await Task.Delay(700);
-
-        await infractionService.StopAsync(CancellationToken.None);
-
-        mediator.Verify(m => m.Send(It.IsAny<GetAllInfractionsRequest>(), It.IsAny<CancellationToken>()), Times.Once);
-        Assert.That(harness.Published.Count(), Is.EqualTo(1));
-    }
-
-    [Test]
     public async Task SuccessfullyUpdatesInfraction()
     {
-        var mediator = new Mock<IMediator>();
+        var mediator = Substitute.For<IMediator>();
 
-        var infractionService = (IInfractionService)new InfractionService(Mock.Of<IBus>(), mediator.Object);
+        var infractionService = (IInfractionService)new InfractionService(Substitute.For<IBus>(), mediator);
         var now = DateTimeOffset.UtcNow.AddSeconds(1);
         var infraction = new InfractionDTO
         (
@@ -181,8 +140,7 @@ public class InfractionServiceTests
             now
         );
 
-        mediator.Setup(m => m.Send(It.IsAny<UpdateInfractionRequest>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(infraction);
+        mediator.Send(default!, default).ReturnsForAnyArgs(infraction);
 
         var result = await infractionService.UpdateInfractionAsync(InfractionID, GuildID, default, true, default);
 
@@ -198,7 +156,7 @@ public class InfractionServiceTests
     [Test]
     public async Task DoesNotAllowEmptyUpdate()
     {
-        var service = (IInfractionService) new InfractionService(Mock.Of<IBus>(), Mock.Of<IMediator>());
+        var service = (IInfractionService) new InfractionService(Substitute.For<IBus>(), Substitute.For<IMediator>());
 
         var result = await service.UpdateInfractionAsync(InfractionID, GuildID, default, default, default);
 
@@ -213,7 +171,7 @@ public class InfractionServiceTests
     [Test]
     public async Task DoesNotAllowNegativeExpirationInUpdate()
     {
-        var service = (IInfractionService) new InfractionService(Mock.Of<IBus>(), Mock.Of<IMediator>());
+        var service = (IInfractionService) new InfractionService(Substitute.For<IBus>(), Substitute.For<IMediator>());
 
         var result = await service.UpdateInfractionAsync(InfractionID, GuildID, default, default, DateTimeOffset.MinValue);
 

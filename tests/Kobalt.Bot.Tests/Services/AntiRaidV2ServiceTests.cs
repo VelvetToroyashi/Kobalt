@@ -2,7 +2,7 @@
 using Kobalt.Bot.Data.MediatR.Guilds;
 using Kobalt.Bot.Services;
 using MediatR;
-using Moq;
+using NSubstitute;
 using Remora.Discord.API.Abstractions.Gateway.Events;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Rest.Core;
@@ -28,22 +28,25 @@ public class AntiRaidV2ServiceTests
         default
     );
 
+    /// <summary>
+    /// Tests that the HandleAsync method returns success when the configuration is disabled.
+    /// </summary>
     [Test]
     public async Task HandleAsync_WhenConfigIsDisabled_ReturnsSuccess()
     {
-        var mediator = new Mock<IMediator>();
+        var mediator = Substitute.For<IMediator>();
 
-        mediator.Setup(m => m.Send(new GetGuild.AntiRaidConfigRequest(It.IsAny<Snowflake>()), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<GuildAntiRaidConfigDTO>.FromSuccess(DefaultConfig));
+        mediator.Send(new GetGuild.AntiRaidConfigRequest(Arg.Any<Snowflake>()), Arg.Any<CancellationToken>())
+            .Returns(Result<GuildAntiRaidConfigDTO>.FromSuccess(DefaultConfig));
 
-        var service = new AntiRaidV2Service(null!, mediator.Object, null!);
-        var result = await service.HandleAsync(Mock.Of<IGuildMemberAdd>());
+        var service = new AntiRaidV2Service(null!, mediator, null!);
+        var result = await service.HandleAsync(Substitute.For<IGuildMemberAdd>());
 
         Assert.That(result.IsSuccess, Is.True);
     }
 
     /// <summary>
-    /// Asserts that the raid state (what tracks users) assigns a base score to non-supicious users correctly.
+    /// Tests that the raid state assigns a base score to non-suspicious users correctly.
     /// </summary>
     [Test]
     public void RaidStateAppliesBaseScoreCorrectly()
@@ -51,7 +54,7 @@ public class AntiRaidV2ServiceTests
         var state = new RaidState();
         var config = DefaultConfig with { BaseJoinScore = 5 };
 
-        state.AddUser(Mock.Of<IUser>(), DateTimeOffset.UtcNow, config);
+        state.AddUser(Substitute.For<IUser>(), DateTimeOffset.UtcNow, config);
 
         var user = state._users[0];
 
@@ -59,7 +62,7 @@ public class AntiRaidV2ServiceTests
     }
 
     /// <summary>
-    /// Asserts that the raid state applies a score for users that join too quickly after another user.
+    /// Tests that the raid state applies a score for users that join too quickly after another user.
     /// </summary>
     [Test]
     public void RaidStateCalculatesSuspiciousJoinDeltaCorrectly()
@@ -67,8 +70,8 @@ public class AntiRaidV2ServiceTests
         var state = new RaidState();
         var config = DefaultConfig with { JoinVelocityScore = 10, LastJoinBufferPeriod = TimeSpan.FromSeconds(1) };
 
-        state.AddUser(Mock.Of<IUser>(), DateTimeOffset.UtcNow, config);
-        state.AddUser(Mock.Of<IUser>(), DateTimeOffset.UtcNow, config);
+        state.AddUser(Substitute.For<IUser>(), DateTimeOffset.UtcNow, config);
+        state.AddUser(Substitute.For<IUser>(), DateTimeOffset.UtcNow, config);
 
         var user = state._users[1];
 
@@ -84,7 +87,7 @@ public class AntiRaidV2ServiceTests
         var state = new RaidState();
         var config = DefaultConfig with { NoAvatarScore = 10 };
 
-        state.AddUser(Mock.Of<IUser>(), DateTimeOffset.UtcNow, config);
+        state.AddUser(Substitute.For<IUser>(), DateTimeOffset.UtcNow, config);
 
         var user = state._users[0];
 
@@ -93,24 +96,21 @@ public class AntiRaidV2ServiceTests
 
     /// <summary>
     /// Tests that the raid state returns suspicious users correctly.
-    /// </summary>
-    /// <remarks>
     /// Users are considered suspicious if their threat score is greater than the base score.
-    /// </remarks>
+    /// </summary>
     [Test]
     public void RaidStateCalculatesReturnsSuspiciousUsersCorrectly()
     {
         var state = new RaidState();
         var config = DefaultConfig with { JoinVelocityScore = 10, LastJoinBufferPeriod = TimeSpan.FromSeconds(1), AntiRaidCooldownPeriod = TimeSpan.FromSeconds(10) };
 
-        state.AddUser(Mock.Of<IUser>(), DateTimeOffset.UtcNow, config);
-        state.AddUser(Mock.Of<IUser>(), DateTimeOffset.UtcNow, config);
-        state.AddUser(Mock.Of<IUser>(), DateTimeOffset.UtcNow, config);
-        state.AddUser(Mock.Of<IUser>(), DateTimeOffset.UtcNow.AddSeconds(1), config);
+        state.AddUser(Substitute.For<IUser>(), DateTimeOffset.UtcNow, config);
+        state.AddUser(Substitute.For<IUser>(), DateTimeOffset.UtcNow, config);
+        state.AddUser(Substitute.For<IUser>(), DateTimeOffset.UtcNow, config);
+        state.AddUser(Substitute.For<IUser>(), DateTimeOffset.UtcNow.AddSeconds(1), config);
 
         var suspiciousUsers = state.GetSuspiciousUsers(config).ToArray();
 
         Assert.That(suspiciousUsers.Length, Is.EqualTo(2));
     }
-
 }
