@@ -79,6 +79,11 @@ public class UpdateGuildInfractionRuleRequestHandler : IRequestHandler<UpdateGui
             rule.MatchValue = matchValue;
         }
 
+        if (update.RuleName.IsDefined(out var ruleName))
+        {
+            rule.RuleName = ruleName;
+        }
+
         context.Update(rule);
         await context.SaveChangesAsync(ct);
 
@@ -86,6 +91,7 @@ public class UpdateGuildInfractionRuleRequestHandler : IRequestHandler<UpdateGui
         (
             rule.Id,
             rule.GuildID,
+            rule.RuleName,
             rule.ActionType,
             rule.MatchTimeSpan,
             rule.MatchValue,

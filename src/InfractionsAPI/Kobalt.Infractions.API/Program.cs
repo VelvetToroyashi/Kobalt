@@ -40,29 +40,45 @@ builder.Services
 var app = builder.Build();
 app.MapControllers();
 
-app.MapPut("/infractions/guilds/{guildID}", async (ulong guildID, [FromBody] InfractionCreatePayload infraction, IInfractionService infractions) =>
+app.MapPut("/infractions/guilds/{guildID}", async (ulong guildID, [FromBody] InfractionCreatePayload payload, IInfractionService infractions) =>
 {
     var now = DateTimeOffset.UtcNow;
     var result = await infractions.CreateInfractionAsync
     (
         guildID,
-        infraction.UserID,
-        infraction.ModeratorID,
-        infraction.Type,
-        infraction.Reason,
-        infraction.ExpiresAt,
-        infraction.ReferencedID
+        payload.UserID,
+        payload.ModeratorID,
+        payload.Type,
+        payload.Reason,
+        payload.ExpiresAt,
+        payload.ReferencedID
     );
 
-    if (!result.IsDefined(out var created))
+    if (!result.IsDefined(out var infraction))
     {
         return Results.BadRequest(result.Error!.Message);
     }
+    
+    // This trips me up a lot; 'now' refers to right before we create
+    // the infraction, so new infractions will never be older than this,
+    // unless we get a cosmic bit flip, or chrony dies.
+    var wasUpdated = infraction.CreatedAt < now;
 
-    // If the infraction is freshly created, return 201, otherwise 200.
-    return created.CreatedAt < now
-        ? Results.Ok(created)
-        : Results.Created($"/infractions/guilds/{guildID}/{created.Id}", created);
+    if (!wasUpdated)
+    {
+        var infractionsFromRules = await infractions.EvaluateInfractionsAsync(guildID, payload.UserID);
+        
+        if (infractionsFromRules.IsDefined(out var extraInfractions))
+        {
+            return Results.Ok(InfractionResponsePayload.FromDTO(infraction, true, infractionsFromRules));
+        }
+    }
+    
+    // We'll still return a 201 for convenience and "correctness", but we'll also include 
+    // an `updated` field in the response body to indicate whether or not the infraction was updated.
+    return wasUpdated
+        ? Results.Ok(InfractionResponsePayload.FromDTO(infraction, true))
+        : Results.Created($"/infractions/guilds/{guildID}/{infraction.Id}", InfractionResponsePayload.FromDTO(infraction, false));
 });
 
 app.MapGet("/infractions/guilds/{guildID}", async (ulong guildID, IMediator mediator, [FromQuery] int? page = 1, [FromQuery] int? pageSize = 10) =>
@@ -77,20 +93,6 @@ app.MapGet("/infractions/guilds/{guildID}", async (ulong guildID, IMediator medi
     }
 
     return Results.Ok(infractions);
-});
-
-app.MapPost("/infractions/guilds/{guildID}/rules/evaluate/{userID}", async (IInfractionService infractions, ulong guildID, ulong userID) =>
-{
-    var result = await infractions.EvaluateInfractionsAsync(guildID, userID);
-
-    if (result.IsDefined(out var matched))
-    {
-        return Results.Json(matched);
-    }
-    else
-    {
-        return Results.NoContent();
-    }
 });
 
 app.MapGet("/infractions/guilds/{guildID}/{id}", async (ulong guildID, int id, IMediator mediator) =>
@@ -151,6 +153,17 @@ app.MapPost("/infractions/{guildID}/rules", async (ulong guildID, InfractionRule
     return Results.CreatedAtRoute("/infractions/{guildID}/rules/{id}", new { guildID, id = createdRule.Id }, createdRule);
 });
 
+app.MapPut("/infractions/{guildID}/rules", async (ulong guildID, [FromBody] IReadOnlyList<InfractionRuleDTO> rules, IMediator mediator) =>
+{
+    var result = await mediator.Send(new UpdateGuildInfractionRules.Request(guildID, rules));
+
+    if (!result.IsDefined(out var updatedRules))
+    {
+        return Results.BadRequest(result.Error!.Message);
+    }
+
+    return Results.Ok(updatedRules);
+});
 
 app.MapPatch("/infractions/{guildID}/rules/{id}", async (ulong guildID, int id, [FromBody] InfractionRuleUpdatePayload rule, IMediator mediator) =>
 {

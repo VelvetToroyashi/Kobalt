@@ -18,7 +18,7 @@ using Color = System.Drawing.Color;
 
 namespace Kobalt.Bot.Services;
 
-internal record InfractionResult(InfractionDTO Infraction, InfractionState State);
+internal record InfractionResult(InfractionResponsePayload Infraction, InfractionState State);
 
 internal enum InfractionState { Created, Updated }
 
@@ -79,9 +79,9 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             kickResult = new InvalidOperationError("Failed to kick. Are they still in the server?");
         }
 
-        var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
+        var embed = GenerateEmbedsForInfractions(infractionResult.Entity, user, moderator);
 
-        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
+        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new(embed));
 
         return kickResult;
     }
@@ -112,9 +112,9 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             banResult = new InvalidOperationError("Failed to ban. Are they still in the server?");
         }
 
-        var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
+        var embed = GenerateEmbedsForInfractions(infractionResult.Entity, user, moderator);
 
-        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
+        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new(embed));
 
         return banResult;
     }
@@ -150,9 +150,9 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             reason: reason.Truncate(500)
         );
 
-        var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
+        var embed = GenerateEmbedsForInfractions(infractionResult.Entity, user, moderator);
 
-        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
+        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new(embed));
 
         if (!muteRoleResult.IsSuccess)
         {
@@ -179,9 +179,9 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             return Result.FromError(infractionResult.Error);
         }
 
-        var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
+        var embed = GenerateEmbedsForInfractions(infractionResult.Entity, user, moderator);
 
-        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
+        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new(embed));
 
         return Result.FromSuccess();
     }
@@ -203,10 +203,9 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             return Result.FromError(infractionResult.Error);
         }
 
-        var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
+        var embed = GenerateEmbedsForInfractions(infractionResult.Entity, user, moderator);
 
-        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
-
+        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new(embed));
         return Result.FromSuccess();
     }
 
@@ -233,9 +232,9 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             return Result.FromError(infractionResult.Error);
         }
 
-        var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
+        var embed = GenerateEmbedsForInfractions(infractionResult.Entity, user, moderator);
 
-        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
+        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new(embed));
 
         return Result.FromSuccess();
     }
@@ -265,9 +264,9 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             reason: reason.Truncate(500)
         );
 
-        var embed = GenerateEmbedForInfraction(infractionResult.Entity, user, moderator);
+        var embed = GenerateEmbedsForInfractions(infractionResult.Entity, user, moderator);
 
-        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
+        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new(embed));
 
         return Result.FromSuccess();
     }
@@ -305,9 +304,9 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             return Result.FromError(infractionResult.Error);
         }
 
-        var embed = GenerateEmbedForInfraction(infractionResult.Entity, userResult.Entity, moderator);
+        var embed = GenerateEmbedsForInfractions(infractionResult.Entity, userResult.Entity, moderator);
 
-        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new[] { embed });
+        await _channelLogger.LogAsync(guildID, LogChannelType.CaseCreate, default, new(embed));
 
         return Result.FromSuccess();
     }
@@ -355,47 +354,36 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
         return fetched;
     }
 
-    /// <summary>
-    /// Attempts to escalate an infraction for a user in a guild, using the Guild's configured rules.
-    /// </summary>
-    /// <param name="guildID">The ID of the guild to escalate. </param>
-    /// <param name="user">The user to escalate the infraction for.</param>
-    /// <remarks>
-    /// This method only *attmepts* to escalate an infraction, automatically handling invoking the correct method
-    /// if a rule matches (e.g. three mutes in an hour ➜ ban). If no rule matches, this method will return a successful
-    /// content, as the API returns 204 No Content if no rule matches.
-    /// </remarks>
-    public async Task<Result> TryEscalateInfractionAsync(Snowflake guildID, IUser user)
+    private IReadOnlyList<Embed> GenerateEmbedsForInfractions(InfractionResult infraction, IUser user, IUser moderator)
     {
-        using var rulesResult = await _client.PostAsync($"/infractions/guilds/{guildID}/rules/evaluate/{user.ID}", null);
+        var embeds = new Embed[1 + infraction.Infraction.AdditionalInfractions.Map(i => i.Count).OrDefault(0)];
 
-        if (rulesResult.StatusCode is HttpStatusCode.NoContent)
+        var dto = new InfractionDTO
+        (
+            infraction.Infraction.Id,
+            infraction.Infraction.ReferencedId,
+            false,
+            infraction.Infraction.Reason,
+            infraction.Infraction.UserID,
+            infraction.Infraction.ModeratorID,
+            infraction.Infraction.GuildID,
+            infraction.Infraction.Type,
+            infraction.Infraction.CreatedAt,
+            infraction.Infraction.ExpiresAt
+        );
+        
+        embeds[0] = GenerateEmbedForInfraction(dto, user, moderator, infraction.Infraction.IsUpdated);
+        
+        for (var i = 1; i < embeds.Length; i++)
         {
-            return Result.FromSuccess();
+            embeds[i] = GenerateEmbedForInfraction(infraction.Infraction.AdditionalInfractions.Value[i - 1], user, moderator);
         }
-        else if (rulesResult.StatusCode is not HttpStatusCode.OK)
-        {
-            return Result.FromError(new InvalidOperationError("Failed to escalate infraction."));
-        }
-        else
-        {
-            var match = await rulesResult.Content.ReadFromJsonAsync<InfractionRuleMatch>();
-
-            var res = await (match!.Type switch
-            {
-                InfractionType.Kick => AddUserKickAsync(guildID, user, _self, "Automatic case esclation."),
-                InfractionType.Ban  => AddUserBanAsync(guildID, user, _self, "Automatic case esclation.", match.Duration!),
-                InfractionType.Mute => AddUserMuteAsync(guildID, user, _self, "Automatic case esclation.", match.Duration!.Value),
-                _ => Task.FromResult(Result.FromError(new InvalidOperationError($"Unexpected infraction type: {match.Type}")))
-            });
-
-            return res;
-        }
+        
+        return embeds;
     }
 
-    private Embed GenerateEmbedForInfraction(InfractionResult result, IUser user, IUser moderator)
+    private Embed GenerateEmbedForInfraction(InfractionDTO infraction, IUser user, IUser moderator, bool isInfractionUpdate = false)
     {
-        var (infraction, state) = result;
         var title = $"Case {infraction.Id} | {moderator.Username}#{moderator.Discriminator:0000} ➜ {user.Username}#{user.Discriminator:0000}";
 
         var fieldsList = new List<EmbedField>
@@ -416,7 +404,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             fieldsList.Add(new EmbedField("Referenced Case", $"`#{referencedId}`", true));
         }
 
-        if (state is InfractionState.Updated)
+        if (isInfractionUpdate)
         {
             fieldsList.Add(new EmbedField("Updated", DateTimeOffset.UtcNow.ToTimestamp(), true));
         }
@@ -462,8 +450,8 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
         }
 
         var stream = await response.Content.ReadAsStreamAsync();
-        var result = await JsonSerializer.DeserializeAsync<InfractionDTO>(stream, _serializerOptions);
-        return new InfractionResult(result!, response.StatusCode is HttpStatusCode.Created ? InfractionState.Created : InfractionState.Updated);
+        var result = await JsonSerializer.DeserializeAsync<InfractionResponsePayload>(stream, _serializerOptions);
+        return new InfractionResult(result!, result!.IsUpdated? InfractionState.Created : InfractionState.Updated);
     }
 
     async Task IConsumer<InfractionDTO>.Consume(ConsumeContext<InfractionDTO> context)
@@ -478,7 +466,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             return;
         }
 
-        var embed = GenerateEmbedForInfraction(new InfractionResult(context.Message, InfractionState.Created), getUserResult.Entity, getModeratorResult.Entity);
+        var embed = GenerateEmbedForInfraction(context.Message, getUserResult.Entity, getModeratorResult.Entity);
 
         await _channelLogger.LogAsync(new Snowflake(message.GuildID), LogChannelType.CaseCreate, default, new[] { embed });
     }

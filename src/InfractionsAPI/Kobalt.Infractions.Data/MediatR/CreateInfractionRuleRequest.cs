@@ -62,6 +62,7 @@ public class CreateInfractionRuleRequestHandler : IRequestHandler<CreateInfracti
         (
             rule.Id,
             rule.GuildID,
+            rule.RuleName,
             rule.ActionType,
             rule.MatchTimeSpan,
             rule.MatchValue,
