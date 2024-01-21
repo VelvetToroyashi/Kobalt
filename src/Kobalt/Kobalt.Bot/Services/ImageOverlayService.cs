@@ -1,4 +1,7 @@
 ﻿using Remora.Results;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace Kobalt.Bot.Services;
 
