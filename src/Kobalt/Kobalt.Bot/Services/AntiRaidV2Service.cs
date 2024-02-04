@@ -12,14 +12,16 @@ public class AntiRaidV2Service
 {
     private readonly IUser _self;
     private readonly IMediator _mediator;
+    private readonly TimeProvider _timeProvider;
     private readonly InfractionAPIService _infractions;
     private readonly ConcurrentDictionary<Snowflake, RaidState> _raidStates = new();
 
-    public AntiRaidV2Service(IUser self, IMediator mediator, InfractionAPIService infractions)
+    public AntiRaidV2Service(IUser self, IMediator mediator, InfractionAPIService infractions, TimeProvider timeProvider)
     {
         _self = self;
         _mediator = mediator;
         _infractions = infractions;
+        _timeProvider = timeProvider;
     }
 
     /// <summary>
@@ -28,7 +30,7 @@ public class AntiRaidV2Service
     /// <param name="member">The member that joined.</param>
     public async Task<Result> HandleAsync(IGuildMemberAdd member)
     {
-        var state = _raidStates.GetOrAdd(member.GuildID, (_) => new RaidState());
+        var state = _raidStates.GetOrAdd(member.GuildID, (_) => new RaidState(_timeProvider));
         var configResult = await _mediator.Send(new GetGuild.AntiRaidConfigRequest(member.GuildID));
 
         if (!configResult.IsDefined(out var config) || !config.IsEnabled)
@@ -69,7 +71,7 @@ public class AntiRaidV2Service
 /// <summary>
 /// Represents the current state of a raid.
 /// </summary>
-internal class RaidState
+internal class RaidState(TimeProvider timeProvider)
 {
     internal readonly List<(IUser User, DateTimeOffset JoinDate, int ThreatScore, bool Handled)> _users = new();
 
@@ -160,7 +162,7 @@ internal class RaidState
     /// <param name="config"></param>
     private void ClearState(GuildAntiRaidConfigDTO config)
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = timeProvider.GetUtcNow();
         var cutoff = now - config.AntiRaidCooldownPeriod;
 
         if (_users.LastOrDefault().JoinDate < cutoff)

@@ -39,9 +39,9 @@ public class AntiRaidV2ServiceTests
         mediator.Send(new GetGuild.AntiRaidConfigRequest(Arg.Any<Snowflake>()), Arg.Any<CancellationToken>())
             .Returns(Result<GuildAntiRaidConfigDTO>.FromSuccess(DefaultConfig));
 
-        var service = new AntiRaidV2Service(null!, mediator, null!);
+        var service = new AntiRaidV2Service(null!, mediator, null!, TimeProvider.System);
         var result = await service.HandleAsync(Substitute.For<IGuildMemberAdd>());
-
+        
         Assert.That(result.IsSuccess, Is.True);
     }
 
@@ -51,7 +51,7 @@ public class AntiRaidV2ServiceTests
     [Test]
     public void RaidStateAppliesBaseScoreCorrectly()
     {
-        var state = new RaidState();
+        var state = new RaidState(TimeProvider.System);
         var config = DefaultConfig with { BaseJoinScore = 5 };
 
         state.AddUser(Substitute.For<IUser>(), DateTimeOffset.UtcNow, config);
@@ -67,7 +67,7 @@ public class AntiRaidV2ServiceTests
     [Test]
     public void RaidStateCalculatesSuspiciousJoinDeltaCorrectly()
     {
-        var state = new RaidState();
+        var state = new RaidState(TimeProvider.System);
         var config = DefaultConfig with { JoinVelocityScore = 10, LastJoinBufferPeriod = TimeSpan.FromSeconds(1) };
 
         state.AddUser(Substitute.For<IUser>(), DateTimeOffset.UtcNow, config);
@@ -84,7 +84,7 @@ public class AntiRaidV2ServiceTests
     [Test]
     public void RaidStateCalculatesNoAvatarScoreCorrectly()
     {
-        var state = new RaidState();
+        var state = new RaidState(TimeProvider.System);
         var config = DefaultConfig with { NoAvatarScore = 10 };
 
         state.AddUser(Substitute.For<IUser>(), DateTimeOffset.UtcNow, config);
@@ -101,7 +101,7 @@ public class AntiRaidV2ServiceTests
     [Test]
     public void RaidStateCalculatesReturnsSuspiciousUsersCorrectly()
     {
-        var state = new RaidState();
+        var state = new RaidState(TimeProvider.System);
         var config = DefaultConfig with { JoinVelocityScore = 10, LastJoinBufferPeriod = TimeSpan.FromSeconds(1), AntiRaidCooldownPeriod = TimeSpan.FromSeconds(10) };
 
         state.AddUser(Substitute.For<IUser>(), DateTimeOffset.UtcNow, config);

@@ -68,6 +68,8 @@ builder.Services.AddAuthentication(DiscordAuthenticationSchemeOptions.SchemeName
 
 builder.Services.AddAuthorization(auth => auth.AddPolicy(DiscordAuthorizationHandler.PolicyName, policy => policy.Requirements.Add(new MustManageGuildRequirement())));
 
+builder.Services.AddSingleton(TimeProvider.System);
+
 var host = builder.Build();
 
 host.UseAuthentication();
