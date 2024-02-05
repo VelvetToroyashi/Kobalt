@@ -11,7 +11,7 @@ namespace Kobalt.Bot.Auth;
 
 public class MustManageGuildRequirement : IAuthorizationRequirement;
 
-public class DiscordAuthorizationHandler(IRestHttpClient rest, ICacheProvider cache) : AuthorizationHandler<MustManageGuildRequirement, Snowflake>
+public class GuildManagementAuthorizationHandler(IRestHttpClient rest, ICacheProvider cache) : AuthorizationHandler<MustManageGuildRequirement, Snowflake>
 {
     public const string PolicyName = "MustManageGuild";
     

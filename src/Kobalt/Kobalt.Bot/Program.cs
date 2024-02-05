@@ -61,12 +61,12 @@ ConfigureKobaltBotServices(builder.Configuration, builder.Services);
 
 builder.Host.AddStartupTaskSupport();
 
-builder.Services.AddSingleton<IAuthorizationHandler, DiscordAuthorizationHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, GuildManagementAuthorizationHandler>();
 
 builder.Services.AddAuthentication(DiscordAuthenticationSchemeOptions.SchemeName)
        .AddScheme<DiscordAuthenticationSchemeOptions, DiscordAuthenticationHandler>(DiscordAuthenticationSchemeOptions.SchemeName, null);
 
-builder.Services.AddAuthorization(auth => auth.AddPolicy(DiscordAuthorizationHandler.PolicyName, policy => policy.Requirements.Add(new MustManageGuildRequirement())));
+builder.Services.AddAuthorization(auth => auth.AddPolicy(GuildManagementAuthorizationHandler.PolicyName, policy => policy.Requirements.Add(new MustManageGuildRequirement())));
 
 builder.Services.AddSingleton(TimeProvider.System);
 
@@ -100,7 +100,7 @@ host.MapPatch
     async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, ulong guildID) =>
     {
         var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
-        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), GuildManagementAuthorizationHandler.PolicyName);
         
         if (!authorization.Succeeded)
         {
@@ -140,7 +140,7 @@ host.MapGet
     "/api/guilds/{guildID}/rolemenus",
     async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, ulong guildID) =>
     {
-        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), GuildManagementAuthorizationHandler.PolicyName);
         
         if (!authorization.Succeeded)
         {
@@ -167,7 +167,7 @@ host.MapPost
     "/api/guilds/{guildID}/rolemenus",
     async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, RoleMenuService roleMenus, ulong guildID) =>
     {
-        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), GuildManagementAuthorizationHandler.PolicyName);
         
         if (!authorization.Succeeded)
         {
@@ -215,7 +215,7 @@ host.MapPatch
     "/api/guilds/{guildID}/rolemenus/{roleMenuID}",
     async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, RoleMenuService roleMenus, ulong guildID, int roleMenuID) =>
     {
-        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), GuildManagementAuthorizationHandler.PolicyName);
             
         if (!authorization.Succeeded)
         {
@@ -259,7 +259,10 @@ host.MapPatch
     }
 ).RequireAuthorization();
 
-host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper handler, IOptions<KobaltConfig> config) =>
+host.MapPost
+(
+    "/interaction",
+    async (HttpContext ctx, WebhookInteractionHelper handler, IOptions<KobaltConfig> config) =>
     {
         var hasHeaders = DiscordHeaders.TryExtractHeaders(ctx.Request.Headers, out var timestamp, out var signature);
         var body = await new StreamReader(ctx.Request.Body).ReadToEndAsync();
@@ -268,14 +271,17 @@ host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper ha
         {
             ctx.Response.StatusCode = 401;
             Console.WriteLine("Interaction Validation Failed.");
+
             return;
         }
 
         var result = await handler.HandleInteractionAsync(body);
+
         if (!result.IsDefined(out var content))
         {
             ctx.Response.StatusCode = 500;
             Console.WriteLine($"Interaction Handling Failed. Result: {result.Error}");
+
             return;
         }
 
