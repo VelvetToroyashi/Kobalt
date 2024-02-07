@@ -18,7 +18,7 @@
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
-      <PackageReference Include="Remora.Discord.API" Version="76.0.0" />
+      <PackageReference Include="Remora.Discord.API" Version="77.0.0" />
       <PackageReference Include="Remora.Results" Version="7.4.1" />
     </ItemGroup>
 
