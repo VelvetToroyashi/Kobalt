@@ -19,6 +19,7 @@ using Kobalt.Infrastructure.Services;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
 using Kobalt.Shared.Extensions;
+using Kobalt.Shared.Models;
 using Kobalt.Shared.Services;
 using MassTransit.Configuration;
 using MediatR;
@@ -27,6 +28,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using NodaTime;
 using Polly;
 using Remora.Commands.Extensions;
 using Remora.Discord.API.Abstractions.Gateway.Commands;
@@ -66,7 +68,11 @@ builder.Services.AddSingleton<IAuthorizationHandler, GuildManagementAuthorizatio
 builder.Services.AddAuthentication(DiscordAuthenticationSchemeOptions.SchemeName)
        .AddScheme<DiscordAuthenticationSchemeOptions, DiscordAuthenticationHandler>(DiscordAuthenticationSchemeOptions.SchemeName, null);
 
-builder.Services.AddAuthorization(auth => auth.AddPolicy(GuildManagementAuthorizationHandler.PolicyName, policy => policy.Requirements.Add(new MustManageGuildRequirement())));
+builder.Services.AddAuthorization(auth =>
+    {
+        auth.AddPolicy(GuildManagementAuthorizationHandler.PolicyName, policy => policy.Requirements.Add(new MustManageGuildRequirement()));
+    }
+);
 
 builder.Services.AddSingleton(TimeProvider.System);
 
@@ -301,6 +307,20 @@ host.MapPost
         }
     }
 );
+
+host.MapPatch("/users/@me", async (HttpContext context, IMediator mediator, IDateTimeZoneProvider dtz, UserSettingsUpdatePayload payload) => {
+    var user = context.User;
+
+    var isValidTimezone = payload.Timezone.Map(tz => TimeHelper.GetDateTimeZoneFromString(tz, dtz).IsSuccess).OrDefault(true);
+    
+    if (!isValidTimezone)
+    {
+        return Results.BadRequest("Invalid timezone.");
+    }
+    
+    var result = await mediator.Send(new UpdateUser.Request(new Snowflake(ulong.Parse(user.Identity!.Name!)), payload.Timezone, payload.DisplayTimezone));
+    return Results.Ok();
+}).RequireAuthorization(auth => auth.RequireAuthenticatedUser());
 
 await host.RunAsync();
 
