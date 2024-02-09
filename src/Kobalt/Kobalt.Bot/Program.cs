@@ -47,6 +47,7 @@ using Remora.Discord.Gateway.Extensions;
 using Remora.Discord.Interactivity.Extensions;
 using Remora.Rest.Core;
 using RemoraDelegateDispatch.Extensions;
+using RemoraHTTPInteractions.Extensions;
 using RemoraHTTPInteractions.Services;
 using Serilog;
 using StackExchange.Redis;
@@ -349,7 +350,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
     services.AddDiscordGateway(_ => token);
     services.AddInteractivity();
-    //services.AddHTTPInteractionAPIs();
+    services.AddHTTPInteractionAPIs();
     services.AddDiscordCommands(true);
     services.AddPostExecutionEvent<PostExecutionHandler>();
     services.AddHostedService<KobaltDiscordGatewayService>();
