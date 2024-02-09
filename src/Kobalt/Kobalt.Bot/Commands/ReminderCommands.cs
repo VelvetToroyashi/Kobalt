@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Humanizer;
 using Kobalt.Bot.Services;
+using Kobalt.Infrastructure;
 using Kobalt.Shared.DTOs.Reminders;
 using NodaTime;
 using Remora.Commands.Attributes;
@@ -22,6 +23,7 @@ using IResult = Remora.Results.IResult;
 
 namespace Kobalt.Bot.Commands;
 
+[SkipAssemblyDiscovery]
 public class ReminderContextCommands(IDiscordRestInteractionAPI interactions, IInteractionContext context) : CommandGroup
 {
     public const string ReminderModalID = "reminder-modal";
@@ -58,6 +60,7 @@ public class ReminderContextCommands(IDiscordRestInteractionAPI interactions, II
 }
 
 [Group("reminder")]
+[SkipAssemblyDiscovery]
 public class ReminderCommands : CommandGroup
 {
     

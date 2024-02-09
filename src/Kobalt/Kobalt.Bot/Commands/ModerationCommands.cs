@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Humanizer;
 using Kobalt.Bot.Services;
+using Kobalt.Infrastructure;
 using Kobalt.Shared.Conditions;
 using Kobalt.Shared.Extensions;
 using Remora.Commands.Attributes;
@@ -19,6 +20,7 @@ using Color = System.Drawing.Color;
 namespace Kobalt.Bot.Commands;
 
 [Group("moderation")]
+[SkipAssemblyDiscovery]
 [RequireContext(ChannelContext.Guild)]
 [RequireDiscordPermission(DiscordPermission.ManageRoles, DiscordPermission.KickMembers)]
 [RequireBotDiscordPermissions(DiscordPermission.BanMembers, DiscordPermission.ModerateMembers)]

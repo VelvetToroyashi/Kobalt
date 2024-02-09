@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Kobalt.Bot.Auth;
 using Kobalt.Bot.Autocomplete;
+using Kobalt.Bot.Commands;
 using Kobalt.Bot.Data;
 using Kobalt.Bot.Data.DTOs;
 using Kobalt.Bot.Data.Entities.RoleMenus;
@@ -270,6 +271,12 @@ host.MapPost
     "/interaction",
     async (HttpContext ctx, WebhookInteractionHelper handler, IOptions<KobaltConfig> config) =>
     {
+        if (!config.Value.Bot.EnableHTTPInteractions)
+        {
+            ctx.Response.StatusCode = 403;
+            return;
+        }
+        
         var hasHeaders = DiscordHeaders.TryExtractHeaders(ctx.Request.Headers, out var timestamp, out var signature);
         var body = await new StreamReader(ctx.Request.Body).ReadToEndAsync();
 
@@ -363,37 +370,24 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
     services.AddRespondersFromAssembly(asm);
     services.AddInteractivityFromAssembly(asm);
-    services.AddCommandGroupsFromAssembly(asm, typeFilter: t => !t.IsNested);
+    services.AddCommandGroupsFromAssembly(asm, typeFilter: t => !t.IsNested && !t.CustomAttributes.Any(t => t.AttributeType == typeof(SkipAssemblyDiscoveryAttribute)));
 
     services.AddSingleton<AntiRaidV2Service>();
     services.AddSingleton<ChannelWatcherService>();
     services.AddSingleton<MessagePurgeService>();
-    
-    services.AddHttpClient
-    (
-        "Reminders",
-        (s, c) =>
-        {
-            var address = s.GetService<IConfiguration>()!["Kobalt:RemindersApiUrl"] ??
-                          throw new KeyNotFoundException("The API url was not configured.");
 
-            c.BaseAddress = new Uri(address);
-        }
-    );
-    
     services.AddAutocompleteProvider<ReminderAutoCompleteProvider>()
             .AddAutocompleteProvider<RoleMenuAutocompleteProvider>();
 
     services.AddSingleton<RoleMenuService>();
 
     services.AddRabbitMQ();
-    
-    services.AddSingleton<ReminderAPIService>();
-    services.RegisterConsumer<ReminderAPIService>();
 
-    AddPhishingServices(services);
-    AddInfractionServices(services);
+    AddReminderServices(services, config);
+    AddPhishingServices(services, config);
+    AddInfractionServices(services, config);
     
+    // TODO: Make redis stub so that an in-memory shim can be used instead.
     ConfigureRedis(hostConfig, services);
     
     const string CacheKey = "<>k__SelfUserCacheKey_d270867";
@@ -463,30 +457,20 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     );
 
     services.AddDelegateResponders();
-
-    services.AddDelegateResponder<IGuildMemberAdd>
-    (
-        (IGuildMemberAdd member, PhishingDetectionService phishing, CancellationToken ct) 
-            => phishing.HandleAsync(member.User.Value, member.GuildID, ct)
-    );
-    
-    services.AddDelegateResponder<IGuildMemberUpdate>
-    (
-        (IGuildMemberUpdate member, PhishingDetectionService phishing, CancellationToken ct) 
-            => phishing.HandleAsync(member.User, member.GuildID, ct)
-    );
-    
-    services.AddDelegateResponder<IMessageCreate>
-    (
-        (IMessageCreate message, PhishingDetectionService phishing, CancellationToken ct) 
-            => phishing.HandleAsync(message, message.GuildID, ct)
-    );
 }
 
 // TODO: Make these optional?
 
-void AddInfractionServices(IServiceCollection services)
+void AddInfractionServices(IServiceCollection services, KobaltConfig config)
 {
+    if (!config.Bot.EnableInfractions)
+    {
+        Log.Information("KOBALT_INFRACTIONS_ENABLED is 'false'; infraction services will be unavailable");
+        return;
+    }
+
+    services.AddCommandTree().WithCommandGroup<ModerationCommands>();
+    
     services.AddHttpClient
     (
         "Infractions",
@@ -503,8 +487,14 @@ void AddInfractionServices(IServiceCollection services)
     services.RegisterConsumer<InfractionAPIService>();
 }
 
-void AddPhishingServices(IServiceCollection services)
+void AddPhishingServices(IServiceCollection services, KobaltConfig config)
 {
+    if (!config.Bot.EnablePhishing)
+    {
+        Log.Information("KOBALT_PHISHING_ENABLED is 'false'; anti-phishing services will be unavailable");
+        return;
+    }
+    
     services.AddHttpClient
     (
         "Phishing",
@@ -519,4 +509,51 @@ void AddPhishingServices(IServiceCollection services)
 
     services.AddScoped<PhishingAPIService>();
     services.AddScoped<PhishingDetectionService>();
+    
+    services.AddDelegateResponder<IGuildMemberAdd>
+    (
+        (IGuildMemberAdd member, PhishingDetectionService phishing, CancellationToken ct) 
+        => phishing.HandleAsync(member.User.Value, member.GuildID, ct)
+    );
+    
+    services.AddDelegateResponder<IGuildMemberUpdate>
+    (
+        (IGuildMemberUpdate member, PhishingDetectionService phishing, CancellationToken ct) 
+        => phishing.HandleAsync(member.User, member.GuildID, ct)
+    );
+    
+    services.AddDelegateResponder<IMessageCreate>
+    (
+        (IMessageCreate message, PhishingDetectionService phishing, CancellationToken ct) 
+        => phishing.HandleAsync(message, message.GuildID, ct)
+    );
+}
+
+void AddReminderServices(IServiceCollection serviceCollection, KobaltConfig config)
+{
+    
+    if (!config.Bot.EnableReminders)
+    {
+        Log.Information("KOBALT_REMINDERS_ENABLED is 'false'; reminder services will be unavailable");
+        return;
+    }
+
+    serviceCollection.AddCommandTree()
+                     .WithCommandGroup<ReminderCommands>()
+                     .WithCommandGroup<ReminderContextCommands>();
+
+    serviceCollection.AddHttpClient
+    (
+        "Reminders",
+        (s, c) =>
+        {
+            var address = s.GetService<IConfiguration>()!["Kobalt:RemindersApiUrl"] ??
+                          throw new KeyNotFoundException("The API url was not configured.");
+
+            c.BaseAddress = new Uri(address);
+        }
+    );
+    serviceCollection.AddSingleton<ReminderAPIService>();
+    serviceCollection.RegisterConsumer<ReminderAPIService>();
+    serviceCollection.AddCommandTree().WithCommandGroup<ReminderCommands>();
 }

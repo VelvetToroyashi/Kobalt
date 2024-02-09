@@ -2,7 +2,7 @@
 
 public sealed class KobaltConfig
 {
-    public required KobaltBotConfig Bot { get; set; }
+    public required KobaltBotConfig Bot { get; set; } = new();
     public required KobaltDiscordConfig Discord { get; set; }
 };
 
