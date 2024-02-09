@@ -41,6 +41,10 @@ You can acquire your bot token and public key from the [Discord Developer Dashbo
 }
 ```
 
+> [!INFO]
+> `PublicKey` can be ommitted if you intend to use the bot without an HTTP endpoint for interactions.
+> Specify `KOBALT_HTTP_INTERACTIONS_ENABLED=false` (env var) or `{ "Kobalt": { "HttpInteractionsEnabled": false } }` (appsettings.json) to disable HTTP interactions.
+
 ## Feature checklist (AKA a Roadmap)
 
 - [ ] Kobalt (The bot itself)
