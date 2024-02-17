@@ -46,9 +46,6 @@ public partial class ManageGuild
     private IReadOnlyDictionary<Snowflake, IChannel>? _channels;
     private Result<IReadOnlyList<InfractionView>>? _infractions;
 
-    private string? _currentSearch;
-    private readonly Func<KobaltLoggingConfigView, bool> _searchFilter = (config) => true;
-
     private bool _showExpiredInfractions = true;
     
     private bool _isBusy = false;
@@ -60,6 +57,8 @@ public partial class ManageGuild
         _kobaltGuild.Logging.RemoveAll(c => c.ChannelID == channelID);
         StateHasChanged(); // Important, otherwise the changes won't be reflected in the UI.
     }
+
+    private bool FilterChannelsSearch() => true;
     
     private void ShowAddChannelDialogue()
     {

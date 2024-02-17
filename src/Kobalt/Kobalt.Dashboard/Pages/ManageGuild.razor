@@ -201,12 +201,6 @@ else
                     <MudText Typo="Typo.h6">@("Channel".ToQuantity(_kobaltGuild.Logging.Count))</MudText>
                     <MudSpacer/>
                     <div style="height: min-content; align-items: center" class="flex flex-row space-x-2">
-                        <MudHidden Breakpoint="Breakpoint.SmAndDown">
-                            <MudTextField Margin="Margin.Dense" Style="max-width: 210px;" 
-                                          FullWidth="false" Placeholder="Search" Variant="Variant.Outlined" 
-                                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" 
-                                          @bind-Value="_currentSearch"/>
-                        </MudHidden>
                         <MudButton Class="k-log-button"
                                    Color="Color.Primary" 
                                    Style="width: fit-content; height: 40px;"
