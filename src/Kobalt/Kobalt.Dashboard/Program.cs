@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MudBlazor;
 using MudBlazor.Services;
 using MudExtensions.Services;
 using Remora.Discord.API;
@@ -24,7 +25,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddMudServices();
+builder.Services.AddMudServices
+(
+    config =>
+    {
+        config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        config.SnackbarConfiguration.PreventDuplicates = true;
+        config.SnackbarConfiguration.NewestOnTop = true;
+        config.SnackbarConfiguration.ShowCloseIcon = true;
+        config.SnackbarConfiguration.VisibleStateDuration = 5000;
+    
+    }
+);
 builder.Services.AddMudExtensions();
 
 builder.Services.AddAuthentication

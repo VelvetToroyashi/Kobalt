@@ -1,4 +1,6 @@
 using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using Humanizer;
 using Kobalt.Bot.Data.DTOs;
@@ -33,6 +35,9 @@ public partial class ManageGuild
     public required IHttpClientFactory Http { get; set; }
     
     [Inject]
+    public required ITokenRepository Tokens { get; set; }
+    
+    [Inject]
     public required IOptionsMonitor<JsonSerializerOptions> JsonOptions { get; set; }
     
     [Inject]
@@ -41,6 +46,9 @@ public partial class ManageGuild
     [Inject]
     public required IDialogService DialogService { get; set; }
     
+    [Inject]
+    public required ISnackbar SnackBar { get; set; }
+    
     private IGuild? _guild;
     private KobaltGuildView _kobaltGuild = null!;
     private IReadOnlyDictionary<Snowflake, IChannel>? _channels;
@@ -48,7 +56,7 @@ public partial class ManageGuild
 
     private bool _showExpiredInfractions = true;
     
-    private bool _isBusy = false;
+    private bool _isBusy;
     private GuildState _guildState = GuildState.Loading;
 
     // TODO: Add confirmation? Or at least inform the user that this isn't saved until they click save.
@@ -191,6 +199,41 @@ public partial class ManageGuild
         {
             return Result<KobaltGuildDTO>.FromError(new NotFoundError("Failed to retrieve guild."));
         }
+    }
+
+    private async Task<Result> SaveChangesAsync()
+    {
+        _isBusy = true;
+        
+        var token = await Tokens.GetTokenAsync(CancellationToken.None);
+
+        using var http = Http.CreateClient("Kobalt");
+        using var request = new HttpRequestMessage(HttpMethod.Patch, $"api/guilds/{GuildID}");
+
+        var jsonSerializer = JsonOptions.Get("Discord");
+        var json = JsonSerializer.Serialize(_kobaltGuild, jsonSerializer);
+        
+        request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        
+        using var response = await http.SendAsync(request);
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            _isBusy = false;
+            StateHasChanged();
+            
+            SnackBar.Add("Failed to save changes.", Severity.Error);
+            
+            return Result.FromError(new NotFoundError("Failed to save changes."));
+        }
+        
+        _isBusy = false;
+        StateHasChanged();
+        
+        SnackBar.Add("Changes saved.", Severity.Success);
+        
+        return Result.FromSuccess();
     }
 
     private record InfractionView
