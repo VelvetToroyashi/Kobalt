@@ -20,12 +20,13 @@ public class GetGuildInfractionRulesHandler : IRequestHandler<GetGuildInfraction
                                  .Where(x => x.GuildID == request.GuildID)
                                  .ToListAsync(cancellationToken);
 
-        return rules.Select
+        var dtos = rules.Select
         (
             x => new InfractionRuleDTO
             (
                 x.Id,
                 x.GuildID,
+                x.RuleName,
                 x.ActionType,
                 x.MatchTimeSpan,
                 x.MatchValue,
@@ -33,5 +34,7 @@ public class GetGuildInfractionRulesHandler : IRequestHandler<GetGuildInfraction
                 x.ActionDuration
             )
         );
+
+        return dtos.ToArray();
     }
 }

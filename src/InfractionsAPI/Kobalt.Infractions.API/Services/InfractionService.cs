@@ -49,7 +49,7 @@ public class InfractionService : BackgroundService, IInfractionService
     }
 
     /// <inheritdoc/>
-    async Task<Result<InfractionDTO>> IInfractionService.CreateInfractionAsync
+    public async Task<Result<InfractionDTO>> CreateInfractionAsync
     (
         ulong guildID,
         ulong userID,
@@ -124,7 +124,7 @@ public class InfractionService : BackgroundService, IInfractionService
     }
 
     /// <inheritdoc/>
-    public async Task<Optional<InfractionRuleMatch>> EvaluateInfractionsAsync(ulong guildID, ulong userID)
+    public async Task<Optional<IReadOnlyList<InfractionDTO>>> EvaluateInfractionsAsync(ulong guildID, ulong userID)
     {
         var rules = await _mediator.Send(new GetGuildInfractionRulesRequest(guildID));
 
@@ -151,6 +151,8 @@ public class InfractionService : BackgroundService, IInfractionService
         {
             return default;
         }
+        
+        var matchedInfractions = new List<InfractionDTO>();
 
         // Group so we can avoid potentially making multiple queries for the same type.
         foreach (var ruleGroup in rules.GroupBy(g => g.MatchType))
@@ -165,8 +167,30 @@ public class InfractionService : BackgroundService, IInfractionService
 
                 if (meetsThreshold && meetsTimeThreshold)
                 {
-                    return new InfractionRuleMatch(rule.ActionType, rule.ActionDuration);
+                    var infractionResult = await CreateInfractionAsync
+                    (
+                        guildID,
+                        userID,
+                        userID, // TODO? Change this so that Kobalt/"AutoMod" is the moderator.
+                        rule.ActionType,
+                        // TODO: Add reason field in rules / Allow differing reason between log and what's sent to the user.
+                        "AUTOMOD: Automatic escalation based on infraction rules.", 
+                        DateTimeOffset.UtcNow + rule.ActionDuration,
+                        null
+                    );
+
+                    if (!infractionResult.IsDefined(out var infraction))
+                    {
+                        continue;
+                    }
+                    
+                    matchedInfractions.Add(infraction);
                 }
+            }
+            
+            if (matchedInfractions.Any())
+            {
+                return matchedInfractions;
             }
         }
 

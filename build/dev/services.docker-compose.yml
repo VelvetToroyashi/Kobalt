@@ -20,8 +20,9 @@ services:
     image: postgres:15-alpine
     ports:
       - "5432:5432"
-      #volumes:
+    volumes:
       #- ./postgres/data:/var/lib/postgresql/data
+      - ./postgresql.conf:/usr/local/share/postgresql/postgresql.conf
     environment:
       - POSTGRES_USER=kobalt
       - POSTGRES_PASSWORD=kobalt

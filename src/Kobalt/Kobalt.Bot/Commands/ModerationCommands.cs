@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Humanizer;
 using Kobalt.Bot.Services;
+using Kobalt.Infrastructure;
 using Kobalt.Shared.Conditions;
 using Kobalt.Shared.Extensions;
 using Remora.Commands.Attributes;
@@ -19,6 +20,7 @@ using Color = System.Drawing.Color;
 namespace Kobalt.Bot.Commands;
 
 [Group("moderation")]
+[SkipAssemblyDiscovery]
 [RequireContext(ChannelContext.Guild)]
 [RequireDiscordPermission(DiscordPermission.ManageRoles, DiscordPermission.KickMembers)]
 [RequireBotDiscordPermissions(DiscordPermission.BanMembers, DiscordPermission.ModerateMembers)]
@@ -55,8 +57,6 @@ public class ModerationCommands
             return result;
         }
 
-        await apiService.TryEscalateInfractionAsync(context.Interaction.GuildID.Value, target);
-
         return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
             context.Interaction.ApplicationID,
@@ -64,7 +64,6 @@ public class ModerationCommands
             "User kicked successfully."
         );
     }
-
     [Command("ban")]
     [Description("Bans a user from the guild.")]
     public async Task<Result> BanAsync
@@ -94,8 +93,6 @@ public class ModerationCommands
             return result;
         }
 
-        await apiService.TryEscalateInfractionAsync(context.Interaction.GuildID.Value, target);
-
         return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
             context.Interaction.ApplicationID,
@@ -103,7 +100,6 @@ public class ModerationCommands
             "User banned successfully."
         );
     }
-
     [Command("mute")]
     [Description("Mutes a user on the guild.")]
     public async Task<Result> MuteAsync
@@ -128,8 +124,6 @@ public class ModerationCommands
             return result;
         }
 
-        await apiService.TryEscalateInfractionAsync(context.Interaction.GuildID.Value, target);
-
         return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
             context.Interaction.ApplicationID,
@@ -137,7 +131,6 @@ public class ModerationCommands
             "User muted successfully."
         );
     }
-
     [Command("warn")]
     [Description("Warns a user on the guild.")]
     public async Task<Result> WarnAsync
@@ -158,8 +151,6 @@ public class ModerationCommands
             return result;
         }
 
-        await apiService.TryEscalateInfractionAsync(context.Interaction.GuildID.Value, target);
-
         return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
             context.Interaction.ApplicationID,
@@ -167,7 +158,6 @@ public class ModerationCommands
             "User warned successfully."
         );
     }
-
     [Command("note")]
     [Description("Sets a note on the user's record.")]
     public async Task<Result> NoteAsync
@@ -190,7 +180,6 @@ public class ModerationCommands
         {
             return result;
         }
-
         return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
             context.Interaction.ApplicationID,
@@ -198,7 +187,6 @@ public class ModerationCommands
             "I've recorded your note."
         );
     }
-
     [Command("unban")]
     [Description("Un-bans a user on the guild.")]
     public async Task<Result> UnbanAsync
@@ -218,7 +206,6 @@ public class ModerationCommands
         {
             return result;
         }
-
         return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
             context.Interaction.ApplicationID,
@@ -226,7 +213,6 @@ public class ModerationCommands
             "User un-banned successfully."
         );
     }
-
     [Command("unmute")]
     [Description("Un-mutes a user on the guild.")]
     public async Task<Result> UnmuteAsync
@@ -246,7 +232,6 @@ public class ModerationCommands
         {
             return result;
         }
-
         return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
             context.Interaction.ApplicationID,
@@ -254,7 +239,6 @@ public class ModerationCommands
             "User un-muted successfully."
         );
     }
-
     [Command("pardon")]
     [Description("Pardons a user from an infraction.")]
     public async Task<Result> PardonAsync
@@ -273,7 +257,6 @@ public class ModerationCommands
         {
             return result;
         }
-
         return (Result)await interactions.EditOriginalInteractionResponseAsync
         (
             context.Interaction.ApplicationID,
@@ -281,7 +264,6 @@ public class ModerationCommands
             "User un-muted successfully."
         );
     }
-
     [Command("view_case")]
     [Description("View a specific case.")]
     public async Task<Result> ViewCaseAsync
@@ -302,7 +284,6 @@ public class ModerationCommands
                 "I couldn't find that case."
             );
         }
-
         var moderatorResult = await users.GetUserAsync(new Snowflake(infraction.ModeratorID));
         var targetResult = await users.GetUserAsync(new Snowflake(infraction.UserID));
 
@@ -338,7 +319,6 @@ public class ModerationCommands
             embeds: new[] { embed }
         );
     }
-
     [Command("view_cases")]
     [Description("View a user's cases.")]
     public async Task<Result> ViewCasesAsync
@@ -363,7 +343,6 @@ public class ModerationCommands
                 "That user's history is squeaky clean."
             );
         }
-
         var embeds = infractions
                     .Select(inf => $"`#{PadLeft(inf.Id)}` | `{inf.Type,-8}` | {inf.Reason.Truncate(50, "[...]")}")
                     .Chunk(15)
@@ -387,7 +366,6 @@ public class ModerationCommands
                 embeds: embeds
             );
         }
-
         return (Result)await feedback.SendPaginatedMessageAsync
         (
             context.Interaction.Channel.Value.ID.Value,
@@ -403,6 +381,5 @@ public class ModerationCommands
             return strVal.PadLeft(biggest.Length);
         }
     }
-
     // TODO: case-update
 }

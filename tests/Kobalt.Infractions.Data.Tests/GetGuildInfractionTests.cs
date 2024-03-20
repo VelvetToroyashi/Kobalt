@@ -99,9 +99,9 @@ public class GetGuildInfractionTests
         var handler = new GetGuildInfractionHandler(_db);
 
         var res = await handler.Handle(new(InfractionID, GuildID), default);
-
-        Assert.IsFalse(res.IsSuccess);
-        Assert.IsInstanceOf<NotFoundError>(res.Error);
+        
+        Assert.That(res.IsSuccess);
+        Assert.That(res.Error, Is.InstanceOf<NotFoundError>());
     }
 
     [Test]
@@ -128,7 +128,7 @@ public class GetGuildInfractionTests
 
         var res = await handler.Handle(new(InfractionID, GuildID + 1), default);
         
-        Assert.IsFalse(res.IsSuccess);
-        Assert.IsInstanceOf<NotFoundError>(res.Error);
+        Assert.That(res.IsSuccess, Is.False);
+        Assert.That(res.Error, Is.InstanceOf<NotFoundError>());
     }
 }

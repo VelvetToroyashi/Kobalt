@@ -3,6 +3,7 @@ using System;
 using Kobalt.Infractions.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kobalt.Infractions.Data.Migrations
 {
     [DbContext(typeof(InfractionContext))]
-    partial class InfractionContextModelSnapshot : ModelSnapshot
+    [Migration("20240119142716_InfractionRuleNames")]
+    partial class InfractionRuleNames
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

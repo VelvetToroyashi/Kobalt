@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Kobalt.Bot.Auth;
 using Kobalt.Bot.Autocomplete;
+using Kobalt.Bot.Commands;
 using Kobalt.Bot.Data;
 using Kobalt.Bot.Data.DTOs;
 using Kobalt.Bot.Data.Entities.RoleMenus;
@@ -19,6 +20,7 @@ using Kobalt.Infrastructure.Services;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
 using Kobalt.Shared.Extensions;
+using Kobalt.Shared.Models;
 using Kobalt.Shared.Services;
 using MassTransit.Configuration;
 using MediatR;
@@ -27,6 +29,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using NodaTime;
 using Polly;
 using Remora.Commands.Extensions;
 using Remora.Discord.API.Abstractions.Gateway.Commands;
@@ -44,6 +47,7 @@ using Remora.Discord.Gateway.Extensions;
 using Remora.Discord.Interactivity.Extensions;
 using Remora.Rest.Core;
 using RemoraDelegateDispatch.Extensions;
+using RemoraHTTPInteractions.Extensions;
 using RemoraHTTPInteractions.Services;
 using Serilog;
 using StackExchange.Redis;
@@ -61,12 +65,18 @@ ConfigureKobaltBotServices(builder.Configuration, builder.Services);
 
 builder.Host.AddStartupTaskSupport();
 
-builder.Services.AddSingleton<IAuthorizationHandler, DiscordAuthorizationHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, GuildManagementAuthorizationHandler>();
 
 builder.Services.AddAuthentication(DiscordAuthenticationSchemeOptions.SchemeName)
        .AddScheme<DiscordAuthenticationSchemeOptions, DiscordAuthenticationHandler>(DiscordAuthenticationSchemeOptions.SchemeName, null);
 
-builder.Services.AddAuthorization(auth => auth.AddPolicy(DiscordAuthorizationHandler.PolicyName, policy => policy.Requirements.Add(new MustManageGuildRequirement())));
+builder.Services.AddAuthorization(auth =>
+    {
+        auth.AddPolicy(GuildManagementAuthorizationHandler.PolicyName, policy => policy.Requirements.Add(new MustManageGuildRequirement()));
+    }
+);
+
+builder.Services.AddSingleton(TimeProvider.System);
 
 var host = builder.Build();
 
@@ -98,7 +108,7 @@ host.MapPatch
     async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, ulong guildID) =>
     {
         var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
-        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), GuildManagementAuthorizationHandler.PolicyName);
         
         if (!authorization.Succeeded)
         {
@@ -138,7 +148,7 @@ host.MapGet
     "/api/guilds/{guildID}/rolemenus",
     async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, ulong guildID) =>
     {
-        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), GuildManagementAuthorizationHandler.PolicyName);
         
         if (!authorization.Succeeded)
         {
@@ -165,7 +175,7 @@ host.MapPost
     "/api/guilds/{guildID}/rolemenus",
     async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, RoleMenuService roleMenus, ulong guildID) =>
     {
-        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), GuildManagementAuthorizationHandler.PolicyName);
         
         if (!authorization.Succeeded)
         {
@@ -213,7 +223,7 @@ host.MapPatch
     "/api/guilds/{guildID}/rolemenus/{roleMenuID}",
     async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, RoleMenuService roleMenus, ulong guildID, int roleMenuID) =>
     {
-        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), DiscordAuthorizationHandler.PolicyName);
+        var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), GuildManagementAuthorizationHandler.PolicyName);
             
         if (!authorization.Succeeded)
         {
@@ -257,8 +267,17 @@ host.MapPatch
     }
 ).RequireAuthorization();
 
-host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper handler, IOptions<KobaltConfig> config) =>
+host.MapPost
+(
+    "/interaction",
+    async (HttpContext ctx, WebhookInteractionHelper handler, IOptions<KobaltConfig> config) =>
     {
+        if (!config.Value.Bot.EnableHTTPInteractions)
+        {
+            ctx.Response.StatusCode = 403;
+            return;
+        }
+        
         var hasHeaders = DiscordHeaders.TryExtractHeaders(ctx.Request.Headers, out var timestamp, out var signature);
         using var sr = new StreamReader(ctx.Request.Body);
         var body = await sr.ReadToEndAsync();
@@ -267,14 +286,17 @@ host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper ha
         {
             ctx.Response.StatusCode = 401;
             Console.WriteLine("Interaction Validation Failed.");
+
             return;
         }
 
         var result = await handler.HandleInteractionAsync(body);
+
         if (!result.IsDefined(out var content))
         {
             ctx.Response.StatusCode = 500;
             Console.WriteLine($"Interaction Handling Failed. Result: {result.Error}");
+
             return;
         }
 
@@ -294,6 +316,20 @@ host.MapPost("/interaction", async (HttpContext ctx, WebhookInteractionHelper ha
         }
     }
 );
+
+host.MapPatch("/users/@me", async (HttpContext context, IMediator mediator, IDateTimeZoneProvider dtz, UserSettingsUpdatePayload payload) => {
+    var user = context.User;
+
+    var isValidTimezone = payload.Timezone.Map(tz => TimeHelper.GetDateTimeZoneFromString(tz, dtz).IsSuccess).OrDefault(true);
+    
+    if (!isValidTimezone)
+    {
+        return Results.BadRequest("Invalid timezone.");
+    }
+    
+    var result = await mediator.Send(new UpdateUser.Request(new Snowflake(ulong.Parse(user.Identity!.Name!)), payload.Timezone, payload.DisplayTimezone));
+    return Results.Ok();
+}).RequireAuthorization(auth => auth.RequireAuthenticatedUser());
 
 await host.RunAsync();
 
@@ -315,7 +351,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
     services.AddDiscordGateway(_ => token);
     services.AddInteractivity();
-    //services.AddHTTPInteractionAPIs();
+    services.AddHTTPInteractionAPIs();
     services.AddDiscordCommands(true);
     services.AddPostExecutionEvent<PostExecutionHandler>();
     services.AddHostedService<KobaltDiscordGatewayService>();
@@ -336,37 +372,24 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
     services.AddRespondersFromAssembly(asm);
     services.AddInteractivityFromAssembly(asm);
-    services.AddCommandGroupsFromAssembly(asm, typeFilter: t => !t.IsNested);
+    services.AddCommandGroupsFromAssembly(asm, typeFilter: t => !t.IsNested && !t.CustomAttributes.Any(t => t.AttributeType == typeof(SkipAssemblyDiscoveryAttribute)));
 
     services.AddSingleton<AntiRaidV2Service>();
     services.AddSingleton<ChannelWatcherService>();
     services.AddSingleton<MessagePurgeService>();
-    
-    services.AddHttpClient
-    (
-        "Reminders",
-        (s, c) =>
-        {
-            var address = s.GetService<IConfiguration>()!["Kobalt:RemindersApiUrl"] ??
-                          throw new KeyNotFoundException("The API url was not configured.");
 
-            c.BaseAddress = new Uri(address);
-        }
-    );
-    
     services.AddAutocompleteProvider<ReminderAutoCompleteProvider>()
             .AddAutocompleteProvider<RoleMenuAutocompleteProvider>();
 
     services.AddSingleton<RoleMenuService>();
 
     services.AddRabbitMQ();
-    
-    services.AddSingleton<ReminderAPIService>();
-    services.RegisterConsumer<ReminderAPIService>();
 
-    AddPhishingServices(services);
-    AddInfractionServices(services);
+    AddReminderServices(services, config);
+    AddPhishingServices(services, config);
+    AddInfractionServices(services, config);
     
+    // TODO: Make redis stub so that an in-memory shim can be used instead.
     ConfigureRedis(hostConfig, services);
     
     const string CacheKey = "<>k__SelfUserCacheKey_d270867";
@@ -437,30 +460,20 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     );
 
     services.AddDelegateResponders();
-
-    services.AddDelegateResponder<IGuildMemberAdd>
-    (
-        (IGuildMemberAdd member, PhishingDetectionService phishing, CancellationToken ct) 
-            => phishing.HandleAsync(member.User.Value, member.GuildID, ct)
-    );
-    
-    services.AddDelegateResponder<IGuildMemberUpdate>
-    (
-        (IGuildMemberUpdate member, PhishingDetectionService phishing, CancellationToken ct) 
-            => phishing.HandleAsync(member.User, member.GuildID, ct)
-    );
-    
-    services.AddDelegateResponder<IMessageCreate>
-    (
-        (IMessageCreate message, PhishingDetectionService phishing, CancellationToken ct) 
-            => phishing.HandleAsync(message, message.GuildID, ct)
-    );
 }
 
 // TODO: Make these optional?
 
-void AddInfractionServices(IServiceCollection services)
+void AddInfractionServices(IServiceCollection services, KobaltConfig config)
 {
+    if (!config.Bot.EnableInfractions)
+    {
+        Log.Information("KOBALT_INFRACTIONS_ENABLED is 'false'; infraction services will be unavailable");
+        return;
+    }
+
+    services.AddCommandTree().WithCommandGroup<ModerationCommands>();
+    
     services.AddHttpClient
     (
         "Infractions",
@@ -477,8 +490,14 @@ void AddInfractionServices(IServiceCollection services)
     services.RegisterConsumer<InfractionAPIService>();
 }
 
-void AddPhishingServices(IServiceCollection services)
+void AddPhishingServices(IServiceCollection services, KobaltConfig config)
 {
+    if (!config.Bot.EnablePhishing)
+    {
+        Log.Information("KOBALT_PHISHING_ENABLED is 'false'; anti-phishing services will be unavailable");
+        return;
+    }
+    
     services.AddHttpClient
     (
         "Phishing",
@@ -493,4 +512,51 @@ void AddPhishingServices(IServiceCollection services)
 
     services.AddScoped<PhishingAPIService>();
     services.AddScoped<PhishingDetectionService>();
+    
+    services.AddDelegateResponder<IGuildMemberAdd>
+    (
+        (IGuildMemberAdd member, PhishingDetectionService phishing, CancellationToken ct) 
+        => phishing.HandleAsync(member.User.Value, member.GuildID, ct)
+    );
+    
+    services.AddDelegateResponder<IGuildMemberUpdate>
+    (
+        (IGuildMemberUpdate member, PhishingDetectionService phishing, CancellationToken ct) 
+        => phishing.HandleAsync(member.User, member.GuildID, ct)
+    );
+    
+    services.AddDelegateResponder<IMessageCreate>
+    (
+        (IMessageCreate message, PhishingDetectionService phishing, CancellationToken ct) 
+        => phishing.HandleAsync(message, message.GuildID, ct)
+    );
+}
+
+void AddReminderServices(IServiceCollection serviceCollection, KobaltConfig config)
+{
+    
+    if (!config.Bot.EnableReminders)
+    {
+        Log.Information("KOBALT_REMINDERS_ENABLED is 'false'; reminder services will be unavailable");
+        return;
+    }
+
+    serviceCollection.AddCommandTree()
+                     .WithCommandGroup<ReminderCommands>()
+                     .WithCommandGroup<ReminderContextCommands>();
+
+    serviceCollection.AddHttpClient
+    (
+        "Reminders",
+        (s, c) =>
+        {
+            var address = s.GetService<IConfiguration>()!["Kobalt:RemindersApiUrl"] ??
+                          throw new KeyNotFoundException("The API url was not configured.");
+
+            c.BaseAddress = new Uri(address);
+        }
+    );
+    serviceCollection.AddSingleton<ReminderAPIService>();
+    serviceCollection.RegisterConsumer<ReminderAPIService>();
+    serviceCollection.AddCommandTree().WithCommandGroup<ReminderCommands>();
 }

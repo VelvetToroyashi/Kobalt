@@ -1,4 +1,5 @@
 ﻿using Kobalt.Infractions.Shared;
+using MassTransit.Futures.Contracts;
 
 namespace Kobalt.Infractions.Data.Entities;
 
@@ -23,6 +24,11 @@ public class InfractionRule
     /// The unique ID of the rule.
     /// </summary>
     public int Id { get; set; }
+    
+    /// <summary>
+    /// The user-friendly name of this rule.
+    /// </summary>
+    public string RuleName { get; set; }
     
     /// <summary>
     /// The ID of the guild that this rule applies to.

@@ -47,11 +47,11 @@ public interface IInfractionService
     );
 
     /// <summary>
-    /// Evaluates a server's configured infraction rules, returning the first match, if any.
+    /// Evaluates a server's configured infraction rules, returning additionally-generated infractions, if any.
     /// </summary>
     /// <param name="guildID">The ID of the guild the rules should be evaluated on.</param>
     /// <param name="userID">The ID of the user to evaluate infractions for.</param>
-    /// <returns>A match of the infraction, if any.</returns>
-    Task<Optional<InfractionRuleMatch>> EvaluateInfractionsAsync(ulong guildID, ulong userID);
+    /// <returns>All additionally-generated infractions, if any.</returns>
+    Task<Optional<IReadOnlyList<InfractionDTO>>> EvaluateInfractionsAsync(ulong guildID, ulong userID);
 
 }
