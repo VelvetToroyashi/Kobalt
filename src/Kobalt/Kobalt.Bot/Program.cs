@@ -90,7 +90,7 @@ host.MapGet
     {
         var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
         var getGuildResult = await mediator.Send(new GetGuild.Request(new Snowflake(guildID)));
-        
+
         if (getGuildResult is { Entity: {} guild })
         {
             return Results.Json(KobaltGuildDTO.FromEntity(guild), jsonSerializer);
@@ -109,36 +109,36 @@ host.MapPatch
     {
         var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
         var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), GuildManagementAuthorizationHandler.PolicyName);
-        
+
         if (!authorization.Succeeded)
         {
             return Results.Forbid();
         }
-        
+
         var guildResult = await mediator.Send(new GetGuild.Request(new Snowflake(guildID)));
-        
+
         if (guildResult is not { Entity: {} guild })
         {
             // 5xx, this should be impossible.
             return Results.StatusCode(500);
         }
-        
+
         var json = await ctx.Request.ReadFromJsonAsync<KobaltGuildDTO>(jsonSerializer);
-        
+
         if (json is null)
         {
             return Results.BadRequest();
         }
-        
+
         await mediator.Send(new UpdateGuild.AntiPhishing.Request(guild.ID, json.AntiPhishingConfig.ScanUsers, json.AntiPhishingConfig.ScanLinks, json.AntiPhishingConfig.DetectionAction));
         await mediator.Send(new UpdateGuild.AntiRaid.Request(guild.ID, json.AntiRaidConfig.IsEnabled, json.AntiRaidConfig.MinimumAccountAgeBypass, json.AntiRaidConfig.AccountFlagsBypass, json.AntiRaidConfig.BaseJoinScore, json.AntiRaidConfig.JoinVelocityScore, json.AntiRaidConfig.MinimumAgeScore, json.AntiRaidConfig.NoAvatarScore, json.AntiRaidConfig.SuspiciousInviteScore, json.AntiRaidConfig.ThreatScoreThreshold, json.AntiRaidConfig.AntiRaidCooldownPeriod, json.AntiRaidConfig.LastJoinBufferPeriod, json.AntiRaidConfig.MinimumAccountAge));
-        
+
         // TODO: Bulk update
         foreach (var channel in json.LogChannels)
         {
             await mediator.Send(new AddOrModifyLoggingChannel.Request(guild.ID, channel.ChannelID, channel.Type));
         }
-        
+
         return Results.NoContent();
     }
 ).RequireAuthorization();
@@ -149,15 +149,15 @@ host.MapGet
     async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, ulong guildID) =>
     {
         var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), GuildManagementAuthorizationHandler.PolicyName);
-        
+
         if (!authorization.Succeeded)
         {
             return Results.Forbid();
         }
-        
+
         var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
         var getRoleMenusResult = await mediator.Send(new GetAllRoleMenus.Request(new Snowflake(guildID)));
-        
+
         if (getRoleMenusResult is { Entity: {} roleMenus })
         {
             return Results.Json(roleMenus.Select(RoleMenuDTO.FromEntity), jsonSerializer);
@@ -167,7 +167,7 @@ host.MapGet
             return Results.NotFound();
         }
     }
-    
+
 ).RequireAuthorization();
 
 host.MapPost
@@ -176,15 +176,15 @@ host.MapPost
     async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, RoleMenuService roleMenus, ulong guildID) =>
     {
         var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), GuildManagementAuthorizationHandler.PolicyName);
-        
+
         if (!authorization.Succeeded)
         {
             return Results.Forbid();
         }
-        
+
         var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
         var data = await ctx.Request.ReadFromJsonAsync<RoleMenuDTO>(jsonSerializer);
-        
+
         if (data is null)
         {
             return Results.BadRequest();
@@ -208,12 +208,12 @@ host.MapPost
                         Description = data.Description,
                         MutuallyExclusiveRoles = o.MutuallyExclusiveRoleIDs.ToList(),
                         MutuallyInclusiveRoles = o.MutuallyInclusiveRoleIDs.ToList(),
-                    } 
+                    }
                 ).ToList()
             )
         );
 
-        var result = await mediator.Send(request);        
+        var result = await mediator.Send(request);
         return Results.Json(RoleMenuDTO.FromEntity(result), jsonSerializer);
     }
 ).RequireAuthorization();
@@ -224,15 +224,15 @@ host.MapPatch
     async (HttpContext ctx, IMediator mediator, IAuthorizationService auth, RoleMenuService roleMenus, ulong guildID, int roleMenuID) =>
     {
         var authorization = await auth.AuthorizeAsync(ctx.User, new Snowflake(guildID), GuildManagementAuthorizationHandler.PolicyName);
-            
+
         if (!authorization.Succeeded)
         {
             return Results.Forbid();
         }
-        
+
         var jsonSerializer = ctx.RequestServices.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
         var data = await ctx.Request.ReadFromJsonAsync<RoleMenuDTO>(jsonSerializer);
-        
+
         if (data is null)
         {
             return Results.BadRequest();
@@ -257,12 +257,12 @@ host.MapPatch
                         Description = data.Description,
                         MutuallyExclusiveRoles = o.MutuallyExclusiveRoleIDs.ToList(),
                         MutuallyInclusiveRoles = o.MutuallyInclusiveRoleIDs.ToList(),
-                    } 
+                    }
                 ).ToList()
             )
         );
 
-        var result = await mediator.Send(request);        
+        var result = await mediator.Send(request);
         return Results.Json(result, jsonSerializer);
     }
 ).RequireAuthorization();
@@ -277,7 +277,7 @@ host.MapPost
             ctx.Response.StatusCode = 403;
             return;
         }
-        
+
         var hasHeaders = DiscordHeaders.TryExtractHeaders(ctx.Request.Headers, out var timestamp, out var signature);
         var body = await new StreamReader(ctx.Request.Body).ReadToEndAsync();
 
@@ -320,12 +320,12 @@ host.MapPatch("/users/@me", async (HttpContext context, IMediator mediator, IDat
     var user = context.User;
 
     var isValidTimezone = payload.Timezone.Map(tz => TimeHelper.GetDateTimeZoneFromString(tz, dtz).IsSuccess).OrDefault(true);
-    
+
     if (!isValidTimezone)
     {
         return Results.BadRequest("Invalid timezone.");
     }
-    
+
     var result = await mediator.Send(new UpdateUser.Request(new Snowflake(ulong.Parse(user.Identity!.Name!)), payload.Timezone, payload.DisplayTimezone));
     return Results.Ok();
 }).RequireAuthorization(auth => auth.RequireAuthenticatedUser());
@@ -336,7 +336,7 @@ void ConfigureRedis(IConfiguration config, IServiceCollection services)
 {
     var connString = config.GetConnectionString("Redis");
     services.AddDiscordRedisCaching(s => s.Configuration = connString);
-    
+
     var multiplexer = ConnectionMultiplexer.Connect(connString);
     services.AddSingleton<IConnectionMultiplexer>(multiplexer);
 }
@@ -350,7 +350,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
     services.AddDiscordGateway(_ => token);
     services.AddInteractivity();
-    services.AddHTTPInteractionAPIs();
+    services.AddHttpInteractions();
     services.AddDiscordCommands(true);
     services.AddPostExecutionEvent<PostExecutionHandler>();
     services.AddHostedService<KobaltDiscordGatewayService>();
@@ -387,10 +387,10 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     AddReminderServices(services, config);
     AddPhishingServices(services, config);
     AddInfractionServices(services, config);
-    
+
     // TODO: Make redis stub so that an in-memory shim can be used instead.
     ConfigureRedis(hostConfig, services);
-    
+
     const string CacheKey = "<>k__SelfUserCacheKey_d270867";
     services.AddStartupTask
     (
@@ -419,11 +419,11 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
             logger.LogInformation("Migrating Database");
 
             var now = Stopwatch.GetTimestamp();
-            
+
             await using var db = provider.GetRequiredService<IDbContextFactory<KobaltContext>>().CreateDbContext();
 
             await db.Database.MigrateAsync();
-            
+
             logger.LogInformation("Migrated DB successfully in {TimeMs:N0} ms", Stopwatch.GetElapsedTime(now).TotalMilliseconds);
         }
     );
@@ -471,7 +471,7 @@ void AddInfractionServices(IServiceCollection services, KobaltConfig config)
     }
 
     services.AddCommandTree().WithCommandGroup<ModerationCommands>();
-    
+
     services.AddHttpClient
     (
         "Infractions",
@@ -495,7 +495,7 @@ void AddPhishingServices(IServiceCollection services, KobaltConfig config)
         Log.Information("KOBALT_PHISHING_ENABLED is 'false'; anti-phishing services will be unavailable");
         return;
     }
-    
+
     services.AddHttpClient
     (
         "Phishing",
@@ -510,29 +510,29 @@ void AddPhishingServices(IServiceCollection services, KobaltConfig config)
 
     services.AddScoped<PhishingAPIService>();
     services.AddScoped<PhishingDetectionService>();
-    
+
     services.AddDelegateResponder<IGuildMemberAdd>
     (
-        (IGuildMemberAdd member, PhishingDetectionService phishing, CancellationToken ct) 
+        (IGuildMemberAdd member, PhishingDetectionService phishing, CancellationToken ct)
         => phishing.HandleAsync(member.User.Value, member.GuildID, ct)
     );
-    
+
     services.AddDelegateResponder<IGuildMemberUpdate>
     (
-        (IGuildMemberUpdate member, PhishingDetectionService phishing, CancellationToken ct) 
+        (IGuildMemberUpdate member, PhishingDetectionService phishing, CancellationToken ct)
         => phishing.HandleAsync(member.User, member.GuildID, ct)
     );
-    
+
     services.AddDelegateResponder<IMessageCreate>
     (
-        (IMessageCreate message, PhishingDetectionService phishing, CancellationToken ct) 
+        (IMessageCreate message, PhishingDetectionService phishing, CancellationToken ct)
         => phishing.HandleAsync(message, message.GuildID, ct)
     );
 }
 
 void AddReminderServices(IServiceCollection serviceCollection, KobaltConfig config)
 {
-    
+
     if (!config.Bot.EnableReminders)
     {
         Log.Information("KOBALT_REMINDERS_ENABLED is 'false'; reminder services will be unavailable");

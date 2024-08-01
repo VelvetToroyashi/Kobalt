@@ -15,9 +15,8 @@ namespace Kobalt.Bot.Commands.ContextMenus;
 
 public class TimeCommand : CommandGroup
 {
-    private const string TimezoneNotFoundOrSharedError =
-    "The author has not set a timezone, or does not wish to share it.\n " +
-    "Ask them to run `/user-settings timezone set` with `share_timezone` to true.";
+    private const string TimezoneNotFoundOrSharedError = "The author has not set a timezone, or does not wish to share it.\n " +
+                                                         "Ask them to run `/user-settings timezone set` with `share_timezone` to true.";
 
     private const string TimezoneNotSetForCurrentUserError = "You have not set a timezone. Please run `/user-settings timezone set` to set your timezone.";
 
