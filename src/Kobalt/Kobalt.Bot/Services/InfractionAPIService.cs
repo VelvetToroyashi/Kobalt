@@ -3,6 +3,7 @@ using System.Text.Json;
 using Humanizer;
 using Kobalt.Infractions.Shared;
 using Kobalt.Infractions.Shared.DTOs;
+using Kobalt.Infractions.Shared.Interfaces;
 using Kobalt.Infractions.Shared.Payloads;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Services;
@@ -25,34 +26,30 @@ internal enum InfractionState { Created, Updated }
 public class InfractionAPIService : IConsumer<InfractionDTO>
 {
     private readonly IUser _self;
-    private readonly HttpClient _client;
+    private readonly IInfractionAPI _client;
     private readonly IDiscordRestUserAPI _users;
     private readonly IDiscordRestGuildAPI _guilds;
     private readonly IChannelLoggerService _channelLogger;
     private readonly IDiscordRestChannelAPI _channels;
-    private readonly JsonSerializerOptions _serializerOptions;
 
     private static readonly TimeSpan MaxMuteDuration = TimeSpan.FromDays(28);
 
     public InfractionAPIService
     (
         IUser self,
-        IHttpClientFactory client,
-        IConfiguration config,
+        IInfractionAPI client,
         IDiscordRestUserAPI users,
         IDiscordRestGuildAPI guilds,
         IChannelLoggerService channelLogger,
-        IDiscordRestChannelAPI channels,
-        IOptionsMonitor<JsonSerializerOptions> serializerOptions
+        IDiscordRestChannelAPI channels
     )
     {
         _self = self;
-        _client = client.CreateClient("Infractions");
+        _client = client;
         _users = users;
         _guilds = guilds;
         _channelLogger = channelLogger;
         _channels = channels;
-        _serializerOptions = serializerOptions.Get("Discord");
     }
 
     /// <summary>
@@ -282,7 +279,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     {
         var getInfractionResult = await ResultExtensions.TryCatchAsync
         (
-            () => _client.GetFromJsonAsync<InfractionDTO>($"infractions/guilds/{guildID}/{caseID}", _serializerOptions)
+            () => _client.GetGuildInfractionAsync(guildID, caseID)
         );
 
         if (!getInfractionResult.IsDefined(out var fetched))
@@ -321,7 +318,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     {
         var getInfractionResult = await ResultExtensions.TryCatchAsync
         (
-            () => _client.GetFromJsonAsync<InfractionDTO>($"infractions/guilds/{guildID}/{caseID}", _serializerOptions)
+            () => _client.GetGuildInfractionAsync(guildID, caseID)
         );
 
         if (!getInfractionResult.IsDefined(out var fetched))
@@ -343,7 +340,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     {
         var getInfractionsResult = await ResultExtensions.TryCatchAsync
         (
-            () => _client.GetFromJsonAsync<InfractionDTO[]>($"infractions/guilds/{guildID}/users/{userID}?with_pardons={includePardons}", _serializerOptions)
+            () => _client.GetInfractionsForUserAsync(guildID, userID, includePardons)
         );
 
         if (!getInfractionsResult.IsDefined(out var fetched) || !fetched.Any())
@@ -351,7 +348,7 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             return new NotFoundError("That user doesn't have any cases.");
         }
 
-        return fetched;
+        return getInfractionsResult;
     }
 
     private IReadOnlyList<Embed> GenerateEmbedsForInfractions(InfractionResult infraction, IUser user, IUser moderator)
@@ -371,14 +368,14 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
             infraction.Infraction.CreatedAt,
             infraction.Infraction.ExpiresAt
         );
-        
+
         embeds[0] = GenerateEmbedForInfraction(dto, user, moderator, infraction.Infraction.IsUpdated);
-        
+
         for (var i = 1; i < embeds.Length; i++)
         {
             embeds[i] = GenerateEmbedForInfraction(infraction.Infraction.AdditionalInfractions.Value[i - 1], user, moderator);
         }
-        
+
         return embeds;
     }
 
@@ -441,17 +438,9 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     )
     {
         var payload = new InfractionCreatePayload(reason, userID.Value, moderatorID.Value, referencedCaseID, type, DateTimeOffset.UtcNow + duration);
+        var response = await _client.CreateInfractionAsync(guildID, payload);
 
-        var response = await _client.PutAsJsonAsync($"/infractions/guilds/{guildID}", payload, _serializerOptions);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            return new HttpRequestException(response.ReasonPhrase);
-        }
-
-        var stream = await response.Content.ReadAsStreamAsync();
-        var result = await JsonSerializer.DeserializeAsync<InfractionResponsePayload>(stream, _serializerOptions);
-        return new InfractionResult(result!, result!.IsUpdated? InfractionState.Created : InfractionState.Updated);
+        return new InfractionResult(response, response.IsUpdated ? InfractionState.Created : InfractionState.Updated);
     }
 
     async Task IConsumer<InfractionDTO>.Consume(ConsumeContext<InfractionDTO> context)

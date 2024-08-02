@@ -14,6 +14,7 @@ using Kobalt.Bot.Data.MediatR.RoleMenus;
 using Kobalt.Bot.Handlers;
 using Kobalt.Bot.Services;
 using Kobalt.Bot.Services.Discord;
+using Kobalt.Infractions.Shared.Interfaces;
 using Kobalt.Infrastructure;
 using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services;
@@ -31,6 +32,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using NodaTime;
 using Polly;
+using Refit;
 using Remora.Commands.Extensions;
 using Remora.Discord.API.Abstractions.Gateway.Commands;
 using Remora.Discord.API.Abstractions.Gateway.Events;
@@ -462,6 +464,14 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
 // TODO: Make these optional?
 
+static RefitSettings GetRefitSettings(IServiceProvider provider) => new()
+{
+    ContentSerializer = new SystemTextJsonContentSerializer
+    (
+        provider.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord")
+    )
+};
+
 void AddInfractionServices(IServiceCollection services, KobaltConfig config)
 {
     if (!config.Bot.EnableInfractions)
@@ -472,17 +482,17 @@ void AddInfractionServices(IServiceCollection services, KobaltConfig config)
 
     services.AddCommandTree().WithCommandGroup<ModerationCommands>();
 
-    services.AddHttpClient
-    (
-        "Infractions",
-        (s, c) =>
-        {
-            var address = s.GetService<IConfiguration>()!["Kobalt:InfractionsApiUrl"] ??
-                          throw new KeyNotFoundException("The Phishing API url was not configured.");
+    services.AddRefitClient<IInfractionAPI>(GetRefitSettings)
+            .ConfigureHttpClient
+            (
+                (s, c) =>
+                {
+                    var address = s.GetService<IConfiguration>()!["Kobalt:InfractionsApiUrl"] ??
+                                  throw new KeyNotFoundException("The Phishing API url was not configured.");
 
-            c.BaseAddress = new Uri(address);
-        }
-    );
+                    c.BaseAddress = new Uri(address);
+                }
+            );
 
     services.AddSingleton<InfractionAPIService>();
     services.RegisterConsumer<InfractionAPIService>();
