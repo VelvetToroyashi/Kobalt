@@ -438,9 +438,14 @@ public class InfractionAPIService : IConsumer<InfractionDTO>
     )
     {
         var payload = new InfractionCreatePayload(reason, userID.Value, moderatorID.Value, referencedCaseID, type, DateTimeOffset.UtcNow + duration);
-        var response = await _client.CreateInfractionAsync(guildID, payload);
+        var response = await ResultExtensions.TryCatchAsync(() => _client.CreateInfractionAsync(guildID, payload));
 
-        return new InfractionResult(response, response.IsUpdated ? InfractionState.Created : InfractionState.Updated);
+        if (!response.IsDefined(out var infraction))
+        {
+            return Result<InfractionResult>.FromError(response.Error);
+        }
+
+        return new InfractionResult(infraction, infraction.IsUpdated ? InfractionState.Created : InfractionState.Updated);
     }
 
     async Task IConsumer<InfractionDTO>.Consume(ConsumeContext<InfractionDTO> context)
