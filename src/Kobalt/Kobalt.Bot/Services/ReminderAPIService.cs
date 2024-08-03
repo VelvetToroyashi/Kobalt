@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
 using Kobalt.Shared.DTOs.Reminders;
+using Kobalt.Shared.Extensions;
+using Kobalt.Shared.Services;
 using MassTransit;
 using Microsoft.Extensions.Options;
 using Polly;
@@ -12,23 +14,17 @@ namespace Kobalt.Bot.Services;
 
 public class ReminderAPIService : IConsumer<ReminderDTO>
 {
-    private readonly HttpClient _client;
+    private readonly IKobaltRestRemindersAPI _reminders;
     private readonly IDiscordRestChannelAPI _channels;
-    private readonly JsonSerializerOptions _serializerOptions;
-    private readonly IAsyncPolicy<HttpResponseMessage> _policy;
 
     public ReminderAPIService
     (
-        IHttpClientFactory client,
-        IDiscordRestChannelAPI channels,
-        IOptionsMonitor<JsonSerializerOptions> serializerOptions,
-        IAsyncPolicy<HttpResponseMessage> policy
+        IKobaltRestRemindersAPI reminders,
+        IDiscordRestChannelAPI channels
     )
     {
-        _client = client.CreateClient("Reminders");
+        _reminders = reminders;
         _channels = channels;
-        _serializerOptions = serializerOptions.Get("Discord");
-        _policy = policy;
     }
 
     /// <summary>
@@ -52,35 +48,25 @@ public class ReminderAPIService : IConsumer<ReminderDTO>
     )
     {
         var payload = new ReminderCreatePayload(channelID.Value, GuildID?.Value, content, expiration, replyID?.Value);
-        using var response = await _policy.ExecuteAsync(async () => await _client.PostAsJsonAsync($"api/reminders/{userID}", payload, _serializerOptions));
+        var response = await ResultExtensions.TryCatchAsync(() => _reminders.CreateReminderAsync(userID, payload));
 
-        if (!response.IsSuccessStatusCode)
+        if (!response.IsDefined(out var createdReminder))
         {
-            return new HttpRequestException(response.ReasonPhrase, null, response.StatusCode);
+            return Result<int>.FromError(response.Error);
         }
 
-        var result = await response.Content.ReadFromJsonAsync<ReminderCreationPayload>();
-
-        return result!.Id;
+        return createdReminder.Id;
     }
 
     /// <summary>
     /// Gets reminders for a specific user.
     /// </summary>
     /// <param name="userID">The ID of the user to fetch reminders for.</param>
-    public async Task<Result<ReminderDTO[]>> GetRemindersAsync(Snowflake userID)
+    public async Task<Result<IReadOnlyList<ReminderDTO>>> GetRemindersAsync(Snowflake userID)
     {
-        using var response = await _policy.ExecuteAsync(async () => await _client.GetAsync($"api/reminders/{userID}"));
+        var response = await ResultExtensions.TryCatchAsync(() => _reminders.GetRemindersAsync(userID));
 
-        if (!response.IsSuccessStatusCode)
-        {
-            return new HttpRequestException(response.ReasonPhrase, null, response.StatusCode);
-        }
-
-        var stream = await response.Content.ReadAsStreamAsync();
-        var result = await JsonSerializer.DeserializeAsync<ReminderDTO[]>(stream, _serializerOptions);
-
-        return result;
+        return response;
     }
 
     /// <summary>
@@ -91,16 +77,9 @@ public class ReminderAPIService : IConsumer<ReminderDTO>
     /// <returns></returns>
     public async Task<Result> DeleteRemindersAsync(Snowflake userID, int[] reminderIDs)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Delete, $"api/reminders/{userID}") { Content = new StringContent(JsonSerializer.Serialize(reminderIDs)) };
-        request.Content.Headers.ContentType = new("application/json");
-        using var response = await _policy.ExecuteAsync(async () => await _client.SendAsync(request));
+        var response = await ResultExtensions.TryCatchAsync(() => _reminders.DeleteRemindersAsync(userID, reminderIDs));
 
-        if (!response.IsSuccessStatusCode)
-        {
-            return new HttpRequestException(response.ReasonPhrase, null, response.StatusCode);
-        }
-
-        return Result.FromSuccess();
+        return response;
     }
 
     private async Task DispatchAsync(ReminderDTO reminder, CancellationToken ct)

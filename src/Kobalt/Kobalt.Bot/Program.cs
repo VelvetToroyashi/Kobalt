@@ -435,7 +435,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddMemoryCache();
     services.AddDiscordCaching();
     services.AddCondition<EnsureHierarchyCondition>();
-    services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(Policy<HttpResponseMessage>.Handle<HttpRequestException>().WaitAndRetryAsync(5, i => TimeSpan.FromSeconds(Math.Log(i * i) + 1)));
+    services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(KobaltBot.Policy);
 
     services.Configure<DiscordGatewayClientOptions>
     (
@@ -553,18 +553,31 @@ void AddReminderServices(IServiceCollection serviceCollection, KobaltConfig conf
                      .WithCommandGroup<ReminderCommands>()
                      .WithCommandGroup<ReminderContextCommands>();
 
-    serviceCollection.AddHttpClient
-    (
-        "Reminders",
-        (s, c) =>
-        {
-            var address = s.GetService<IConfiguration>()!["Kobalt:RemindersApiUrl"] ??
-                          throw new KeyNotFoundException("The API url was not configured.");
+    serviceCollection.AddRefitClient<IKobaltRestRemindersAPI>(GetRefitSettings)
+                     .AddPolicyHandler(KobaltBot.Policy)
+                     .ConfigureHttpClient
+                     (
+                         (s, c) =>
+                         {
+                             var address = s.GetService<IConfiguration>()!["Kobalt:RemindersApiUrl"] ??
+                                           throw new KeyNotFoundException("The API url was not configured.");
 
-            c.BaseAddress = new Uri(address);
-        }
-    );
+                             c.BaseAddress = new Uri(address);
+                         }
+                     );
+
     serviceCollection.AddSingleton<ReminderAPIService>();
     serviceCollection.RegisterConsumer<ReminderAPIService>();
-    serviceCollection.AddCommandTree().WithCommandGroup<ReminderCommands>();
+}
+
+
+file class KobaltBot
+{
+    public static readonly IAsyncPolicy<HttpResponseMessage> Policy = Policy<HttpResponseMessage>
+                                                                      .Handle<HttpRequestException>()
+                                                                      .WaitAndRetryAsync
+                                                                      (
+                                                                          5,
+                                                                          i => TimeSpan.FromSeconds(Math.Log(i * i) + 1)
+                                                                      );
 }
