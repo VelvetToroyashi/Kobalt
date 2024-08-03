@@ -20,6 +20,7 @@ using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
+using Kobalt.Phishing.Shared.Interfaces;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Models;
 using Kobalt.Shared.Services;
@@ -336,7 +337,7 @@ await host.RunAsync();
 
 void ConfigureRedis(IConfiguration config, IServiceCollection services)
 {
-    var connString = config.GetConnectionString("Redis");
+    var connString = config.GetConnectionString("Redis") ?? throw new InvalidOperationException("Redis connection string not found");
     services.AddDiscordRedisCaching(s => s.Configuration = connString);
 
     var multiplexer = ConnectionMultiplexer.Connect(connString);
@@ -435,7 +436,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddMemoryCache();
     services.AddDiscordCaching();
     services.AddCondition<EnsureHierarchyCondition>();
-    services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(KobaltBot.Policy);
+    services.AddSingleton(KobaltBot.Policy);
 
     services.Configure<DiscordGatewayClientOptions>
     (
@@ -506,17 +507,18 @@ void AddPhishingServices(IServiceCollection services, KobaltConfig config)
         return;
     }
 
-    services.AddHttpClient
-    (
-        "Phishing",
-        (s, c) =>
-        {
-            var address = s.GetService<IConfiguration>()!["Kobalt:PhishingApiUrl"] ??
-                          throw new KeyNotFoundException("The Phishing API url was not configured.");
+    services.AddRefitClient<IKobaltRestPhishingAPI>(GetRefitSettings)
+            .AddPolicyHandler(KobaltBot.Policy)
+            .ConfigureHttpClient
+            (
+                (s, c) =>
+                {
+                    var address = s.GetService<IConfiguration>()!["Kobalt:PhishingApiUrl"] ??
+                                  throw new KeyNotFoundException("The Phishing API url was not configured.");
 
-            c.BaseAddress = new Uri(address);
-        }
-    );
+                    c.BaseAddress = new Uri(address);
+                }
+            );
 
     services.AddScoped<PhishingAPIService>();
     services.AddScoped<PhishingDetectionService>();

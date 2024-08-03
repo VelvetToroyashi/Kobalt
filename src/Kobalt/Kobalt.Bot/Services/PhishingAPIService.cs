@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Humanizer;
+using Kobalt.Phishing.Shared.Interfaces;
 using Kobalt.Phishing.Shared.Models;
 using Kobalt.Shared.Extensions;
 using Microsoft.Extensions.Options;
@@ -12,19 +13,10 @@ namespace Kobalt.Bot.Services;
 /// <summary>
 /// An API wrapper for the phishing API.
 /// </summary>
-public partial class PhishingAPIService
+public partial class PhishingAPIService(IKobaltRestPhishingAPI phishing)
 {
-    private readonly HttpClient _client;
-    private readonly JsonSerializerOptions _jsonOptions;
-
     [GeneratedRegex(@"[.]*(?:https?:\/\/(www\.)?)?(?<link>[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6})\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)")]
     private static partial Regex DomainRegex();
-
-    public PhishingAPIService(IHttpClientFactory client, IOptionsMonitor<JsonSerializerOptions> jsonOptions)
-    {
-        _client = client.CreateClient("Phishing");
-        _jsonOptions = jsonOptions.Get("Discord");
-    }
 
     /// <summary>
     /// Checks if a user is suspicious.
@@ -36,10 +28,10 @@ public partial class PhishingAPIService
     /// <returns>A result containing</returns>
     public async Task<UserPhishingDetectionResult> DetectUserPhishingAsync(Snowflake guildID, Snowflake userID, string username, string? avatarHash)
     {
-        using var response = await _client.PostAsJsonAsync($"/phishing/{guildID}/user", new CheckUserRequest(userID, username, avatarHash), _jsonOptions);
-        var match = await response.Content.ReadFromJsonAsync<UserPhishingDetectionResult>(_jsonOptions);
+        CheckUserRequest request = new(userID, username, avatarHash);
+        var match = await phishing.CheckUserAsync(guildID, request);
 
-        return match!;
+        return match;
     }
 
     /// <summary>
@@ -53,17 +45,21 @@ public partial class PhishingAPIService
     /// </returns>
     public async Task<Result<string>> DetectLinkPhishingAsync(string content)
     {
-        var domains = DomainRegex().Matches(content).ToArray();
+        var domains = DomainRegex().Matches(content).Select(d => d.Groups["link"].Value).ToArray();
 
         if (!domains.Any())
         {
             return new InvalidOperationError("No domains were found in the content.");
         }
 
-        using var response = await _client.PostAsJsonAsync("/phishing/check/domains", domains.Select(d => d.Groups["link"].Value).ToArray(),  _jsonOptions);
-        var match = await response.Content.ReadFromJsonAsync<UserPhishingDetectionResult>(_jsonOptions);
+        var matchResult = await ResultExtensions.TryCatchAsync(() => phishing.CheckLinksAsync(domains));
 
-        return match!.Match ? Result<string>.FromSuccess(match!.DetectionReason!) : new NotFoundError("No matches were found.");
+        if (!matchResult.IsDefined(out var match) || match.Match is false)
+        {
+            return new NotFoundError(matchResult.Error!.Message);
+        }
+
+        return Result<string>.FromSuccess(match!.DetectionReason!);
 
     }
 
@@ -77,8 +73,10 @@ public partial class PhishingAPIService
     /// <returns>A result that may or not have succeeded.</returns>
     public async Task<Result> CreateSuspiciousGuildAvatarAsync(Snowflake guildID, Snowflake addedBy, string url, string category)
     {
-        using var response = await _client.PutAsJsonAsync($"/phishing/{guildID}/avatar", new SubmitAvatarRequest(url, category, addedBy), _jsonOptions);
-        return response.IsSuccessStatusCode ? Result.FromSuccess() : new InvalidOperationError(await response.Content.ReadAsStringAsync());
+        var request = new SubmitAvatarRequest(url, category, addedBy);
+        var result = await ResultExtensions.TryCatchAsync(() => phishing.CreateSuspiciousUserAvatarAsync(guildID, request));
+
+        return result;
     }
 
     /// <summary>
@@ -105,8 +103,9 @@ public partial class PhishingAPIService
             }
         }
 
-        using var response = await _client.PutAsJsonAsync($"/phishing/{guildID}/username", new SubmitUsernameRequest(usernamePattern, parseType), _jsonOptions);
-        return response.IsSuccessStatusCode ? Result.FromSuccess() : new InvalidOperationError(await response.Content.ReadAsStringAsync());
-    }
+        var request = new SubmitUsernameRequest(usernamePattern, parseType);
+        var result = await ResultExtensions.TryCatchAsync(() => phishing.CreateSuspiciousUsernameAsync(guildID, request));
 
+        return result;
+    }
 }
