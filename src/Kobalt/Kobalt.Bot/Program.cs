@@ -14,11 +14,13 @@ using Kobalt.Bot.Data.MediatR.RoleMenus;
 using Kobalt.Bot.Handlers;
 using Kobalt.Bot.Services;
 using Kobalt.Bot.Services.Discord;
+using Kobalt.Infractions.Shared.Interfaces;
 using Kobalt.Infrastructure;
 using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
+using Kobalt.Phishing.Shared.Interfaces;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Models;
 using Kobalt.Shared.Services;
@@ -31,6 +33,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using NodaTime;
 using Polly;
+using Refit;
 using Remora.Commands.Extensions;
 using Remora.Discord.API.Abstractions.Gateway.Commands;
 using Remora.Discord.API.Abstractions.Gateway.Events;
@@ -334,7 +337,7 @@ await host.RunAsync();
 
 void ConfigureRedis(IConfiguration config, IServiceCollection services)
 {
-    var connString = config.GetConnectionString("Redis");
+    var connString = config.GetConnectionString("Redis") ?? throw new InvalidOperationException("Redis connection string not found");
     services.AddDiscordRedisCaching(s => s.Configuration = connString);
 
     var multiplexer = ConnectionMultiplexer.Connect(connString);
@@ -433,7 +436,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddMemoryCache();
     services.AddDiscordCaching();
     services.AddCondition<EnsureHierarchyCondition>();
-    services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(Policy<HttpResponseMessage>.Handle<HttpRequestException>().WaitAndRetryAsync(5, i => TimeSpan.FromSeconds(Math.Log(i * i) + 1)));
+    services.AddSingleton(KobaltBot.Policy);
 
     services.Configure<DiscordGatewayClientOptions>
     (
@@ -462,6 +465,14 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
 // TODO: Make these optional?
 
+static RefitSettings GetRefitSettings(IServiceProvider provider) => new()
+{
+    ContentSerializer = new SystemTextJsonContentSerializer
+    (
+        provider.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord")
+    )
+};
+
 void AddInfractionServices(IServiceCollection services, KobaltConfig config)
 {
     if (!config.Bot.EnableInfractions)
@@ -472,17 +483,17 @@ void AddInfractionServices(IServiceCollection services, KobaltConfig config)
 
     services.AddCommandTree().WithCommandGroup<ModerationCommands>();
 
-    services.AddHttpClient
-    (
-        "Infractions",
-        (s, c) =>
-        {
-            var address = s.GetService<IConfiguration>()!["Kobalt:InfractionsApiUrl"] ??
-                          throw new KeyNotFoundException("The Phishing API url was not configured.");
+    services.AddRefitClient<IInfractionAPI>(GetRefitSettings)
+            .ConfigureHttpClient
+            (
+                (s, c) =>
+                {
+                    var address = s.GetService<IConfiguration>()!["Kobalt:InfractionsApiUrl"] ??
+                                  throw new KeyNotFoundException("The Phishing API url was not configured.");
 
-            c.BaseAddress = new Uri(address);
-        }
-    );
+                    c.BaseAddress = new Uri(address);
+                }
+            );
 
     services.AddSingleton<InfractionAPIService>();
     services.RegisterConsumer<InfractionAPIService>();
@@ -496,17 +507,18 @@ void AddPhishingServices(IServiceCollection services, KobaltConfig config)
         return;
     }
 
-    services.AddHttpClient
-    (
-        "Phishing",
-        (s, c) =>
-        {
-            var address = s.GetService<IConfiguration>()!["Kobalt:PhishingApiUrl"] ??
-                          throw new KeyNotFoundException("The Phishing API url was not configured.");
+    services.AddRefitClient<IKobaltRestPhishingAPI>(GetRefitSettings)
+            .AddPolicyHandler(KobaltBot.Policy)
+            .ConfigureHttpClient
+            (
+                (s, c) =>
+                {
+                    var address = s.GetService<IConfiguration>()!["Kobalt:PhishingApiUrl"] ??
+                                  throw new KeyNotFoundException("The Phishing API url was not configured.");
 
-            c.BaseAddress = new Uri(address);
-        }
-    );
+                    c.BaseAddress = new Uri(address);
+                }
+            );
 
     services.AddScoped<PhishingAPIService>();
     services.AddScoped<PhishingDetectionService>();
@@ -543,18 +555,31 @@ void AddReminderServices(IServiceCollection serviceCollection, KobaltConfig conf
                      .WithCommandGroup<ReminderCommands>()
                      .WithCommandGroup<ReminderContextCommands>();
 
-    serviceCollection.AddHttpClient
-    (
-        "Reminders",
-        (s, c) =>
-        {
-            var address = s.GetService<IConfiguration>()!["Kobalt:RemindersApiUrl"] ??
-                          throw new KeyNotFoundException("The API url was not configured.");
+    serviceCollection.AddRefitClient<IKobaltRestRemindersAPI>(GetRefitSettings)
+                     .AddPolicyHandler(KobaltBot.Policy)
+                     .ConfigureHttpClient
+                     (
+                         (s, c) =>
+                         {
+                             var address = s.GetService<IConfiguration>()!["Kobalt:RemindersApiUrl"] ??
+                                           throw new KeyNotFoundException("The API url was not configured.");
 
-            c.BaseAddress = new Uri(address);
-        }
-    );
+                             c.BaseAddress = new Uri(address);
+                         }
+                     );
+
     serviceCollection.AddSingleton<ReminderAPIService>();
     serviceCollection.RegisterConsumer<ReminderAPIService>();
-    serviceCollection.AddCommandTree().WithCommandGroup<ReminderCommands>();
+}
+
+
+file class KobaltBot
+{
+    public static readonly IAsyncPolicy<HttpResponseMessage> Policy = Policy<HttpResponseMessage>
+                                                                      .Handle<HttpRequestException>()
+                                                                      .WaitAndRetryAsync
+                                                                      (
+                                                                          5,
+                                                                          i => TimeSpan.FromSeconds(Math.Log(i * i) + 1)
+                                                                      );
 }

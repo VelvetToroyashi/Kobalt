@@ -31,7 +31,7 @@ public class RoleMenuOptionConfiguration : IEntityTypeConfiguration<RoleMenuOpti
     public void Configure(EntityTypeBuilder<RoleMenuOptionEntity> builder)
     {
         builder.ToTable("role_menu_options");
- 
+
         // TODO: Update to EF Core 8, where primitive collections are supported natively (translated to JSONB)
         builder
         .Property(rmo => rmo.MutuallyInclusiveRoles)
@@ -40,7 +40,7 @@ public class RoleMenuOptionConfiguration : IEntityTypeConfiguration<RoleMenuOpti
             roles => string.Join(',', roles),
             str => str.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => new Snowflake(ulong.Parse(s), 0)).ToList()
         );
-        
+
         builder
         .Property(rmo => rmo.MutuallyExclusiveRoles)
         .HasConversion<string>
@@ -49,4 +49,4 @@ public class RoleMenuOptionConfiguration : IEntityTypeConfiguration<RoleMenuOpti
             str => str.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => new Snowflake(ulong.Parse(s), 0)).ToList()
         );
     }
-} 
+}

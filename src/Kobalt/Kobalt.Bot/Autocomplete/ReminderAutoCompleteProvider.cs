@@ -42,19 +42,19 @@ public class ReminderAutoCompleteProvider : IAutocompleteProvider
             return Array.Empty<IApplicationCommandOptionChoice>();
         }
 
-        if (!_cache.TryGetValue($"{userId}_reminders", out ReminderDTO[]? reminders))
+        if (!_cache.TryGetValue($"{userId}_reminders", out IReadOnlyList<ReminderDTO>? reminders))
         {
             var reminderResult = await _reminders.GetRemindersAsync(userId);
-            
+
             if (!reminderResult.IsSuccess)
             {
                 return Array.Empty<IApplicationCommandOptionChoice>();
             }
-            
+
             reminders = reminderResult.Entity;
             _cache.Set($"{userId}_reminders", reminders, TimeSpan.FromMinutes(5));
         }
-        
+
         var now = DateTimeOffset.UtcNow;
 
         var suggestions = reminders!
@@ -70,7 +70,7 @@ public class ReminderAutoCompleteProvider : IAutocompleteProvider
                           )
                           .Select(s => new ApplicationCommandOptionChoice(s.Item2, s.Id.ToString()))
                           .ToArray();
-        
+
         return suggestions;
     }
 }
