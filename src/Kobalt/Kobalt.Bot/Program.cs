@@ -353,7 +353,11 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
     services.AddDiscordGateway(_ => token);
     services.AddInteractivity();
-    services.AddHttpInteractions();
+
+    if (config.Bot.EnableHTTPInteractions)
+    {
+        services.AddHttpInteractions();
+    }
     services.AddDiscordCommands(true);
     services.AddPostExecutionEvent<PostExecutionHandler>();
     services.AddHostedService<KobaltDiscordGatewayService>();
@@ -486,10 +490,10 @@ void AddInfractionServices(IServiceCollection services, KobaltConfig config)
     services.AddRefitClient<IInfractionAPI>(GetRefitSettings)
             .ConfigureHttpClient
             (
-                (s, c) =>
+                (c) =>
                 {
-                    var address = s.GetService<IConfiguration>()!["Kobalt:InfractionsApiUrl"] ??
-                                  throw new KeyNotFoundException("The Phishing API url was not configured.");
+                    var address = config.Bot.InfractionsUrl ??
+                                  throw new KeyNotFoundException("The Infractions API url was not configured.");
 
                     c.BaseAddress = new Uri(address);
                 }
@@ -513,7 +517,7 @@ void AddPhishingServices(IServiceCollection services, KobaltConfig config)
             (
                 (s, c) =>
                 {
-                    var address = s.GetService<IConfiguration>()!["Kobalt:PhishingApiUrl"] ??
+                    var address = config.Bot.PhishingUrl ??
                                   throw new KeyNotFoundException("The Phishing API url was not configured.");
 
                     c.BaseAddress = new Uri(address);
@@ -561,8 +565,8 @@ void AddReminderServices(IServiceCollection serviceCollection, KobaltConfig conf
                      (
                          (s, c) =>
                          {
-                             var address = s.GetService<IConfiguration>()!["Kobalt:RemindersApiUrl"] ??
-                                           throw new KeyNotFoundException("The API url was not configured.");
+                             var address = config.Bot.RemindersUrl ??
+                                           throw new KeyNotFoundException("The Reminders API url was not configured.");
 
                              c.BaseAddress = new Uri(address);
                          }
