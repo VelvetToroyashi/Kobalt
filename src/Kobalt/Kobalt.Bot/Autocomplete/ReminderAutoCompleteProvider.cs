@@ -66,7 +66,7 @@ public class ReminderAutoCompleteProvider : IAutocompleteProvider
                           .Take(25)
                           .Select
                           (
-                              r => (r.Id, $"({r.Id}) | in {(r.Expiration - now).Humanize(minUnit: TimeUnit.Second)} {r.ReminderContent}".Truncate(95, "[...]"))
+                              r => (r.Id, $"({r.Id}) | in {(r.Expiration - now).Humanize(minUnit: TimeUnit.Second)} {r.ReminderContent}".Truncate(45, "[...]"))
                           )
                           .Select(s => new ApplicationCommandOptionChoice(s.Item2, s.Id.ToString()))
                           .ToArray();
