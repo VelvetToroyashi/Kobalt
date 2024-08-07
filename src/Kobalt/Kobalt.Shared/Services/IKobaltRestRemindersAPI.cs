@@ -32,5 +32,5 @@ public interface IKobaltRestRemindersAPI
     /// <param name="userID">The ID of the user deleting a reminder.</param>
     /// <param name="ids">The IDs of the reminder being deleted.</param>
     [Delete("/api/reminders/{userID}")]
-    public Task DeleteRemindersAsync(Snowflake userID, IReadOnlyList<int> ids);
+    public Task DeleteRemindersAsync(Snowflake userID, [Body] [AliasAs("reminderIDs")] IReadOnlyList<int> ids);
 }
