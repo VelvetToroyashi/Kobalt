@@ -60,16 +60,10 @@ public class ReminderAutoCompleteProvider : IAutocompleteProvider
             return reminders!
                    .OrderBy(r => r.Expiration)
                    .Take(20)
-                   .Select
-                   (
-                       r => (r.Id, $"({r.Id}) | in {(r.Expiration - DateTimeOffset.UtcNow).Humanize(minUnit: TimeUnit.Second)} {r.ReminderContent}".Truncate(45, "[...]"))
-                   )
-                   .Select(s => new ApplicationCommandOptionChoice(s.Item2, s.Id.ToString()))
+                   .Select(GetReminderContent)
+                   .Select(s => new ApplicationCommandOptionChoice(s.Item2, s.Item1.ToString()))
                    .ToArray();
         }
-
-        var now = DateTimeOffset.UtcNow;
-
         var suggestions = reminders!
                           .Select(r => (r, Fuzz.PartialRatio(r.ReminderContent, userInput)))
                           .Where(rt => rt.Item2 > 60)
@@ -77,13 +71,15 @@ public class ReminderAutoCompleteProvider : IAutocompleteProvider
                           .ThenByDescending(rt => rt.r.Expiration)
                           .Select(rt => rt.r)
                           .Take(25)
-                          .Select
-                          (
-                              r => (r.Id, $"({r.Id}) | in {(r.Expiration - now).Humanize(minUnit: TimeUnit.Second)} {r.ReminderContent}".Truncate(45, "[...]"))
-                          )
-                          .Select(s => new ApplicationCommandOptionChoice(s.Item2, s.Id.ToString()))
+                          .Select(GetReminderContent)
+                          .Select(s => new ApplicationCommandOptionChoice(s.Item2, s.Item1.ToString()))
                           .ToArray();
 
         return suggestions;
+
+        static (int, string) GetReminderContent(ReminderDTO reminder)
+        {
+            return (reminder.Id, $"({reminder.Id}) | in {(reminder.Expiration - DateTimeOffset.UtcNow).Humanize(minUnit: TimeUnit.Second)}: {reminder.ReminderContent}".Truncate(65, "[...]"));
+        }
     }
 }
