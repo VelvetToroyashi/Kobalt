@@ -1,25 +1,25 @@
 version: "3"
 
 services:
-  kobalt:
-    container_name: "kobalt_bot"
-    image: kobalt/bot:latest
-    ports:
-      - "5040:8080"
-    environment:
-      - DISCORD__TOKEN=${KOBALT_DISCORD_TOKEN}
-      - DISCORD__PUBLICKEY=${KOBALT_DISCORD_PUBLICKEY}
-      - DISCORD__SHARDCOUNT=1
-      - CONNECTIONSTRINGS__REDIS=kobalt_redis:6379
-      - CONNECTIONSTRINGS__KOBALT=Server=kobalt_postgres;Database=kobalt;Username=kobalt;Password=kobalt;
-      - CONNECTIONSTRINGS__RABBITMQ=rabbitmq://kobalt:kobalt@kobalt_rabbitmq:5672/
-      - KOBALT__REMINDERSAPIURL=http://kobalt_reminders:8080
-      - KOBALT__INFRACTIONSAPIURL=http://kobalt_infractions:8080
-      - KOBALT__PHISHINGAPIURL=http://kobalt_phishing:8080
-    depends_on:
-      - postgres
-      - redis
-      - rabbit-mq
+#  kobalt:
+#    container_name: "kobalt_bot"
+#    image: kobalt/bot:latest
+#    ports:
+#      - "5040:8080"
+#    environment:
+#      - DISCORD__TOKEN=${KOBALT_DISCORD_TOKEN}
+#      - DISCORD__PUBLICKEY=${KOBALT_DISCORD_PUBLICKEY}
+#      - DISCORD__SHARDCOUNT=1
+#      - CONNECTIONSTRINGS__REDIS=kobalt_redis:6379
+#      - CONNECTIONSTRINGS__KOBALT=Server=kobalt_postgres;Database=kobalt;Username=kobalt;Password=kobalt;
+#      - CONNECTIONSTRINGS__RABBITMQ=rabbitmq://kobalt:kobalt@kobalt_rabbitmq:5672/
+#      - KOBALT__REMINDERSAPIURL=http://kobalt_reminders:8080
+#      - KOBALT__INFRACTIONSAPIURL=http://kobalt_infractions:8080
+#      - KOBALT__PHISHINGAPIURL=http://kobalt_phishing:8080
+#    depends_on:
+#      - postgres
+#      - redis
+#      - rabbit-mq
 
   rabbit-mq:
     container_name: "kobalt_rabbitmq"
@@ -34,7 +34,7 @@ services:
       - '15672:15672'
     volumes:
       - ./rabbitmq/data/:/var/lib/rabbitmq/mnesia
-  
+
   postgres:
     container_name: "kobalt_postgres"
     image: postgres:15-alpine
@@ -65,7 +65,7 @@ services:
       - CONNECTIONSTRINGS__RABBITMQ=rabbitmq://kobalt:kobalt@kobalt_rabbitmq:5672/
     depends_on:
       - rabbit-mq
-  
+
   infractions:
     container_name: "kobalt_infractions"
     image: kobalt/infractions:latest
@@ -77,7 +77,7 @@ services:
     depends_on:
       - rabbit-mq
       - postgres
-  
+
   phishing:
     container_name: "kobalt_phishing"
     image: kobalt/phishing:latest
