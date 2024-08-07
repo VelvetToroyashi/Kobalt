@@ -55,6 +55,19 @@ public class ReminderAutoCompleteProvider : IAutocompleteProvider
             _cache.Set($"{userId}_reminders", reminders, TimeSpan.FromMinutes(5));
         }
 
+        if (string.IsNullOrWhiteSpace(userInput))
+        {
+            return reminders!
+                   .OrderBy(r => r.Expiration)
+                   .Take(20)
+                   .Select
+                   (
+                       r => (r.Id, $"({r.Id}) | in {(r.Expiration - DateTimeOffset.UtcNow).Humanize(minUnit: TimeUnit.Second)} {r.ReminderContent}".Truncate(45, "[...]"))
+                   )
+                   .Select(s => new ApplicationCommandOptionChoice(s.Item2, s.Id.ToString()))
+                   .ToArray();
+        }
+
         var now = DateTimeOffset.UtcNow;
 
         var suggestions = reminders!
