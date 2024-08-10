@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types.Booru;
+using Kobalt.Shared.Types;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Abstractions.Objects;
@@ -56,14 +57,14 @@ public class E621Command : CommandGroup
         (
              _context.Interaction.ApplicationID,
              _context.Interaction.Token,
-             "<:_:859424401723883560> Searching..."
+             $"{KobaltEmoji.Search} Searching..."
         );
 
         var searchResult = await _booru.SearchAsync(count, tags);
 
         if (!searchResult.IsSuccess)
         {
-            var errorMessage = $"<:_:908958943466893323> {searchResult.Error.Message}";
+            var errorMessage = $"{KobaltEmoji.Error} {searchResult.Error.Message}";
 
             return (Result)await _interactions.EditOriginalInteractionResponseAsync
             (
@@ -133,7 +134,7 @@ public class E621Command : CommandGroup
             (
                 Title: tags + $" ({i + 1}/{search.Posts.Count})",
                 Url: "https://e621.net/posts/",
-                Description: $"{post.Score.Up} <:_:909715386843430933> {post.Score.Down} <:_:911135418420953138>  Favorites: {post.FavCount} ",
+                Description: $"{post.Score.Up} {KobaltEmoji.ThumbsUp} {post.Score.Down} {KobaltEmoji.ThumbsDown} Favorites: {post.FavCount} ",
                 Image: new EmbedImage(post.File.Url.ToString()),
                 Colour: Color.FromArgb(2, 37, 70)
             );

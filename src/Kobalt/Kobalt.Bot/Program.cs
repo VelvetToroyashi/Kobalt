@@ -24,6 +24,7 @@ using Kobalt.Phishing.Shared.Interfaces;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Models;
 using Kobalt.Shared.Services;
+using Kobalt.Shared.Types;
 using MassTransit.Configuration;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -40,6 +41,7 @@ using Remora.Discord.API.Abstractions.Gateway.Events;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Gateway.Commands;
+using Remora.Discord.Caching.Abstractions.Services;
 using Remora.Discord.Caching.Extensions;
 using Remora.Discord.Caching.Redis.Extensions;
 using Remora.Discord.Commands.Extensions;
@@ -48,6 +50,9 @@ using Remora.Discord.Extensions.Extensions;
 using Remora.Discord.Gateway;
 using Remora.Discord.Gateway.Extensions;
 using Remora.Discord.Interactivity.Extensions;
+using Remora.Discord.Rest;
+using Remora.Discord.Rest.Extensions;
+using Remora.Rest;
 using Remora.Rest.Core;
 using RemoraDelegateDispatch.Extensions;
 using RemoraHTTPInteractions.Extensions;
@@ -85,6 +90,8 @@ var host = builder.Build();
 
 host.UseAuthentication();
 host.UseAuthorization();
+
+#region Endpoints
 
 host.MapGet
 (
@@ -332,8 +339,12 @@ host.MapPatch("/users/@me", async (HttpContext context, IMediator mediator, IDat
     var result = await mediator.Send(new UpdateUser.Request(new Snowflake(ulong.Parse(user.Identity!.Name!)), payload.Timezone, payload.DisplayTimezone));
     return Results.Ok();
 }).RequireAuthorization(auth => auth.RequireAuthenticatedUser());
+#endregion
 
+await ApplyKobaltEmojisAsync(host.Services);
 await host.RunAsync();
+
+#region Local Functions
 
 void ConfigureRedis(IConfiguration config, IServiceCollection services)
 {
@@ -467,7 +478,51 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddDelegateResponders();
 }
 
-// TODO: Make these optional?
+static async Task ApplyKobaltEmojisAsync(IServiceProvider services)
+{
+    // TODO: Use app API when that PR gets merged.
+
+    var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("Kobalt");
+
+    var restClient = services.GetRequiredService<IRestHttpClient>();
+    var tokenStore = services.GetRequiredService<IAsyncTokenStore>();
+    var token = await tokenStore.GetTokenAsync(default);
+
+    var jsonOptions = services.GetRequiredService<IOptionsMonitor<JsonSerializerOptions>>().Get("Discord");
+
+    var id = Encoding.UTF8.GetString(Convert.FromBase64String(token.Split('.')[0] + "=="));
+
+    logger.LogDebug("Loading Kobalt emojis...");
+
+    var emojiResult = await restClient.GetAsync<JsonDocument>
+    (
+        $"applications/{id}/emojis",
+        b => b.WithRateLimitContext(services.GetRequiredService<ICacheProvider>())
+    );
+
+    if (!emojiResult.IsDefined(out var emojiDoc))
+    {
+        logger.LogError("Failed to get emojis: {Error}", emojiResult.Error);
+        return;
+    }
+
+    logger.LogDebug("Loaded {Count} emojis", emojiDoc.RootElement.SelectElement("items")!.Value.GetArrayLength());
+
+    var fields = typeof(KobaltEmoji).GetFields(BindingFlags.Public | BindingFlags.Static);
+    var emojis = emojiDoc.RootElement.SelectElement("items")!.Value.Deserialize<IReadOnlyList<IEmoji>>(jsonOptions)!;
+
+    foreach (var field in fields)
+    {
+        var emoji = emojis.FirstOrDefault(e => e.Name!.Equals(field.Name, StringComparison.OrdinalIgnoreCase));
+
+        if (emoji is null)
+        {
+            continue;
+        }
+
+        field.SetValue(null, $"<:{emoji.Name}:{emoji.ID}>");
+    }
+}
 
 static RefitSettings GetRefitSettings(IServiceProvider provider) => new()
 {
@@ -575,15 +630,16 @@ void AddReminderServices(IServiceCollection serviceCollection, KobaltConfig conf
     serviceCollection.AddSingleton<ReminderAPIService>();
     serviceCollection.RegisterConsumer<ReminderAPIService>();
 }
-
+#endregion
 
 file class KobaltBot
 {
-    public static readonly IAsyncPolicy<HttpResponseMessage> Policy = Policy<HttpResponseMessage>
-                                                                      .Handle<HttpRequestException>()
-                                                                      .WaitAndRetryAsync
-                                                                      (
-                                                                          5,
-                                                                          i => TimeSpan.FromSeconds(Math.Log(i * i) + 1)
-                                                                      );
+    public static readonly IAsyncPolicy<HttpResponseMessage> Policy =
+        Policy<HttpResponseMessage>
+        .Handle<HttpRequestException>()
+        .WaitAndRetryAsync
+        (
+            5,
+            i => TimeSpan.FromSeconds(Math.Log(i * i) + 1)
+        );
 }

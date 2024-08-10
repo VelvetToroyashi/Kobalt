@@ -1,5 +1,6 @@
 using Kobalt.Bot.Data.MediatR.Guilds;
 using Kobalt.Infractions.Shared;
+using Kobalt.Shared.Types;
 using MediatR;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
@@ -61,7 +62,7 @@ public class GuildSettingsCommands : CommandGroup
         (
             _context.Interaction.ApplicationID,
             _context.Interaction.Token,
-            "<:_:866599434729029642> Consider it done.",
+            $"{KobaltEmoji.Success} Consider it done.",
             flags: MessageFlags.Ephemeral
         );
     }

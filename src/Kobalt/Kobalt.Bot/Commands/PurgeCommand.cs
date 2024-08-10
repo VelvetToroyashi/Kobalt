@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Kobalt.Bot.Services;
+using Kobalt.Shared.Types;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Abstractions.Objects;
@@ -25,30 +26,30 @@ public class PurgeCommand(IInteractionContext context, IDiscordRestInteractionAP
         [MinValue(1)]
         [Description("How many messages to purge.")]
         int amount,
-        
+
         [Description("What channel to purge; ignored if user is specified.")]
         IChannel? channel = null,
-        
+
         [Description("User to purge messages from, across all channels.")]
         IUser? user = null,
-        
+
         [Description("Regex to filter by; no effect if user is specified.")]
         string regex = "",
-        
+
         [DiscordTypeHint(TypeHint.String)]
-        Snowflake? around = null,
-        
+        OneOf<Snowflake, IPartialMessage>? around = null,
+
         [DiscordTypeHint(TypeHint.String)]
-        Snowflake? before = null,
-        
+        OneOf<Snowflake, IPartialMessage>? before = null,
+
         [DiscordTypeHint(TypeHint.String)]
-        Snowflake? after = null,
+        OneOf<Snowflake, IPartialMessage>? after = null,
 
         string reason = "Not given."
     )
     {
         Result<int> result;
-        
+
         if (user is not null)
         {
             result = await purgeService.PurgeByUserAsync(context.Interaction.GuildID.Value, user.ID, amount, reason);
@@ -62,9 +63,9 @@ public class PurgeCommand(IInteractionContext context, IDiscordRestInteractionAP
             result = await purgeService.PurgeByChannelAsync
             (
                 channel?.ID ?? context.Interaction.Channel.Value.ID.Value,
-                around,
-                before,
-                after,
+                around?.Match(f0 => f0, f1 => f1.ID.Value),
+                before?.Match(f0 => f0, f1 => f1.ID.Value),
+                after?.Match(f0 => f0, f1 => f1.ID.Value),
                 amount,
                 reason
             );
@@ -76,7 +77,7 @@ public class PurgeCommand(IInteractionContext context, IDiscordRestInteractionAP
             (
                 context.Interaction.ApplicationID,
                 context.Interaction.Token,
-                $"<:trash:867650498030731315> Deleted {deleted} messages."
+                $"{KobaltEmoji.Trash} Deleted {deleted} messages."
             );
         }
         else
