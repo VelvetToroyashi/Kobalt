@@ -32,8 +32,6 @@ services:
       - '5672:5672'
       # HTTP management UI
       - '15672:15672'
-    volumes:
-      - ./rabbitmq/data/:/var/lib/rabbitmq/mnesia
 
   postgres:
     container_name: "kobalt_postgres"
@@ -52,8 +50,6 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
-    volumes:
-      - ./redis/data:/data
 
   reminders:
     container_name: "kobalt_reminders"
