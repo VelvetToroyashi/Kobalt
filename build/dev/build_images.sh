@@ -50,11 +50,10 @@ build_docker_images() {
   find "$ROOT_DIR/src" -type d -name "*.API" | while read -r api_dir; do
     # Get the parent directory name which should be the project name
     project_name=$(basename "$(dirname "$api_dir")")
-
     echo "Building Docker image for $project_name..."
 
     # Build the Docker image
-    docker build -t "kobalt_$(convert_image_name "${project_name,,}")" -f "$api_dir/Dockerfile" "$ROOT_DIR"
+    docker build -t "$(convert_image_name "$(basename "${api_dir,,}")")" -f "$api_dir/Dockerfile" "$ROOT_DIR"
 
     echo "Built Docker image for $project_name"
   done
