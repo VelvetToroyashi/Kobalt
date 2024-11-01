@@ -41,9 +41,11 @@ using Remora.Discord.API.Abstractions.Gateway.Events;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Gateway.Commands;
+using Remora.Discord.Caching.Abstractions;
 using Remora.Discord.Caching.Abstractions.Services;
 using Remora.Discord.Caching.Extensions;
 using Remora.Discord.Caching.Redis.Extensions;
+using Remora.Discord.Caching.Services;
 using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Commands.Responders;
 using Remora.Discord.Extensions.Extensions;
@@ -371,6 +373,7 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     }
     services.AddDiscordCommands(true);
     services.AddPostExecutionEvent<PostExecutionHandler>();
+    services.AddPreparationErrorEvent<PostExecutionHandler>();
     services.AddHostedService<KobaltDiscordGatewayService>();
     services.Configure<InteractionResponderOptions>(s => s.UseEphemeralResponses = true);
     services.AddOffsetServices();
@@ -452,6 +455,8 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
     services.AddDiscordCaching();
     services.AddCondition<EnsureHierarchyCondition>();
     services.AddSingleton(KobaltBot.Policy);
+
+    services.Configure<CacheSettings>(s => s.SetDefaultEvictionAbsoluteExpiration(TimeSpan.Zero));
 
     services.Configure<DiscordGatewayClientOptions>
     (
