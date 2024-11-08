@@ -17,8 +17,8 @@ using SixLabors.ImageSharp.Processing;
 
 namespace Kobalt.Phishing.API.Services;
 
-// TODO: Using alias when .NET 8 is released.
-internal record UsernameDetectionResult(bool Matched, string? Username, bool Global);
+using UsernameDetectionResult = (bool Matched, string? Username, bool Global);
+
 
 /// <summary>
 /// A service that aggregates various sources for phishing data.
