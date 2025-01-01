@@ -11,7 +11,7 @@ Here's a topological view of the layout of the project from a service point-of-v
 
 ## Development & Debugging / Running the bot
 
-Given the inherently...*convoluted* nature of Microservices, this bot isn't trivial to work with, but I've provided a few compose files under the `build` directory. 
+Due to the highly-interconnected nature of microservices, several docker-compose files under the `build` directory have been provided to run various services and dependencies.. 
 `services.docker-compose.yml` runs Postgres, Redis, and RabbitMQ, which are required for core functionality of the bot and some microservices, however the bot itself does not rely on microservices unless you add plugins.
 
 Running the bot is just as simple as building and running, but you will need to provide some configuration. For testing purposes, of if you're just running Kobalt for a small server, [.NET User Secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-7.0) are probably fine.
