@@ -30,7 +30,6 @@ public class AntiRaidV2Service
     /// <param name="member">The member that joined.</param>
     public async Task<Result> HandleAsync(IGuildMemberAdd member)
     {
-        var state = _raidStates.GetOrAdd(member.GuildID, (_) => new RaidState(_timeProvider));
         var configResult = await _mediator.Send(new GetGuild.AntiRaidConfigRequest(member.GuildID));
 
         if (!configResult.IsDefined(out var config) || !config.IsEnabled)
@@ -38,6 +37,7 @@ public class AntiRaidV2Service
             return Result.FromSuccess();
         }
 
+        var state = _raidStates.GetOrAdd(member.GuildID, (_) => new RaidState(_timeProvider));
         state.AddUser(member.User.Value, member.JoinedAt, config);
 
         if (!state.IsRaid(config))
@@ -76,6 +76,13 @@ internal class RaidState(TimeProvider timeProvider)
     internal readonly List<(IUser User, DateTimeOffset JoinDate, int ThreatScore, bool Handled)> _users = new();
 
     /// <summary>
+    /// Checks if a given user's ID is being tracked.
+    /// </summary>
+    /// <param name="user">The ID of the user to check for.</param>
+    /// <returns>Whether the user is currently being tracked by this raid state.</returns>
+    public bool IsTrackedUser(Snowflake user) => _users.Any(u => u.User.ID == user);
+
+    /// <summary>
     /// Adds a user to the tracking state.
     /// </summary>
     /// <param name="user">The user to track.</param>
@@ -83,6 +90,11 @@ internal class RaidState(TimeProvider timeProvider)
     /// <param name="config">A configuration to determine how their threat score should be calculated.</param>
     public void AddUser(IUser user, DateTimeOffset joinTimestamp, GuildAntiRaidConfigDTO config)
     {
+        if (IsTrackedUser(user.ID))
+        {
+            return;
+        }
+
         var threatScore = config.BaseJoinScore;
         var lastJoinDelta = joinTimestamp - _users.LastOrDefault().Item2;
         var accountAge = user.ID.Timestamp - joinTimestamp;
