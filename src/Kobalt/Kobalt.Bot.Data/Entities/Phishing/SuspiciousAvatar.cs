@@ -1,4 +1,4 @@
-namespace Kobalt.Phishing.Data.Entities;
+namespace Kobalt.Bot.Data.Entities.Phishing;
 
 /// <summary>
 /// Represents a suspicious avatar

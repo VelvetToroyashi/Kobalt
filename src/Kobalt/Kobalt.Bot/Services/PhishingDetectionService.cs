@@ -1,6 +1,8 @@
+using System.Text.RegularExpressions;
 using Kobalt.Bot.Data.Entities;
 using Kobalt.Bot.Data.MediatR.Guilds;
 using Kobalt.Infractions.Shared;
+using Kobalt.Shared.Models.Phishing;
 using MediatR;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Rest.Core;
@@ -10,14 +12,17 @@ namespace Kobalt.Bot.Services;
 /// <summary>
 /// Service for detecting phishing attempts.
 /// </summary>
-public class PhishingDetectionService
+public partial class PhishingDetectionService
 {
+    [GeneratedRegex(@"[.]*(?:https?:\/\/(www\.)?)?(?<link>[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6})\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)")]
+    public static partial Regex DomainRegex();
+
     private readonly IUser _self;
     private readonly IMediator _mediator;
-    private readonly PhishingAPIService _phishing;
+    private readonly PhishingService _phishing;
     private readonly InfractionAPIService _infractions;
 
-    public PhishingDetectionService(IUser self, IMediator mediator, PhishingAPIService phishing, InfractionAPIService infractions)
+    public PhishingDetectionService(IUser self, IMediator mediator, PhishingService phishing, InfractionAPIService infractions)
     {
         _self = self;
         _mediator = mediator;
@@ -40,7 +45,8 @@ public class PhishingDetectionService
             return (Result)configResult;
         }
 
-        var phishingResult = await _phishing.DetectUserPhishingAsync(guildID, user.ID, user.Username, user.Avatar?.Value);
+        var phishingRequest = new CheckUserRequest(user.ID, user.Username, user.Avatar?.Value);
+        var phishingResult = await _phishing.CheckUserAsync(guildID, phishingRequest);
 
         if (!phishingResult.Match)
         {
@@ -64,6 +70,9 @@ public class PhishingDetectionService
             return Result.FromSuccess();
         }
 
+        var diff = DateTimeOffset.UtcNow - message.ID.Timestamp;
+
+        Console.WriteLine($"Time to detection: {diff.TotalMilliseconds}ms");
         var configResult = await _mediator.Send(new GetGuild.PhishingConfigRequest(gid));
 
         if (!configResult.IsDefined(out var config) || !config.ScanLinks)
@@ -71,14 +80,17 @@ public class PhishingDetectionService
             return (Result)configResult;
         }
 
-        var phishingResult = await _phishing.DetectLinkPhishingAsync(message.Content);
+        var links = DomainRegex().Matches(message.Content).Select(d => d.Groups["link"].Value).ToArray();
 
-        if (!phishingResult.IsDefined(out var detectionResult))
+
+        var phishingResult = _phishing.CheckLinks(links);
+
+        if (!phishingResult.IsDefined(out var link))
         {
             return Result.FromSuccess();
         }
 
-        return await HandlePhishingAsync(config, message.Author, gid, $"{detectionResult}");
+        return await HandlePhishingAsync(config, message.Author, gid, link);
     }
 
 

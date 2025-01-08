@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Kobalt.Bot.Data.Entities;
+using Kobalt.Bot.Data.Entities.Phishing;
 using Kobalt.Bot.Data.Entities.RoleMenus;
 using Kobalt.Shared.DatabaseConverters;
 using Microsoft.EntityFrameworkCore;
@@ -14,12 +15,16 @@ namespace Kobalt.Bot.Data;
 public class KobaltContext : DbContext
 {
     internal const string Schema = "kobalt_core";
-    
+
     public DbSet<RoleMenuEntity> RoleMenus { get; set; }
-    
+
     public DbSet<User> Users { get; set; } = default!;
     public DbSet<KobaltGuild> Guilds { get; set; } = default!;
     public DbSet<LogChannel> LogChannels { get; set; } = default!;
+
+    public DbSet<SuspiciousAvatar> SuspiciousAvatars { get; set; } = null!;
+
+    public DbSet<SuspiciousUsername> SuspiciousUsernames { get; set; } = null!;
 
 
     public KobaltContext(DbContextOptions<KobaltContext> options) : base(options) { }

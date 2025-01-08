@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using Kobalt.Phishing.Shared.Models;
+using Kobalt.Shared.Models.Phishing;
 
-namespace Kobalt.Phishing.Data.Entities;
+namespace Kobalt.Bot.Data.Entities.Phishing;
 
 public class SuspiciousUsername
 {

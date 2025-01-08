@@ -1,9 +1,9 @@
-using Kobalt.Phishing.Data.Entities;
+using Kobalt.Bot.Data.Entities.Phishing;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Remora.Results;
 
-namespace Kobalt.Phishing.Data.MediatR;
+namespace Kobalt.Bot.Data.MediatR.Phishing;
 
 public static class CreateSuspiciousAvatar
 {
@@ -28,9 +28,9 @@ public static class CreateSuspiciousAvatar
 
     internal class Handler : IRequestHandler<Request, Result<SuspiciousAvatar>>
     {
-        private readonly IDbContextFactory<PhishingContext> _context;
+        private readonly IDbContextFactory<KobaltContext> _context;
 
-        public Handler(IDbContextFactory<PhishingContext> context) => _context = context;
+        public Handler(IDbContextFactory<KobaltContext> context) => _context = context;
 
         public async Task<Result<SuspiciousAvatar>> Handle(Request request, CancellationToken cancellationToken)
         {

@@ -3,10 +3,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using CoenM.ImageHash;
 using CoenM.ImageHash.HashAlgorithms;
-using Kobalt.Phishing.Data.Entities;
-using Kobalt.Phishing.Data.MediatR;
-using Kobalt.Phishing.Shared.Models;
+using Kobalt.Bot.Data.Entities.Phishing;
+using Kobalt.Bot.Data.MediatR.Phishing;
 using Kobalt.Shared.Extensions;
+using Kobalt.Shared.Models.Phishing;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using Remora.Rest.Core;
@@ -15,7 +15,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace Kobalt.Phishing.API.Services;
+namespace Kobalt.Bot.Services;
 
 using UsernameDetectionResult = (bool Matched, string? Username, bool Global);
 
@@ -27,7 +27,7 @@ public class PhishingService : BackgroundService
 {
     private const string DiscordCDNAvatars = "https://cdn.discordapp.com/avatars/{0}/{1}.png?size=256";
     private const string DiscordBadLinks = "https://cdn.discordapp.com/bad-domains/updated_hashes.json";
-    private const string FishFish = "https://phish.sinking.yachts/v2/all"; // TODO: Replace with fishfish.gg when the API is stabilized.
+    private const string FishFish = "https://api.fishfish.gg/v1/domains";
 
     private readonly HttpClient _client;
     private readonly IMediator _mediator;
@@ -46,9 +46,9 @@ public class PhishingService : BackgroundService
     /// <param name="guildID">The ID of the guild to evaluate for.</param>
     /// <param name="request">The data pertaining to the user.</param>
     /// <returns>A result indicating whether there was a match.</returns>
-    public async Task<UserPhishingDetectionResult> CheckUserAsync(ulong guildID, CheckUserRequest request)
+    public async Task<UserPhishingDetectionResult> CheckUserAsync(Snowflake guildID, CheckUserRequest request)
     {
-        var usernames = await _mediator.Send(new GetSuspiciousUsernames.Request(guildID));
+        var usernames = await _mediator.Send(new GetSuspiciousUsernames.Request(guildID.Value));
 
         var matchResult = CheckUsername(request.Username, usernames);
 
@@ -79,27 +79,42 @@ public class PhishingService : BackgroundService
     /// </summary>
     /// <param name="domains">The domains to check.</param>
     /// <returns>A result for whether or not any of the domains matched.</returns>
-    public UserPhishingDetectionResult CheckLinksAsync(IReadOnlyList<string> domains)
+    public Optional<string>  CheckLinks(IReadOnlyList<string> domains)
     {
-        var domainList = _cache.Get<HashSet<byte[]>>("phishing-domains");
+        HashSet<byte[]>? domainList = _cache.Get<HashSet<byte[]>>("phishing-domains");
+
+        domainList.Add(SHA256.HashData("wahs.uk"u8.ToArray()));
 
         if (domainList is null)
         {
             //TODO: Throw so we can return a 500
-            return new UserPhishingDetectionResult(null, false, false, null);
+            return default;
         }
 
-        domains = domains.Select(d => d.Replace("https://", "").Replace("http://", "").Replace("/", "")).ToArray();
+        Regex regex = PhishingDetectionService.DomainRegex();
 
-        var matches = domains.Select((d, i) => (SHA256.HashData(Encoding.UTF8.GetBytes(d)), i))
-                             .Where(check => domainList.Any(domain => domain.SequenceEqual(check.Item1)));
-
-        if (matches.Any() && matches.FirstOrDefault() is {} match)
+        foreach (var domain in domains)
         {
-            return new UserPhishingDetectionResult(null, true, true, $"ANTI-PHISHING: Link matched `{domains[match.i]}`.");
+            Match domainMatch = regex.Match(domain);
+
+            if (!domainMatch.Success)
+            {
+                continue;
+            }
+
+            string domainString = domainMatch.Groups["link"].Value;
+            byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(domainString));
+
+            foreach (var domainHash in domainList)
+            {
+                if (domainHash.SequenceEqual(hash))
+                {
+                    return $"ANTI-PHISHING: Link matched `{domainString}`";
+                }
+            }
         }
 
-        return new UserPhishingDetectionResult(null, false, false, null);
+        return default;
     }
 
     public async Task<Result<byte[]>> HashImageAsync(string url)
@@ -120,7 +135,7 @@ public class PhishingService : BackgroundService
         return hashResult;
     }
 
-    private async Task<Result<(SuspiciousAvatar Avatar, int Score)>> CheckAvatarAsync(ulong guildID, Snowflake userID, string? userAvatarHash)
+    private async Task<Result<(SuspiciousAvatar Avatar, int Score)>> CheckAvatarAsync(Snowflake guildID, Snowflake userID, string? userAvatarHash)
     {
         if (userAvatarHash is null)
         {
@@ -140,7 +155,7 @@ public class PhishingService : BackgroundService
         var hasher = new PerceptualHash();
         var hash = hasher.Hash(Image.LoadPixelData<Rgba32>(avatarBytes, 256, 256));
 
-        var avatarHashes = await _mediator.Send(new GetSuspiciousAvatars.Request(guildID));
+        var avatarHashes = await _mediator.Send(new GetSuspiciousAvatars.Request(guildID.Value));
 
         var match = avatarHashes.FirstOrDefault(x => CompareHash.Similarity(hash, BitConverter.ToUInt64(x.Phash)) > 0.94);
 
@@ -158,7 +173,6 @@ public class PhishingService : BackgroundService
         var regexes = usernames.Where(x => x.ParseType == UsernameParseType.Regex);
 
         var literalMatch = literals.FirstOrDefault(x => x.UsernamePattern.Equals(requestUsername, StringComparison.OrdinalIgnoreCase));
-
         if (literalMatch is not null)
         {
             return new UsernameDetectionResult(true, literalMatch.UsernamePattern, literalMatch.GuildID is null);
@@ -219,7 +233,11 @@ public class PhishingService : BackgroundService
             return (Result)fishFishResult;
         }
 
-        var domains = new HashSet<byte[]>(discordResult.Entity!.Count + fishFishResult.Entity!.Count);
+        var firstTenFishDomains = fishFishResult.Entity.Take(10);
+
+        Console.WriteLine($"Domain format: {string.Join(',', firstTenFishDomains)}.");
+
+        var domains = new HashSet<byte[]>(discordResult.Entity!.Count + fishFishResult.Entity!.Count, new ByteEqualityComparer());
 
         foreach(var domain in discordResult.Entity)
         {
@@ -238,4 +256,21 @@ public class PhishingService : BackgroundService
         return Result.FromSuccess();
     }
 
+}
+
+file class ByteEqualityComparer : IEqualityComparer<byte[]>
+{
+    public bool Equals(byte[]? a, byte[]? b)
+    {
+        if (a == b) return true;
+        if (a is null || b is null) return false;
+        return a.AsSpan().SequenceEqual(b.AsSpan());
+    }
+
+    public int GetHashCode(byte[] array)
+    {
+        HashCode hashCode = default;
+        hashCode.AddBytes(array);
+        return hashCode.ToHashCode();
+    }
 }

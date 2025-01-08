@@ -1,6 +1,6 @@
 using Remora.Rest.Core;
 
-namespace Kobalt.Phishing.Shared.Models;
+namespace Kobalt.Shared.Models.Phishing;
 
 public record SubmitAvatarRequest
 (

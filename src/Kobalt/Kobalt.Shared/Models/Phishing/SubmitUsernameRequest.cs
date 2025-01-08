@@ -1,4 +1,4 @@
-namespace Kobalt.Phishing.Shared.Models;
+namespace Kobalt.Shared.Models.Phishing;
 
 /// <summary>
 /// Represents a request to upload a username to the phishing database.

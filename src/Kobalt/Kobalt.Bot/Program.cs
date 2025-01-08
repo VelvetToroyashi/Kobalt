@@ -16,7 +16,6 @@ using Kobalt.Infrastructure.Extensions;
 using Kobalt.Infrastructure.Services;
 using Kobalt.Infrastructure.Services.Booru;
 using Kobalt.Infrastructure.Types;
-using Kobalt.Phishing.Shared.Interfaces;
 using Kobalt.Shared.Extensions;
 using Kobalt.Shared.Services;
 using Kobalt.Shared.Types;
@@ -313,20 +312,16 @@ void AddPhishingServices(IServiceCollection services, KobaltConfig config)
         return;
     }
 
-    services.AddRefitClient<IKobaltRestPhishingAPI>(GetRefitSettings)
-            .AddPolicyHandler(KobaltBot.Policy)
-            .ConfigureHttpClient
-            (
-                (s, c) =>
-                {
-                    var address = config.Bot.PhishingUrl ??
-                                  throw new KeyNotFoundException("The Phishing API url was not configured.");
-
-                    c.BaseAddress = new Uri(address);
-                }
-            );
-
-    services.AddScoped<PhishingAPIService>();
+    services
+           .AddSingleton<PhishingService>()
+           .AddHostedService<PhishingService>(s => s.GetRequiredService<PhishingService>())
+           .AddHttpClient
+           (
+               "Phishing",
+               client => client
+                         .DefaultRequestHeaders
+                         .TryAddWithoutValidation("User-Agent", "Kobalt AntiPhish V1 (GH VelvetToroyashi/Kobalt)")
+           );
     services.AddScoped<PhishingDetectionService>();
 
     services.AddDelegateResponder<IGuildMemberAdd>

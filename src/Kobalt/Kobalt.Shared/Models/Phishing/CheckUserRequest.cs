@@ -1,6 +1,6 @@
 using Remora.Rest.Core;
 
-namespace Kobalt.Phishing.Shared.Models;
+namespace Kobalt.Shared.Models.Phishing;
 
 /// <summary>
 /// Represents a request to check a user's profile for phishing.

@@ -4,20 +4,17 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Kobalt.Phishing.Data.Migrations
+namespace Kobalt.Bot.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class PhishingToCore : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.EnsureSchema(
-                name: "kobalt_phishing");
-
             migrationBuilder.CreateTable(
                 name: "suspicious_avatars",
-                schema: "kobalt_phishing",
+                schema: "kobalt_core",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
@@ -37,7 +34,7 @@ namespace Kobalt.Phishing.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "suspicious_usernames",
-                schema: "kobalt_phishing",
+                schema: "kobalt_core",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
@@ -59,11 +56,11 @@ namespace Kobalt.Phishing.Data.Migrations
         {
             migrationBuilder.DropTable(
                 name: "suspicious_avatars",
-                schema: "kobalt_phishing");
+                schema: "kobalt_core");
 
             migrationBuilder.DropTable(
                 name: "suspicious_usernames",
-                schema: "kobalt_phishing");
+                schema: "kobalt_core");
         }
     }
 }
