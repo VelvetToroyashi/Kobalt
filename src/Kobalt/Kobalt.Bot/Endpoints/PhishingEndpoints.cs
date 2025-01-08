@@ -10,7 +10,7 @@ namespace Kobalt.Bot.Endpoints;
 
 public static class PhishingEndpoints
 {
-    public static void AddPhishingEndpoints(IEndpointRouteBuilder builder)
+    public static void MapPhishingEndpoints(this IEndpointRouteBuilder builder)
     {
         builder.MapPost("/phishing/check/{guildID}/user", async (ulong guildID, [FromBody] CheckUserRequest user, PhishingService phishing) => Results.Json(await phishing.CheckUserAsync(new Snowflake(guildID), user)));
         builder.MapPost("/phishing/check/domains", ([FromBody] IReadOnlyList<string> domains, PhishingService phishing) => Results.Json(phishing.CheckLinks(domains)));

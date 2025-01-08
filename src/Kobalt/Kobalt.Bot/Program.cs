@@ -83,6 +83,8 @@ host.UseAuthorization();
 
 host.MapGuildEndpoints();
 host.MapDiscordWebhookEndpoints();
+host.MapPhishingEndpoints();
+
 
 await ApplyKobaltEmojisAsync(host.Services);
 await host.RunAsync();
