@@ -90,8 +90,8 @@ The configuration system uses .NET's built-in mechanisms. This means you can als
 
 ## Feature checklist (AKA a Roadmap)
 
-- [x] Kobalt (The bot itself)
-    - [x] Configuration
+- [ ] Kobalt (The bot itself)
+    - [ ] Configuration
     - [ ] Entertainment (TBD)
         - [ ] RPG/MUD? (Plays well in Discord)
     - [x] Moderation (See `Infraction API`)* (Cases need an update command, but this is otherwise complete)

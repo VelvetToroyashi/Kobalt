@@ -8,7 +8,7 @@
 
     <ItemGroup>
       <PackageReference Include="Refit" Version="8.0.0" />
-      <PackageReference Include="Remora.Rest.Core" Version="2.2.1" />
+      <PackageReference Include="Remora.Rest.Core" Version="3.0.0" />
     </ItemGroup>
 
 </Project>
