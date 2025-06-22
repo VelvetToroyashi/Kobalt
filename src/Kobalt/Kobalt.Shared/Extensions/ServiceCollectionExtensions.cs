@@ -17,10 +17,11 @@ public static class ServiceCollectionExtensions
     /// Adds a consistent logging configuration to the service collection.
     /// </summary>
     /// <param name="services">The service collection.</param>
+    /// <param name="configuration">The application configuration for reading Serilog settings.</param>
     /// <returns>The configured service collection to chain calls with.</returns>
-    public static IServiceCollection AddSerilogLogging(this IServiceCollection services)
+    public static IServiceCollection AddSerilogLogging(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddLogging(ConfigureLogging);
+        services.AddLogging(builder => ConfigureLogging(builder, configuration));
         return services;
     }
 
@@ -92,20 +93,23 @@ public static class ServiceCollectionExtensions
     /// Configures a logging builder, adding Serilog.
     /// </summary>
     /// <param name="loggingBuilder">The builder to configure.</param>
-    private static void ConfigureLogging(ILoggingBuilder loggingBuilder)
+    /// <param name="configuration">The application configuration.</param>
+    private static void ConfigureLogging(ILoggingBuilder loggingBuilder, IConfiguration configuration)
     {
         const string LogFormat = "[{@t:h:mm:ss ff tt}] [{@l:u3}] [{Substring(SourceContext, LastIndexOf(SourceContext, '.') + 1)}] {@m}\n{@x}";
 
-        Log.Logger = new LoggerConfiguration()
-                     #if DEBUG
-                     .MinimumLevel.Debug()
-                     #endif
-                     .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
-                     .MinimumLevel.Override("System.Net", LogEventLevel.Error)
-                     .MinimumLevel.Override("Remora", LogEventLevel.Warning)
-                     .MinimumLevel.Override("MassTransit", LogEventLevel.Information)
-                     .WriteTo.Console(new ExpressionTemplate(LogFormat))
-                     .CreateLogger();
+        var loggerConfig = new LoggerConfiguration()
+                           #if DEBUG
+                           .MinimumLevel.Debug()
+                           #endif
+                           .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
+                           .MinimumLevel.Override("System.Net", LogEventLevel.Error)
+                           .MinimumLevel.Override("Remora", LogEventLevel.Warning)
+                           .MinimumLevel.Override("MassTransit", LogEventLevel.Information)
+                           .WriteTo.Console(new ExpressionTemplate(LogFormat))
+                           .ReadFrom.Configuration(configuration);
+
+        Log.Logger = loggerConfig.CreateLogger();
 
         loggingBuilder.ClearProviders();
         loggingBuilder.AddSerilog(Log.Logger);

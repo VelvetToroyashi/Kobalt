@@ -18,32 +18,75 @@ Running the bot is just as simple as building and running, but you will need to 
 
 `appsettings.json` also works, but if you're planning on opening a PR, ensusure you don't accidentally commit sensitive data.
 
-Your configuration will look something like this, however this format may change in the future. 
+Your configuration will look something like this, however this format may change in the future. All settings for Kobalt itself are under the `Kobalt` root object. Connection strings and logging are configured in their respective top-level sections.
 
-You can acquire your bot token and public key from the [Discord Developer Dashboard](https://discord.com/developers/applications), however the latter is only necessary if you configure an HTTP endpoint for interactions. This provides better performance for commands, but is wholly unneccessary in most situations.
+You can acquire your bot token and public key from the [Discord Developer Dashboard](https://discord.com/developers/applications). The public key is only necessary if you enable HTTP interactions.
+
+A more complete `appsettings.json` example for the main bot (`Kobalt.Bot` project) is shown below:
 
 ```json
 {
   "Kobalt": {
-    "RemindersApiUrl": "http://localhost:5010",
-    "InfractionsApiUrl":"http://localhost:5020",
-    "PhishingApiUrl": "http://localhost:5030"
+    "Bot": {
+      "OwnerIDs": [ 12345678901234567 ], // List of Discord User IDs for bot owners
+      "DefaultActivityType": "Playing",   // Bot's presence: Playing, Streaming, Listening, Watching, Competing
+      "DefaultActivityName": "Kobalt",    // Text for the bot's presence
+      "EnableHTTPInteractions": true,     // Whether to use HTTP interactions (requires PublicKey)
+      "EnableReminders": true,            // Enable/disable the reminder feature
+      "RemindersUrl": "http://localhost:5010", // URL for the Reminders microservice
+      "EnableInfractions": true,          // Enable/disable the infractions/moderation feature
+      "InfractionsUrl": "http://localhost:5020", // URL for the Infractions microservice
+      "EnablePhishing": true,             // Enable/disable anti-phishing feature
+      "PhishingUrl": "http://localhost:5030"   // URL for the Phishing microservice
+    },
+    "Discord": {
+      "Token": "YOUR_DISCORD_BOT_TOKEN",    // Your Discord bot token (required)
+      "PublicKey": "YOUR_DISCORD_PUBLIC_KEY", // Your bot's public key (only if HttpInteractionsEnabled is true)
+      "ShardCount": 1                       // Number of shards for the bot
+    }
   },
   "ConnectionStrings": {
-    "Kobalt": "Server=localhost;Database=kobalt;Username=kobalt;Password=kobalt;",
-    "RabbitMQ": "rabbitmq://kobalt:kobalt@localhost:5672"
+    "Kobalt": "Server=localhost;Port=5432;Database=kobalt;Username=kobalt;Password=kobalt;", // PostgreSQL
+    "Redis": "localhost:6379",                                                              // Redis
+    "RabbitMQ": "amqp://kobalt:kobalt@localhost:5672"                                       // RabbitMQ
   },
-  "Discord": {
-    "Token": "Your bot token",
-    "ShardCount": 1,
-    "PublicKey": "Your Public Key"
+  "Serilog": { // Optional: Configure logging levels and outputs
+    "MinimumLevel": {
+      "Default": "Information", // Overall minimum logging level
+      "Override": { // Specific overrides for different sources
+        "Microsoft": "Warning",
+        "System": "Warning",
+        "Remora": "Information", // Logging from the Discord library
+        "Kobalt": "Debug"      // Logging from Kobalt's own code
+      }
+    },
+    "WriteTo": [
+      { "Name": "Console" } // Log to the console
+      // Example: Log to a file, daily rolling
+      // {
+      //   "Name": "File",
+      //   "Args": {
+      //     "path": "logs/kobalt-.log",
+      //     "rollingInterval": "Day",
+      //     "outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}"
+      //   }
+      // }
+    ],
+    "Enrich": [ "FromLogContext", "WithMachineName", "WithThreadId" ], // Add extra info to logs
+    "Properties": { // Global properties to add to all log events
+      "Application": "KobaltBot"
+    }
   }
 }
 ```
 
 > [!NOTE]
-> `PublicKey` can be ommitted if you intend to use the bot without an HTTP endpoint for interactions.
-> Specify `KOBALT_HTTP_INTERACTIONS_ENABLED=false` (env var) or `{ "Kobalt": { "HttpInteractionsEnabled": false } }` (appsettings.json) to disable HTTP interactions.
+> The `Kobalt:Discord:PublicKey` can be omitted if you set `Kobalt:Bot:EnableHTTPInteractions` to `false` (or the corresponding environment variable `Kobalt__Bot__EnableHTTPInteractions=false`).
+> API URLs for microservices (`RemindersUrl`, `InfractionsUrl`, `PhishingUrl`) are only needed if their respective `Enable` flags are `true`.
+
+The configuration system uses .NET's built-in mechanisms. This means you can also set these values using:
+1.  User Secrets (especially for `Token` during development).
+2.  Environment Variables (e.g., `Kobalt__Discord__Token=YOUR_TOKEN`, `Kobalt__Bot__OwnerIDs__0=12345`). Note the double underscore `__` for nesting and array indexing.
 
 ## Feature checklist (AKA a Roadmap)
 
