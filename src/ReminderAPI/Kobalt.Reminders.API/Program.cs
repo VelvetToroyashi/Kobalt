@@ -16,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddUserSecrets<Program>();
 
-builder.Services.AddSerilogLogging();
+builder.Services.AddSerilogLogging(builder.Configuration);
 builder.Services.AddMediatR(s => s.RegisterServicesFromAssemblyContaining<ReminderContext>());
 builder.Services.AddDbContextFactory<ReminderContext>("Reminders");
 

@@ -14,14 +14,23 @@ public class AntiRaidV2Service
     private readonly IMediator _mediator;
     private readonly TimeProvider _timeProvider;
     private readonly InfractionAPIService _infractions;
+    private readonly ILogger<AntiRaidV2Service> _logger;
     private readonly ConcurrentDictionary<Snowflake, RaidState> _raidStates = new();
 
-    public AntiRaidV2Service(IUser self, IMediator mediator, InfractionAPIService infractions, TimeProvider timeProvider)
+    public AntiRaidV2Service
+    (
+        IUser self,
+        IMediator mediator,
+        InfractionAPIService infractions,
+        TimeProvider timeProvider,
+        ILogger<AntiRaidV2Service> logger
+    )
     {
         _self = self;
         _mediator = mediator;
         _infractions = infractions;
         _timeProvider = timeProvider;
+        _logger = logger;
     }
 
     /// <summary>
@@ -58,7 +67,7 @@ public class AntiRaidV2Service
 
             if (!result.IsSuccess)
             {
-                // TODO: Log
+                _logger.LogWarning("Failed to ban user {UserIdentify} during raid in guild {GuildID}. Reason: {Error}", user.DiscordTag(), guildID, result.Error.Message);
             }
         }
 
@@ -73,6 +82,7 @@ public class AntiRaidV2Service
 /// </summary>
 internal class RaidState(TimeProvider timeProvider)
 {
+    private readonly SemaphoreSlim _lock = new(1, 1);
     internal readonly List<(IUser User, DateTimeOffset JoinDate, int ThreatScore, bool Handled)> _users = new();
 
     /// <summary>
@@ -80,7 +90,18 @@ internal class RaidState(TimeProvider timeProvider)
     /// </summary>
     /// <param name="user">The ID of the user to check for.</param>
     /// <returns>Whether the user is currently being tracked by this raid state.</returns>
-    public bool IsTrackedUser(Snowflake user) => _users.Any(u => u.User.ID == user);
+    public bool IsTrackedUser(Snowflake user)
+    {
+        _lock.Wait();
+        try
+        {
+            return _users.Any(u => u.User.ID == user);
+        }
+        finally
+        {
+            _lock.Release();
+        }
+    }
 
     /// <summary>
     /// Adds a user to the tracking state.
@@ -90,14 +111,24 @@ internal class RaidState(TimeProvider timeProvider)
     /// <param name="config">A configuration to determine how their threat score should be calculated.</param>
     public void AddUser(IUser user, DateTimeOffset joinTimestamp, GuildAntiRaidConfigDTO config)
     {
-        if (IsTrackedUser(user.ID))
+        _lock.Wait();
+        try
         {
-            return;
-        }
+            // Check again inside lock
+            if (_users.Any(u => u.User.ID == user.ID))
+            {
+                return;
+            }
 
-        var threatScore = config.BaseJoinScore;
-        var lastJoinDelta = joinTimestamp - _users.LastOrDefault().Item2;
-        var accountAge = user.ID.Timestamp - joinTimestamp;
+            var threatScore = config.BaseJoinScore;
+            TimeSpan lastJoinDelta = TimeSpan.MaxValue; // Initialize to a large value
+
+            if (_users.Any())
+            {
+                lastJoinDelta = joinTimestamp - _users.Last().JoinDate;
+            }
+
+            var accountAge = user.ID.Timestamp - joinTimestamp;
 
         if (lastJoinDelta < config.LastJoinBufferPeriod)
         {
@@ -121,6 +152,10 @@ internal class RaidState(TimeProvider timeProvider)
 
         if (user.Flags.AsNullable() is {} userFlags && config.AccountFlagsBypass is {} bypassFlags)
         {
+            // Bypass applies if the user possesses ALL of the flags specified in AccountFlagsBypass.
+            // For example, if bypassFlags = (FlagA | FlagB), userFlags must also contain (FlagA | FlagB).
+            // If bypass should occur if the user has ANY of the bypassFlags, this condition would be:
+            // (userFlags & bypassFlags) != 0
             if ((userFlags & bypassFlags) == userFlags)
             {
                 threatScore = config.BaseJoinScore;
@@ -128,15 +163,27 @@ internal class RaidState(TimeProvider timeProvider)
         }
 
         _users.Add((user, joinTimestamp, threatScore, false));
+        }
+        finally
+        {
+            _lock.Release();
+        }
     }
 
     /// <returns>Whether or not the current configuration would consider the current state to be a raid.</returns>
     public bool IsRaid(GuildAntiRaidConfigDTO config)
     {
-        ClearState(config);
-        var score = _users.Sum(u => u.ThreatScore);
-
-        return score >= config.ThreatScoreThreshold;
+        _lock.Wait();
+        try
+        {
+            ClearState(config);
+            var score = _users.Sum(u => u.ThreatScore);
+            return score >= config.ThreatScoreThreshold;
+        }
+        finally
+        {
+            _lock.Release();
+        }
     }
 
     /// <summary>
@@ -145,14 +192,25 @@ internal class RaidState(TimeProvider timeProvider)
     /// <param name="users">The users to mark as handled.</param>
     public void MarkUsersHandled(IEnumerable<Snowflake> users)
     {
-        foreach (var user in users)
+        _lock.Wait();
+        try
         {
-            var userState = _users.FirstOrDefault(u => u.User.ID == user);
-
-            if (userState.User.ID == user)
+            foreach (var userIdToMark in users)
             {
-                userState.Handled = true;
+                for (int i = 0; i < _users.Count; i++)
+                {
+                    if (_users[i].User.ID == userIdToMark)
+                    {
+                        var userTuple = _users[i];
+                        _users[i] = (userTuple.User, userTuple.JoinDate, userTuple.ThreatScore, true); // Mark as handled
+                        break;
+                    }
+                }
             }
+        }
+        finally
+        {
+            _lock.Release();
         }
     }
 
@@ -163,9 +221,19 @@ internal class RaidState(TimeProvider timeProvider)
     /// <returns>Suspicious users, as determined by the config.</returns>
     public IEnumerable<IUser> GetSuspiciousUsers(GuildAntiRaidConfigDTO config)
     {
-        ClearState(config);
-
-        return _users.Where(u => u.ThreatScore > config.BaseJoinScore && !u.Handled).Select(u => u.User);
+        _lock.Wait();
+        try
+        {
+            ClearState(config);
+            // Note: This returns an IEnumerable that might be evaluated lazily.
+            // If the caller iterates this outside of a lock, and _users changes, it could lead to issues.
+            // Materializing to a List here ensures snapshot semantics.
+            return _users.Where(u => u.ThreatScore > config.BaseJoinScore && !u.Handled).Select(u => u.User).ToList();
+        }
+        finally
+        {
+            _lock.Release();
+        }
     }
 
     /// <summary>

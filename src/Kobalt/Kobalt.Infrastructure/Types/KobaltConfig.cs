@@ -24,6 +24,9 @@ public record KobaltDiscordConfig(string Token, int ShardCount, string? PublicKe
 /// <param name="EnablePhishing">Whether phishing is enabled.</param>
 /// <param name="EnableInfractions">Whether infractions are enabled.</param>
 /// <param name="EnableHTTPInteractions">Whether HTTP interactions are enabled.</param>
+/// <param name="OwnerIDs">A list of Discord User IDs for bot owners.</param>
+/// <param name="DefaultActivityType">The default type of activity shown in the bot's status (e.g., Playing, Watching, Listening).</param>
+/// <param name="DefaultActivityName">The default name of the activity shown in the bot's status.</param>
 public record KobaltBotConfig
 (
     string? RemindersUrl = null,
@@ -32,5 +35,8 @@ public record KobaltBotConfig
     bool EnableReminders = true,
     bool EnablePhishing = true,
     bool EnableInfractions = true,
-    bool EnableHTTPInteractions = true
+    bool EnableHTTPInteractions = true,
+    IReadOnlyList<ulong>? OwnerIDs = null,
+    string DefaultActivityType = "Watching",
+    string DefaultActivityName = "Code being written"
 );

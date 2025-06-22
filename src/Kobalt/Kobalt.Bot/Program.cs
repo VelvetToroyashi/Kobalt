@@ -58,7 +58,7 @@ builder.Configuration
        .AddEnvironmentVariables()
        .AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 
-builder.Services.AddSerilogLogging();
+builder.Services.AddSerilogLogging(builder.Configuration);
 
 ConfigureKobaltBotServices(builder.Configuration, builder.Services);
 
@@ -202,8 +202,15 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
 
     services.Configure<DiscordGatewayClientOptions>
     (
-        options =>
+        (options, provider) =>
         {
+            var config = provider.GetRequiredService<IOptions<KobaltConfig>>().Value;
+            if (!Enum.TryParse<ActivityType>(config.Bot.DefaultActivityType, true, out var activityType))
+            {
+                activityType = ActivityType.Watching; // Default if parsing fails
+                Log.Warning("Failed to parse DefaultActivityType '{ActivityType}'. Defaulting to 'Watching'.", config.Bot.DefaultActivityType);
+            }
+
             options.Intents |= GatewayIntents.MessageContents | GatewayIntents.GuildVoiceStates;
             options.Presence = new UpdatePresence
             (
@@ -214,8 +221,8 @@ void ConfigureKobaltBotServices(IConfiguration hostConfig, IServiceCollection se
                 {
                     new Activity
                     (
-                        Name: "Code being written",
-                        Type: ActivityType.Watching
+                        Name: config.Bot.DefaultActivityName,
+                        Type: activityType
                     )
                 }
             );
