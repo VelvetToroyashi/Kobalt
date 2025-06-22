@@ -14,7 +14,7 @@ using Remora.Rest.Json.Policies;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-builder.Services.AddSerilogLogging();
+builder.Services.AddSerilogLogging(builder.Configuration);
 
 var configure = (JsonSerializerOptions options) =>
 {
